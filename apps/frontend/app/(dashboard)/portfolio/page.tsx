@@ -10,6 +10,7 @@ import { usePortfolio } from "@/hooks/usePortfolio";
 import { useAssets } from "@/hooks/useAssets";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { PageTransition } from "@/components/ui/PageTransition";
 import { 
   TrendingUp, TrendingDown, DollarSign, Activity, ArrowUpDown, ArrowUp, ArrowDown 
 } from "lucide-react";
@@ -135,36 +136,42 @@ export default function PortfolioPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-12 w-64" />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Skeleton className="h-32" />
-          <Skeleton className="h-32" />
-          <Skeleton className="h-32" />
+      <PageTransition>
+        <div className="space-y-6">
+          <Skeleton className="h-10 w-48" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Skeleton className="h-32 rounded-xl" />
+            <Skeleton className="h-32 rounded-xl" />
+            <Skeleton className="h-32 rounded-xl" />
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Skeleton className="h-80 rounded-xl" />
+            <Skeleton className="h-80 rounded-xl" />
+          </div>
+          <Skeleton className="h-96 rounded-xl" />
+          <Skeleton className="h-80 rounded-xl" />
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Skeleton className="h-80" />
-          <Skeleton className="h-80" />
-        </div>
-        <Skeleton className="h-96" />
-      </div>
+      </PageTransition>
     );
   }
 
   if (error || !portfolio) {
     return (
-      <div className="space-y-6">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Portfolio</h1>
-        <Card>
-          <CardContent className="py-12 text-center">
-            <p className="text-gray-500 dark:text-gray-400">Failed to load portfolio data. Please try again later.</p>
-          </CardContent>
-        </Card>
-      </div>
+      <PageTransition>
+        <div className="space-y-6">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Portfolio</h1>
+          <Card>
+            <CardContent className="py-12 text-center">
+              <p className="text-gray-500 dark:text-gray-400">Failed to load portfolio data. Please try again later.</p>
+            </CardContent>
+          </Card>
+        </div>
+      </PageTransition>
     );
   }
 
   return (
+    <PageTransition>
     <div className="space-y-6">
       <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Portfolio</h1>
 
@@ -554,5 +561,6 @@ export default function PortfolioPage() {
         </CardContent>
       </Card>
     </div>
+    </PageTransition>
   );
 }

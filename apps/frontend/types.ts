@@ -48,3 +48,24 @@ export interface RegisterCredentials {
   password: string;
   full_name: string;
 }
+
+export interface Notification {
+  id: number;
+  user_id: number;
+  title: string;
+  message: string;
+  type: string;
+  read: boolean;
+  created_at: string;
+}
+
+export interface PriceAlert {
+  id: number;
+  user_id: number;
+  symbol: string;
+  target_price: number;
+  condition: "above" | "below";
+  is_active: boolean;
+  created_at: string;
+  triggered_at?: string | null;
+}
