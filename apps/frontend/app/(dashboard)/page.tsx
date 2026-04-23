@@ -1,11 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePortfolio } from "@/hooks/usePortfolio";
 import { useAssets } from "@/hooks/useAssets";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { TrendingUp, TrendingDown, DollarSign, PieChart, Activity, ArrowRight, Clock } from "lucide-react";
+import { 
+  TrendingUp, 
+  TrendingDown, 
+  DollarSign, 
+  PieChart, 
+  Activity, 
+  ArrowRight, 
+  Clock,
+  BarChart3
+} from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -15,6 +24,8 @@ const formatCurrency = (value: number) => {
     maximumFractionDigits: 2,
   }).format(value);
 };
+
+type SortKey = "symbol" | "type" | "quantity" | "purchase_price" | "current_price" | "value" | "pnl" | "pnl_percent";
 
 export default function DashboardPage() {
   const { portfolio, isLoading: portfolioLoading } = usePortfolio();
@@ -30,70 +41,61 @@ export default function DashboardPage() {
     }
   }, [isLoading, portfolio, assets]);
 
-  const getTimeSinceUpdate = () => {
-    if (!lastUpdate) return null;
-    return `Dernière mise à jour: ${lastUpdate}`;
-  };
+  const dailyChange = useMemo(() => {
+    if (!portfolio?.history || portfolio.history.length < 2) return null;
+    const history = [...portfolio.history].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    const latest = history[history.length - 1];
+    const previous = history[history.length - 2];
+    const change = latest.value - previous.value;
+    const percent = previous.value !== 0 ? (change / previous.value) * 100 : 0;
+    return { change, percent };
+  }, [portfolio?.history]);
+
+  const topGainers = useMemo(() => {
+    if (!assets || assets.length === 0) return [];
+    return [...assets]
+      .map(asset => ({
+        ...asset,
+        pnl: (asset.current_price - asset.purchase_price) * asset.quantity,
+        pnlPercent: ((asset.current_price - asset.purchase_price) / asset.purchase_price) * 100,
+        value: asset.current_price * asset.quantity,
+      }))
+      .sort((a, b) => b.pnlPercent - a.pnlPercent)
+      .slice(0, 5);
+  }, [assets]);
+
+  const topLosers = useMemo(() => {
+    if (!assets || assets.length === 0) return [];
+    return [...assets]
+      .map(asset => ({
+        ...asset,
+        pnl: (asset.current_price - asset.purchase_price) * asset.quantity,
+        pnlPercent: ((asset.current_price - asset.purchase_price) / asset.purchase_price) * 100,
+        value: asset.current_price * asset.quantity,
+      }))
+      .sort((a, b) => a.pnlPercent - b.pnlPercent)
+      .slice(0, 5);
+  }, [assets]);
 
   if (isLoading) {
     return (
       <div className="space-y-6">
         <Skeleton className="h-12 w-64" />
+        <Skeleton className="h-40 w-full" />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Skeleton className="h-32" />
           <Skeleton className="h-32" />
           <Skeleton className="h-32" />
           <Skeleton className="h-32" />
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Asset Allocation</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-64" />
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Assets</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-64" />
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Skeleton className="h-64" />
+          <Skeleton className="h-64" />
+          <Skeleton className="h-64" />
         </div>
       </div>
     );
   }
-
-  const stats = [
-    {
-      label: "Total Portfolio Value",
-      value: portfolio ? `$${formatCurrency(portfolio.total_value)}` : "$0.00",
-      icon: DollarSign,
-      trend: portfolio?.total_gain_loss,
-      trendPercent: portfolio?.gain_loss_percentage,
-    },
-    {
-      label: "Total Assets",
-      value: assets?.length || 0,
-      icon: PieChart,
-      suffix: "assets",
-    },
-    {
-      label: "Gain/Loss",
-      value: portfolio ? `${portfolio.total_gain_loss >= 0 ? "+" : ""}$${formatCurrency(portfolio.total_gain_loss)}` : "$0.00",
-      icon: portfolio && portfolio.total_gain_loss >= 0 ? TrendingUp : TrendingDown,
-      isPositive: portfolio ? portfolio.total_gain_loss >= 0 : true,
-    },
-    {
-      label: "Performance",
-      value: portfolio ? `${portfolio.gain_loss_percentage >= 0 ? "+" : ""}${portfolio.gain_loss_percentage.toFixed(2)}%` : "0.00%",
-      icon: Activity,
-      isPositive: portfolio ? portfolio.gain_loss_percentage >= 0 : true,
-    },
-  ];
 
   return (
     <div className="space-y-6">
@@ -110,110 +112,275 @@ export default function DashboardPage() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat) => (
-          <Card key={stat.label}>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{stat.label}</p>
-                  <p className={cn(
-                    "text-2xl font-bold mt-1",
-                    stat.isPositive !== undefined 
-                      ? stat.isPositive ? "text-green-600" : "text-red-600"
-                      : "text-gray-900 dark:text-gray-100"
-                  )}>
-                    {stat.value}
-                  </p>
-                  {stat.trend !== undefined && (
-                    <p className="text-sm mt-1 text-gray-500 dark:text-gray-400">
-                      {stat.trendPercent?.toFixed(2)}% all time
-                    </p>
+      {/* Hero Section - Total Portfolio Value */}
+      <Card className="bg-gradient-to-br from-blue-600 to-indigo-700 border-none text-white">
+        <CardContent className="pt-8 pb-8">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+            <div>
+              <p className="text-blue-100 text-sm font-medium mb-1">Valeur totale du portfolio</p>
+              <p className="text-4xl md:text-5xl font-bold tracking-tight">
+                ${portfolio ? formatCurrency(portfolio.total_value) : "0.00"}
+              </p>
+              <div className="flex items-center gap-3 mt-3">
+                <div className={cn(
+                  "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-sm font-medium",
+                  portfolio && portfolio.total_gain_loss >= 0 
+                    ? "bg-green-500/20 text-green-100" 
+                    : "bg-red-500/20 text-red-100"
+                )}>
+                  {portfolio && portfolio.total_gain_loss >= 0 ? (
+                    <TrendingUp className="w-4 h-4" />
+                  ) : (
+                    <TrendingDown className="w-4 h-4" />
                   )}
+                  {portfolio ? `${portfolio.total_gain_loss >= 0 ? "+" : ""}${formatCurrency(portfolio.total_gain_loss)}` : "$0.00"}
                 </div>
-                <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-full">
-                  <stat.icon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                </div>
+                <span className="text-blue-200 text-sm">
+                  ({portfolio ? `${portfolio.gain_loss_percentage >= 0 ? "+" : ""}${portfolio.gain_loss_percentage.toFixed(2)}%` : "0.00%"})
+                </span>
               </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+            </div>
+            
+            {/* Performance du jour */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 min-w-[200px]">
+              <div className="flex items-center gap-2 mb-2">
+                <Activity className="w-4 h-4 text-blue-200" />
+                <p className="text-blue-100 text-sm font-medium">Performance du jour</p>
+              </div>
+              {dailyChange ? (
+                <div className="flex items-center gap-2">
+                  <span className={cn(
+                    "text-2xl font-bold",
+                    dailyChange.change >= 0 ? "text-green-300" : "text-red-300"
+                  )}>
+                    {dailyChange.change >= 0 ? "+" : ""}${formatCurrency(dailyChange.change)}
+                  </span>
+                  <span className={cn(
+                    "text-sm font-medium px-2 py-0.5 rounded-full",
+                    dailyChange.percent >= 0 
+                      ? "bg-green-500/20 text-green-200" 
+                      : "bg-red-500/20 text-red-200"
+                  )}>
+                    {dailyChange.percent >= 0 ? "+" : ""}{dailyChange.percent.toFixed(2)}%
+                  </span>
+                </div>
+              ) : (
+                <p className="text-blue-200 text-sm">Données insuffisantes</p>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Asset Allocation</CardTitle>
-            <Link href="/portfolio" className="text-sm text-blue-600 hover:underline dark:text-blue-400 flex items-center gap-1">
-              View details <ArrowRight className="w-4 h-4" />
-            </Link>
-          </CardHeader>
-          <CardContent>
-            {portfolio?.by_type && portfolio.by_type.length > 0 ? (
-              <div className="space-y-4">
-                {portfolio.by_type.map((item) => (
-                  <div key={item.type} className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={cn(
-                        "w-3 h-3 rounded-full",
-                        item.type === "crypto" && "bg-amber-500",
-                        item.type === "stocks" && "bg-emerald-500",
-                        item.type === "real_estate" && "bg-indigo-500"
-                      )} />
-                      <span className="capitalize text-gray-700 dark:text-gray-300">{item.type.replace("_", " ")}</span>
-                    </div>
-                    <div className="text-right">
-                      <span className="font-medium text-gray-900 dark:text-gray-100">${formatCurrency(item.value)}</span>
-                      <span className="text-gray-500 dark:text-gray-400 ml-2">({item.percentage.toFixed(1)}%)</span>
-                    </div>
-                  </div>
-                ))}
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Total Assets</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">
+                  {assets?.length || 0}
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">actifs détenus</p>
               </div>
-            ) : (
-              <p className="text-gray-500 dark:text-gray-400 text-center py-8">No allocation data available</p>
-            )}
+              <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-full">
+                <PieChart className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              </div>
+            </div>
           </CardContent>
         </Card>
 
         <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Gain/Loss Total</p>
+                <p className={cn(
+                  "text-2xl font-bold mt-1",
+                  portfolio && portfolio.total_gain_loss >= 0 ? "text-green-600" : "text-red-600"
+                )}>
+                  {portfolio ? `${portfolio.total_gain_loss >= 0 ? "+" : ""}$${formatCurrency(portfolio.total_gain_loss)}` : "$0.00"}
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">all time</p>
+              </div>
+              <div className={cn(
+                "p-3 rounded-full",
+                portfolio && portfolio.total_gain_loss >= 0 ? "bg-green-100 dark:bg-green-900" : "bg-red-100 dark:bg-red-900"
+              )}>
+                {portfolio && portfolio.total_gain_loss >= 0 ? (
+                  <TrendingUp className="w-6 h-6 text-green-600 dark:text-green-400" />
+                ) : (
+                  <TrendingDown className="w-6 h-6 text-red-600 dark:text-red-400" />
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Performance</p>
+                <p className={cn(
+                  "text-2xl font-bold mt-1",
+                  portfolio && portfolio.gain_loss_percentage >= 0 ? "text-green-600" : "text-red-600"
+                )}>
+                  {portfolio ? `${portfolio.gain_loss_percentage >= 0 ? "+" : ""}${portfolio.gain_loss_percentage.toFixed(2)}%` : "0.00%"}
+                </p>
+                <p className={cn(
+                  "text-sm mt-1",
+                  portfolio && portfolio.gain_loss_percentage >= 0 ? "text-green-600" : "text-red-600"
+                )}>
+                  {portfolio && portfolio.gain_loss_percentage >= 0 ? "↑ En hausse" : "↓ En baisse"}
+                </p>
+              </div>
+              <div className={cn(
+                "p-3 rounded-full",
+                portfolio && portfolio.gain_loss_percentage >= 0 ? "bg-green-100 dark:bg-green-900" : "bg-red-100 dark:bg-red-900"
+              )}>
+                <BarChart3 className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Top Gainers & Losers */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Recent Assets</CardTitle>
-            <Link href="/assets" className="text-sm text-blue-600 hover:underline dark:text-blue-400 flex items-center gap-1">
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-green-600" />
+              Top Gainers
+            </CardTitle>
+            <Link href="/portfolio" className="text-sm text-blue-600 hover:underline dark:text-blue-400 flex items-center gap-1">
               View all <ArrowRight className="w-4 h-4" />
             </Link>
           </CardHeader>
           <CardContent>
-            {assets && assets.length > 0 ? (
+            {topGainers.length > 0 ? (
               <div className="space-y-3">
-                {assets.slice(0, 5).map((asset) => (
+                {topGainers.map((asset) => (
                   <div key={asset.id} className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700 last:border-0">
-                    <div>
-                      <p className="font-medium text-gray-900 dark:text-gray-100">{asset.symbol.toUpperCase()}</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{asset.type}</p>
+                    <div className="flex items-center gap-3">
+                      <div className={cn(
+                        "w-2 h-8 rounded-full",
+                        asset.type === "crypto" && "bg-amber-500",
+                        asset.type === "stocks" && "bg-emerald-500",
+                        asset.type === "real_estate" && "bg-indigo-500"
+                      )} />
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-gray-100">{asset.symbol.toUpperCase()}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{asset.type.replace("_", " ")}</p>
+                      </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-medium text-gray-900 dark:text-gray-100">${formatCurrency(asset.current_price * asset.quantity)}</p>
-                      <p className={cn(
-                        "text-sm",
-                        (asset.current_price - asset.purchase_price) >= 0 ? "text-green-600" : "text-red-600"
-                      )}>
-                        {((asset.current_price - asset.purchase_price) / asset.purchase_price * 100).toFixed(2)}%
+                      <p className="font-medium text-gray-900 dark:text-gray-100">${formatCurrency(asset.value)}</p>
+                      <p className="text-sm text-green-600 font-medium">
+                        +{asset.pnlPercent.toFixed(2)}%
                       </p>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8">
-                <p className="text-gray-500 dark:text-gray-400 mb-4">No assets yet</p>
-                <Link href="/assets" className="text-blue-600 hover:underline dark:text-blue-400">
-                  Add your first asset
-                </Link>
+              <p className="text-gray-500 dark:text-gray-400 text-center py-8">No assets yet</p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <TrendingDown className="w-5 h-5 text-red-600" />
+              Top Losers
+            </CardTitle>
+            <Link href="/portfolio" className="text-sm text-blue-600 hover:underline dark:text-blue-400 flex items-center gap-1">
+              View all <ArrowRight className="w-4 h-4" />
+            </Link>
+          </CardHeader>
+          <CardContent>
+            {topLosers.length > 0 ? (
+              <div className="space-y-3">
+                {topLosers.map((asset) => (
+                  <div key={asset.id} className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700 last:border-0">
+                    <div className="flex items-center gap-3">
+                      <div className={cn(
+                        "w-2 h-8 rounded-full",
+                        asset.type === "crypto" && "bg-amber-500",
+                        asset.type === "stocks" && "bg-emerald-500",
+                        asset.type === "real_estate" && "bg-indigo-500"
+                      )} />
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-gray-100">{asset.symbol.toUpperCase()}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{asset.type.replace("_", " ")}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-medium text-gray-900 dark:text-gray-100">${formatCurrency(asset.value)}</p>
+                      <p className="text-sm text-red-600 font-medium">
+                        {asset.pnlPercent.toFixed(2)}%
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
+            ) : (
+              <p className="text-gray-500 dark:text-gray-400 text-center py-8">No assets yet</p>
             )}
           </CardContent>
         </Card>
       </div>
+
+      {/* Asset Allocation */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Répartition par type d&apos;actif</CardTitle>
+          <Link href="/portfolio" className="text-sm text-blue-600 hover:underline dark:text-blue-400 flex items-center gap-1">
+            View details <ArrowRight className="w-4 h-4" />
+          </Link>
+        </CardHeader>
+        <CardContent>
+          {portfolio?.by_type && portfolio.by_type.length > 0 ? (
+            <div className="space-y-4">
+              {portfolio.by_type.map((item) => (
+                <div key={item.type} className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={cn(
+                      "w-3 h-3 rounded-full",
+                      item.type === "crypto" && "bg-amber-500",
+                      item.type === "stocks" && "bg-emerald-500",
+                      item.type === "real_estate" && "bg-indigo-500"
+                    )} />
+                    <span className="capitalize text-gray-700 dark:text-gray-300">{item.type.replace("_", " ")}</span>
+                  </div>
+                  <div className="flex items-center gap-4 flex-1 mx-4">
+                    <div className="flex-1 h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                      <div 
+                        className={cn(
+                          "h-full rounded-full",
+                          item.type === "crypto" && "bg-amber-500",
+                          item.type === "stocks" && "bg-emerald-500",
+                          item.type === "real_estate" && "bg-indigo-500"
+                        )}
+                        style={{ width: `${item.percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                  <div className="text-right min-w-[120px]">
+                    <span className="font-medium text-gray-900 dark:text-gray-100">${formatCurrency(item.value)}</span>
+                    <span className="text-gray-500 dark:text-gray-400 ml-2">({item.percentage.toFixed(1)}%)</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500 dark:text-gray-400 text-center py-8">No allocation data available</p>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
