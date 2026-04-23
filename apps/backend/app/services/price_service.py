@@ -48,6 +48,22 @@ STOCK_FALLBACK_PRICES = {
     "amc": (4, 6),
 }
 
+REAL_ESTATE_SYMBOL_MAP = {
+    "paris": "PARIS_CENTRAL",
+    "lyon": "LYON",
+    "banlieue": "SUBURBS",
+    "bordeaux": "BORDEAUX",
+    "marseille": "MARSEILLE",
+}
+
+REAL_ESTATE_FALLBACK_PRICES = {
+    "paris": (5000, 15000),
+    "lyon": (3000, 8000),
+    "banlieue": (2000, 5000),
+    "bordeaux": (2500, 6000),
+    "marseille": (2000, 5500),
+}
+
 class PriceService:
     async def get_crypto_price(self, symbol: str) -> Optional[float]:
         cached = await cache_service.get_crypto_price(symbol)
@@ -150,6 +166,20 @@ class PriceService:
         return None
 
     async def get_real_estate_price(self, symbol: str) -> Optional[float]:
+        symbol_normalized = symbol.lower()
+        mapped_symbol = REAL_ESTATE_SYMBOL_MAP.get(symbol_normalized, symbol_normalized.upper())
+        if mapped_symbol in REAL_ESTATE_FALLBACK_PRICES:
+            min_price, max_price = REAL_ESTATE_FALLBACK_PRICES[mapped_symbol]
+            price = round(random.uniform(min_price, max_price), 2)
+            ohlc = self._generate_ohlc(price)
+            await cache_service.set_price_history(symbol, "real_estate", ohlc)
+            return price
+        if symbol_normalized in REAL_ESTATE_FALLBACK_PRICES:
+            min_price, max_price = REAL_ESTATE_FALLBACK_PRICES[symbol_normalized]
+            price = round(random.uniform(min_price, max_price), 2)
+            ohlc = self._generate_ohlc(price)
+            await cache_service.set_price_history(symbol, "real_estate", ohlc)
+            return price
         return None
 
     async def get_price(self, asset_type: str, symbol: str) -> Optional[float]:
