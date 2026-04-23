@@ -34,7 +34,7 @@ services:
       context: ../apps/frontend
       dockerfile: Dockerfile.dev
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:8000
+      NEXT_PUBLIC_API_URL: http://localhost
     ports: ["3000:3000"]
 
   nginx:
