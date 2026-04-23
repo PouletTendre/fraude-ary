@@ -6,10 +6,12 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { LayoutDashboard, Wallet } from "lucide-react";
 
 const navItems = [
-  { href: "/portfolio", label: "Portfolio", icon: "📊" },
-  { href: "/assets", label: "Assets", icon: "💰" },
+  { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/portfolio", label: "Portfolio", icon: Wallet },
+  { href: "/assets", label: "Assets", icon: Wallet },
 ];
 
 export default function DashboardLayout({
@@ -68,7 +70,7 @@ export default function DashboardLayout({
                   : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
               )}
             >
-              <span>{item.icon}</span>
+              <item.icon className="w-5 h-5" />
               <span className="font-medium">{item.label}</span>
             </Link>
           ))}

@@ -1,17 +1,31 @@
 import { cn } from "@/lib/utils";
 import { HTMLAttributes, forwardRef } from "react";
+import { cva, type VariantProps } from "class-variance-authority";
 
-export interface CardProps extends HTMLAttributes<HTMLDivElement> {}
+const cardVariants = cva(
+  "rounded-xl border bg-white text-gray-900 shadow-sm dark:bg-gray-800 dark:text-gray-100",
+  {
+    variants: {
+      variant: {
+        default: "border-gray-200 dark:border-gray-700",
+        elevated: "border-transparent shadow-md dark:shadow-gray-900/50",
+        outline: "border-gray-200 dark:border-gray-700",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+);
+
+export interface CardProps extends HTMLAttributes<HTMLDivElement>, VariantProps<typeof cardVariants> {}
 
 export const Card = forwardRef<HTMLDivElement, CardProps>(
-  ({ className, ...props }, ref) => {
+  ({ className, variant, ...props }, ref) => {
     return (
       <div
         ref={ref}
-        className={cn(
-          "rounded-xl border border-gray-200 bg-white text-gray-900 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100",
-          className
-        )}
+        className={cn(cardVariants({ variant }), className)}
         {...props}
       />
     );
@@ -57,3 +71,17 @@ export const CardContent = forwardRef<HTMLDivElement, CardProps>(
 );
 
 CardContent.displayName = "CardContent";
+
+export const CardFooter = forwardRef<HTMLDivElement, CardProps>(
+  ({ className, ...props }, ref) => {
+    return (
+      <div
+        ref={ref}
+        className={cn("flex items-center p-6 pt-0", className)}
+        {...props}
+      />
+    );
+  }
+);
+
+CardFooter.displayName = "CardFooter";

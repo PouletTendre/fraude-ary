@@ -1,14 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useAssets } from "@/hooks/useAssets";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useToast } from "@/components/ui/Toast";
+import { Search, Filter, X } from "lucide-react";
+import { Badge } from "@/components/ui/Badge";
 
 const TYPE_OPTIONS = [
+  { value: "all", label: "All Types" },
   { value: "crypto", label: "Crypto" },
   { value: "stocks", label: "Stocks" },
   { value: "real_estate", label: "Real Estate" },
@@ -25,6 +28,8 @@ export default function AssetsPage() {
   const { assets, isLoading, createAsset, deleteAsset, isCreating, isDeleting } = useAssets();
   const { addToast } = useToast();
   const [showForm, setShowForm] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
   const [formData, setFormData] = useState({
     name: "",
     type: "crypto" as "crypto" | "stocks" | "real_estate",
@@ -80,6 +85,23 @@ export default function AssetsPage() {
       });
     }
   };
+
+  const filteredAssets = useMemo(() => {
+    if (!assets) return [];
+    return assets.filter((asset) => {
+      const matchesSearch = asset.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (asset.symbol && asset.symbol.toLowerCase().includes(searchQuery.toLowerCase()));
+      const matchesType = typeFilter === "all" || asset.type === typeFilter;
+      return matchesSearch && matchesType;
+    });
+  }, [assets, searchQuery, typeFilter]);
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setTypeFilter("all");
+  };
+
+  const hasActiveFilters = searchQuery !== "" || typeFilter !== "all";
 
   if (isLoading) {
     return (
@@ -166,10 +188,49 @@ export default function AssetsPage() {
         </Card>
       )}
 
-      {assets.length === 0 ? (
+      <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search by name or symbol..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full h-10 pl-10 pr-4 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm placeholder:text-gray-400"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Filter className="w-4 h-4 text-gray-400" />
+          <select
+            value={typeFilter}
+            onChange={(e) => setTypeFilter(e.target.value)}
+            className="h-10 px-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm"
+          >
+            {TYPE_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+          {hasActiveFilters && (
+            <Button variant="secondary" size="sm" onClick={clearFilters}>
+              <X className="w-4 h-4 mr-1" /> Clear
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {filteredAssets.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-gray-500 dark:text-gray-400">No assets yet. Add your first asset to get started.</p>
+            {assets.length === 0 ? (
+              <p className="text-gray-500 dark:text-gray-400">No assets yet. Add your first asset to get started.</p>
+            ) : (
+              <>
+                <p className="text-gray-500 dark:text-gray-400">No assets match your filters.</p>
+                <button onClick={clearFilters} className="text-blue-600 hover:underline dark:text-blue-400 mt-2">
+                  Clear filters
+                </button>
+              </>
+            )}
           </CardContent>
         </Card>
       ) : (
@@ -190,7 +251,7 @@ export default function AssetsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                  {assets.map((asset) => {
+                  {filteredAssets.map((asset) => {
                     const value = asset.current_price * asset.quantity;
                     const gainLoss = (asset.current_price - asset.purchase_price) * asset.quantity;
                     const gainLossPercent = ((asset.current_price - asset.purchase_price) / asset.purchase_price) * 100;
@@ -201,9 +262,12 @@ export default function AssetsPage() {
                           {asset.symbol && <div className="text-sm text-gray-500 dark:text-gray-400">{asset.symbol}</div>}
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap">
-                          <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-700 capitalize">
+                          <Badge variant={
+                            asset.type === "crypto" ? "warning" :
+                            asset.type === "stocks" ? "success" : "info"
+                          }>
                             {asset.type.replace("_", " ")}
-                          </span>
+                          </Badge>
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-right text-gray-900 dark:text-gray-100">{asset.quantity}</td>
                         <td className="px-4 py-4 whitespace-nowrap text-right text-gray-900 dark:text-gray-100">${formatCurrency(asset.purchase_price)}</td>
