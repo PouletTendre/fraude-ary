@@ -29,12 +29,12 @@ jobs:
           echo "POSTGRES_PASSWORD=devpassword123" >> $GITHUB_ENV
           echo "JWT_SECRET=prodsecretchange123" >> $GITHUB_ENV
           echo "TAG=${{ github.sha }}" >> $GITHUB_ENV
+          echo "REPO_DIR=${{ github.workspace }}" >> $GITHUB_ENV
 
       - name: Build and start containers
         run: |
-          cd /root/fraude-ary
-          docker compose -f infra/docker-compose.yml build --no-cache
-          docker compose -f infra/docker-compose.yml up -d
+          docker compose -f $REPO_DIR/infra/docker-compose.yml build --no-cache
+          docker compose -f $REPO_DIR/infra/docker-compose.yml up -d
 
       - name: Verify deployment
         run: |
