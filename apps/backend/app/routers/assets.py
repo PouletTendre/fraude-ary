@@ -40,6 +40,7 @@ async def get_assets(
             purchase_price=a.purchase_price,
             current_price=a.current_price,
             total_value=a.quantity * a.current_price if a.current_price else 0,
+            purchase_date=a.purchase_date,
             created_at=a.created_at
         )
         for a in assets
@@ -63,7 +64,8 @@ async def create_asset(
         symbol=asset.symbol.upper(),
         quantity=asset.quantity,
         purchase_price=asset.purchase_price,
-        current_price=current_price
+        current_price=current_price,
+        purchase_date=asset.purchase_date
     )
     db.add(db_asset)
     await db.commit()
@@ -77,6 +79,7 @@ async def create_asset(
         purchase_price=db_asset.purchase_price,
         current_price=db_asset.current_price,
         total_value=db_asset.quantity * db_asset.current_price,
+        purchase_date=db_asset.purchase_date,
         created_at=db_asset.created_at
     )
 
@@ -99,6 +102,7 @@ async def list_all_assets(
             purchase_price=a.purchase_price,
             current_price=a.current_price,
             total_value=a.quantity * a.current_price if a.current_price else 0,
+            purchase_date=a.purchase_date,
             created_at=a.created_at
         )
         for a in assets
@@ -137,6 +141,7 @@ async def update_asset(
         purchase_price=db_asset.purchase_price,
         current_price=db_asset.current_price,
         total_value=db_asset.quantity * db_asset.current_price if db_asset.current_price else 0,
+        purchase_date=db_asset.purchase_date,
         created_at=db_asset.created_at
     )
 

@@ -8,6 +8,8 @@ class AssetCreate(BaseModel):
     symbol: str
     quantity: float
     purchase_price: float
+    name: Optional[str] = None
+    purchase_date: Optional[str] = None
 
 class AssetUpdate(BaseModel):
     quantity: Optional[float] = None
@@ -22,6 +24,7 @@ class AssetResponse(BaseModel):
     purchase_price: float
     current_price: float
     total_value: float
+    purchase_date: Optional[str] = None
     created_at: Optional[datetime] = None
 
 class PriceHistoryResponse(BaseModel):
