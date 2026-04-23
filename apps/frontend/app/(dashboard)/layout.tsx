@@ -20,7 +20,9 @@ import {
   AlertTriangle,
   Menu,
   X,
+  Settings,
 } from "lucide-react";
+import { Footer } from "@/components/Footer";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -28,6 +30,7 @@ const navItems = [
   { href: "/assets", label: "Assets", icon: Wallet },
   { href: "/alerts", label: "Alerts", icon: AlertTriangle },
   { href: "/notifications", label: "Notifications", icon: Bell },
+  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 export default function DashboardLayout({
@@ -257,15 +260,18 @@ export default function DashboardLayout({
       )}
 
       {/* Main content */}
-      <main
+      <div
         className={cn(
-          "transition-all duration-300 min-h-screen",
+          "transition-all duration-300 min-h-screen flex flex-col",
           isSidebarCollapsed ? "md:ml-16" : "md:ml-64",
-          "pt-16 md:pt-0 px-4 py-6 md:p-8"
+          "pt-16 md:pt-0"
         )}
       >
-        {children}
-      </main>
+        <main className="flex-1 px-4 py-6 md:p-8">
+          {children}
+        </main>
+        <Footer />
+      </div>
     </div>
   );
 }

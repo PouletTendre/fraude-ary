@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import { ToastProvider } from "@/components/ui/Toast";
+import { SettingsProvider } from "@/hooks/useSettings";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,8 +23,10 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <QueryProvider>
-          <ToastProvider>{children}</ToastProvider>
-        </QueryProvider>
+            <SettingsProvider>
+              <ToastProvider>{children}</ToastProvider>
+            </SettingsProvider>
+          </QueryProvider>
         </ThemeProvider>
       </body>
     </html>

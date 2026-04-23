@@ -3,9 +3,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { usePortfolio } from "@/hooks/usePortfolio";
 import { useAssets } from "@/hooks/useAssets";
+import { useSettings } from "@/hooks/useSettings";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { PageTransition } from "@/components/ui/PageTransition";
+import { MarketWeatherWidget } from "@/components/MarketWeatherWidget";
+import { RecentTransactionsWidget } from "@/components/RecentTransactionsWidget";
+import { GoalsWidget } from "@/components/GoalsWidget";
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -19,18 +23,10 @@ import {
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value);
-};
-
-type SortKey = "symbol" | "type" | "quantity" | "purchase_price" | "current_price" | "value" | "pnl" | "pnl_percent";
-
 export default function DashboardPage() {
   const { portfolio, isLoading: portfolioLoading } = usePortfolio();
   const { assets, isLoading: assetsLoading } = useAssets();
+  const { formatCurrency, formatDate } = useSettings();
   const [lastUpdate, setLastUpdate] = useState<string>("");
 
   const isLoading = portfolioLoading || assetsLoading;
@@ -38,9 +34,9 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!isLoading && (portfolio || assets)) {
       const now = new Date();
-      setLastUpdate(now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }));
+      setLastUpdate(formatDate(now));
     }
-  }, [isLoading, portfolio, assets]);
+  }, [isLoading, portfolio, assets, formatDate]);
 
   const dailyChange = useMemo(() => {
     if (!portfolio?.history || portfolio.history.length < 2) return null;
@@ -128,7 +124,7 @@ export default function DashboardPage() {
             <div>
               <p className="text-blue-100 text-sm font-medium mb-1">Valeur totale du portfolio</p>
               <p className="text-4xl md:text-5xl font-bold tracking-tight">
-                ${portfolio ? formatCurrency(portfolio.total_value) : "0.00"}
+                {portfolio ? formatCurrency(portfolio.total_value) : formatCurrency(0)}
               </p>
               <div className="flex items-center gap-3 mt-3">
                 <div className={cn(
@@ -142,7 +138,7 @@ export default function DashboardPage() {
                   ) : (
                     <TrendingDown className="w-4 h-4" />
                   )}
-                  {portfolio ? `${portfolio.total_gain_loss >= 0 ? "+" : ""}${formatCurrency(portfolio.total_gain_loss)}` : "$0.00"}
+                  {portfolio ? `${portfolio.total_gain_loss >= 0 ? "+" : ""}${formatCurrency(portfolio.total_gain_loss)}` : formatCurrency(0)}
                 </div>
                 <span className="text-blue-200 text-sm">
                   ({portfolio ? `${portfolio.gain_loss_percentage >= 0 ? "+" : ""}${portfolio.gain_loss_percentage.toFixed(2)}%` : "0.00%"})
@@ -162,7 +158,7 @@ export default function DashboardPage() {
                     "text-2xl font-bold",
                     dailyChange.change >= 0 ? "text-green-300" : "text-red-300"
                   )}>
-                    {dailyChange.change >= 0 ? "+" : ""}${formatCurrency(dailyChange.change)}
+                    {dailyChange.change >= 0 ? "+" : ""}{formatCurrency(dailyChange.change)}
                   </span>
                   <span className={cn(
                     "text-sm font-medium px-2 py-0.5 rounded-full",
@@ -209,7 +205,7 @@ export default function DashboardPage() {
                   "text-2xl font-bold mt-1",
                   portfolio && portfolio.total_gain_loss >= 0 ? "text-green-600" : "text-red-600"
                 )}>
-                  {portfolio ? `${portfolio.total_gain_loss >= 0 ? "+" : ""}$${formatCurrency(portfolio.total_gain_loss)}` : "$0.00"}
+                  {portfolio ? `${portfolio.total_gain_loss >= 0 ? "+" : ""}${formatCurrency(portfolio.total_gain_loss)}` : formatCurrency(0)}
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">all time</p>
               </div>
@@ -256,6 +252,13 @@ export default function DashboardPage() {
         </Card>
       </div>
 
+      {/* New Widgets: Market Weather, Recent Transactions, Goals */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <MarketWeatherWidget />
+        <RecentTransactionsWidget />
+        <GoalsWidget />
+      </div>
+
       {/* Top Gainers & Losers */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
@@ -286,7 +289,7 @@ export default function DashboardPage() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-medium text-gray-900 dark:text-gray-100">${formatCurrency(asset.value)}</p>
+                      <p className="font-medium text-gray-900 dark:text-gray-100">{formatCurrency(asset.value)}</p>
                       <p className="text-sm text-green-600 font-medium">
                         +{asset.pnlPercent.toFixed(2)}%
                       </p>
@@ -328,7 +331,7 @@ export default function DashboardPage() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-medium text-gray-900 dark:text-gray-100">${formatCurrency(asset.value)}</p>
+                      <p className="font-medium text-gray-900 dark:text-gray-100">{formatCurrency(asset.value)}</p>
                       <p className="text-sm text-red-600 font-medium">
                         {asset.pnlPercent.toFixed(2)}%
                       </p>
@@ -379,7 +382,7 @@ export default function DashboardPage() {
                     </div>
                   </div>
                   <div className="text-right min-w-[120px]">
-                    <span className="font-medium text-gray-900 dark:text-gray-100">${formatCurrency(item.value)}</span>
+                    <span className="font-medium text-gray-900 dark:text-gray-100">{formatCurrency(item.value)}</span>
                     <span className="text-gray-500 dark:text-gray-400 ml-2">({item.percentage.toFixed(1)}%)</span>
                   </div>
                 </div>
