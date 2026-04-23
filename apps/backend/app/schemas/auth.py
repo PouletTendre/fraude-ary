@@ -5,12 +5,8 @@ from datetime import datetime
 class Token(BaseModel):
     access_token: str
     token_type: str
-
-class UserCreate(BaseModel):
-    email: EmailStr
-    password: str
-    full_name: Optional[str] = None
+    user: Optional["UserResponse"] = None
 
 class UserResponse(BaseModel):
-    email: EmailStr
+    email: str
     full_name: Optional[str] = None

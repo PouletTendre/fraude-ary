@@ -11,9 +11,15 @@ export function useAuth() {
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginCredentials) => {
+      const formData = new URLSearchParams();
+      formData.append("username", credentials.email);
+      formData.append("password", credentials.password);
       const response = await fetchApi<AuthResponse>("/auth/login", {
         method: "POST",
-        body: JSON.stringify(credentials),
+        body: formData.toString(),
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
       });
       return response;
     },
