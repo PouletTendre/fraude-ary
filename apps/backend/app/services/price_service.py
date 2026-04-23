@@ -93,11 +93,19 @@ class PriceService:
                 return info.last_price if hasattr(info, 'last_price') else None
             
             price = await asyncio.to_thread(fetch_price)
-            if price:
+            if price and price > 0:
                 await cache_service.set_stock_price(symbol, price)
                 ohlc = self._generate_ohlc(price)
                 await cache_service.set_price_history(symbol, "stocks", ohlc)
-            return price
+                return price
+            fallback = self._get_fallback_stock_price(symbol)
+            if fallback:
+                logging.warning(f"Using fallback price for {symbol}: {fallback}")
+                await cache_service.set_stock_price(symbol, fallback)
+                ohlc = self._generate_ohlc(fallback)
+                await cache_service.set_price_history(symbol, "stocks", ohlc)
+                return fallback
+            return None
         except Exception as e:
             logging.warning(f"Failed to fetch stock price for {symbol}: {e}")
             fallback = self._get_fallback_stock_price(symbol)
