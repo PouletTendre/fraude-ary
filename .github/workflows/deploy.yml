@@ -7,7 +7,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  REPO: ${{ github.repository }}
+  REPO_LOWER: ${{ github.repository }}
 
 jobs:
   build-push:
@@ -23,13 +23,15 @@ jobs:
 
       - name: Build and push backend
         run: |
-          docker build -t ${{ env.REGISTRY }}/${{ env.REPO }}/backend:${{ github.sha }} ./apps/backend
-          docker push ${{ env.REGISTRY }}/${{ env.REPO }}/backend:${{ github.sha }}
+          REPO_LOWER=$(echo "${{ env.REPO_LOWER }}" | tr '[:upper:]' '[:lower:]')
+          docker build -t ${{ env.REGISTRY }}/${REPO_LOWER}/backend:${{ github.sha }} ./apps/backend
+          docker push ${{ env.REGISTRY }}/${REPO_LOWER}/backend:${{ github.sha }}
 
       - name: Build and push frontend
         run: |
-          docker build -t ${{ env.REGISTRY }}/${{ env.REPO }}/frontend:${{ github.sha }} ./apps/frontend
-          docker push ${{ env.REGISTRY }}/${{ env.REPO }}/frontend:${{ github.sha }}
+          REPO_LOWER=$(echo "${{ env.REPO_LOWER }}" | tr '[:upper:]' '[:lower:]')
+          docker build -t ${{ env.REGISTRY }}/${REPO_LOWER}/frontend:${{ github.sha }} ./apps/frontend
+          docker push ${{ env.REGISTRY }}/${REPO_LOWER}/frontend:${{ github.sha }}
 
   deploy:
     needs: build-push
@@ -44,11 +46,7 @@ jobs:
           envs: GITHUB_SHA
           script: |
             export TAG=${{ github.sha }}
-            export REPO=${{ github.repository }}
             cd ~/fraude-ary
-            # Update docker-compose.yml with correct image paths
-            sed -i "s|image: ghcr.io/.*/fraude-ary-backend:.*|image: ghcr.io/${REPO}/backend:${TAG}|" infra/docker-compose.yml
-            sed -i "s|image: ghcr.io/.*/fraude-ary-frontend:.*|image: ghcr.io/${REPO}/frontend:${TAG}|" infra/docker-compose.yml
             docker compose -f infra/docker-compose.yml pull
             docker compose -f infra/docker-compose.yml up -d --no-deps
             docker image prune -f
