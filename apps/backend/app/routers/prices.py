@@ -1,12 +1,12 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 from typing import List
 
 from app.database import get_db
 from app.models.user import User
-from app.models.asset import Asset
-from app.schemas.assets import PriceRefreshResponse
+from app.models.asset import Asset, PriceHistory
+from app.schemas.assets import PriceRefreshResponse, PriceHistoryResponse
 from app.routers.auth import get_current_user
 from app.services.price_service import price_service
 
@@ -55,3 +55,33 @@ async def refresh_prices(
         prices_updated=prices_updated,
         errors=errors
     )
+
+@router.get("/history/{asset_id}", response_model=List[PriceHistoryResponse])
+async def get_price_history(
+    asset_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    asset_result = await db.execute(
+        select(Asset).where(Asset.id == asset_id, Asset.user_email == current_user.email)
+    )
+    asset = asset_result.scalar_one_or_none()
+    if not asset:
+        raise HTTPException(status_code=404, detail="Asset not found")
+
+    history_result = await db.execute(
+        select(PriceHistory)
+        .where(PriceHistory.asset_id == asset_id)
+        .order_by(PriceHistory.timestamp.desc())
+        .limit(100)
+    )
+    history = history_result.scalars().all()
+    return [
+        PriceHistoryResponse(
+            id=h.id,
+            asset_id=h.asset_id,
+            price=h.price,
+            timestamp=h.timestamp
+        )
+        for h in history
+    ]
