@@ -2,10 +2,12 @@ import asyncio
 import httpx
 import logging
 import random
+import uuid
 import yfinance
 from typing import Optional, Dict, List
 from datetime import datetime
 from app.services.cache_service import cache_service
+from sqlalchemy.ext.asyncio import AsyncSession
 
 COINGECKO_API = "https://api.coingecko.com/api/v3"
 
@@ -150,6 +152,16 @@ class PriceService:
         elif asset_type == "real_estate":
             return await self.get_real_estate_price(symbol)
         return None
+
+    async def save_price_history(self, db: AsyncSession, asset_id: str, price: float) -> None:
+        from app.models.asset import PriceHistory
+        history_entry = PriceHistory(
+            id=str(uuid.uuid4()),
+            asset_id=asset_id,
+            price=price,
+            timestamp=datetime.utcnow()
+        )
+        db.add(history_entry)
 
     async def get_current_price(self, symbol: str) -> Optional[float]:
         symbol_upper = symbol.upper()

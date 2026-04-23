@@ -43,6 +43,12 @@ async def refresh_prices(
                 .where(Asset.user_email == current_user.email, Asset.symbol == symbol.upper())
                 .values(current_price=price)
             )
+            asset_result = await db.execute(
+                select(Asset).where(Asset.user_email == current_user.email, Asset.symbol == symbol.upper())
+            )
+            asset = asset_result.scalar_one_or_none()
+            if asset:
+                await price_service.save_price_history(db, asset.id, price)
             prices[symbol.upper()] = price
             prices_updated += 1
     if stock_symbols:
@@ -54,6 +60,12 @@ async def refresh_prices(
                 .where(Asset.user_email == current_user.email, Asset.symbol == symbol.upper())
                 .values(current_price=price)
             )
+            asset_result = await db.execute(
+                select(Asset).where(Asset.user_email == current_user.email, Asset.symbol == symbol.upper())
+            )
+            asset = asset_result.scalar_one_or_none()
+            if asset:
+                await price_service.save_price_history(db, asset.id, price)
             prices[symbol.upper()] = price
             prices_updated += 1
     await db.commit()
