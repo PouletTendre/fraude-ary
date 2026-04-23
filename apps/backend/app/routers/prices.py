@@ -13,6 +13,7 @@ from app.services.cache_service import cache_service
 
 router = APIRouter()
 
+@router.post("/refresh", response_model=PriceRefreshResponse)
 @router.get("/refresh", response_model=PriceRefreshResponse)
 async def refresh_prices(
     current_user: User = Depends(get_current_user),
