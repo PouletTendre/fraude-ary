@@ -22,13 +22,13 @@ def upgrade() -> None:
         sa.Column('rate_vs_usd', sa.Float(), nullable=False),
         sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.func.now(), onupdate=sa.func.now()),
     )
-    op.create_index('ix_assets_user_email', 'assets', ['user_email'])
-    op.create_index('ix_assets_symbol', 'assets', ['symbol'])
-    op.create_index('ix_assets_type', 'assets', ['type'])
-    op.create_index('ix_price_history_asset_id', 'price_history', ['asset_id'])
-    op.create_index('ix_price_history_timestamp', 'price_history', ['timestamp'])
-    op.create_index('ix_price_alerts_symbol', 'price_alerts', ['symbol'])
-    op.create_index('ix_portfolio_snapshots_date', 'portfolio_snapshots', ['date'])
+    op.create_index('ix_assets_user_email', 'assets', ['user_email'], if_not_exists=True)
+    op.create_index('ix_assets_symbol', 'assets', ['symbol'], if_not_exists=True)
+    op.create_index('ix_assets_type', 'assets', ['type'], if_not_exists=True)
+    op.create_index('ix_price_history_asset_id', 'price_history', ['asset_id'], if_not_exists=True)
+    op.create_index('ix_price_history_timestamp', 'price_history', ['timestamp'], if_not_exists=True)
+    op.create_index('ix_price_alerts_symbol', 'price_alerts', ['symbol'], if_not_exists=True)
+    op.create_index('ix_portfolio_snapshots_date', 'portfolio_snapshots', ['date'], if_not_exists=True)
 
 
 def downgrade() -> None:
