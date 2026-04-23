@@ -102,13 +102,20 @@ export default function PortfolioPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Return Rate</p>
-                <p className={`text-2xl font-bold mt-1 ${portfolio.gain_loss_percentage >= 0 ? "text-green-600" : "text-red-600"}`}>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Performance</p>
+                <p className={`text-3xl font-bold mt-1 ${portfolio.gain_loss_percentage >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
                   {portfolio.gain_loss_percentage >= 0 ? "+" : ""}{portfolio.gain_loss_percentage.toFixed(2)}%
+                </p>
+                <p className={`text-sm mt-1 ${portfolio.gain_loss_percentage >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+                  {portfolio.gain_loss_percentage >= 0 ? "↑ En hausse" : "↓ En baisse"}
                 </p>
               </div>
               <div className={`p-3 rounded-full ${portfolio.gain_loss_percentage >= 0 ? "bg-green-100 dark:bg-green-900" : "bg-red-100 dark:bg-red-900"}`}>
-                <Percent className={`w-6 h-6 ${portfolio.gain_loss_percentage >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`} />
+                {portfolio.gain_loss_percentage >= 0 ? (
+                  <TrendingUp className="w-6 h-6 text-green-600 dark:text-green-400" />
+                ) : (
+                  <TrendingDown className="w-6 h-6 text-red-600 dark:text-red-400" />
+                )}
               </div>
             </div>
           </CardContent>

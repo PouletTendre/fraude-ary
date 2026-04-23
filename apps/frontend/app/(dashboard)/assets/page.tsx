@@ -42,10 +42,25 @@ export default function AssetsPage() {
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
-    if (!formData.name) newErrors.name = "Name is required";
-    if (!formData.quantity || parseFloat(formData.quantity) <= 0) newErrors.quantity = "Valid quantity required";
-    if (!formData.purchase_price || parseFloat(formData.purchase_price) <= 0) newErrors.purchase_price = "Valid price required";
-    if (!formData.purchase_date) newErrors.purchase_date = "Purchase date is required";
+    if (!formData.name.trim()) newErrors.name = "Name is required";
+    if (formData.symbol && !/^[A-Z0-9]{1,10}$/.test(formData.symbol.toUpperCase())) {
+      newErrors.symbol = "Symbol must be 1-10 alphanumeric characters";
+    }
+    if (!formData.quantity || parseFloat(formData.quantity) <= 0) {
+      newErrors.quantity = "Valid quantity required (greater than 0)";
+    }
+    if (!formData.purchase_price || parseFloat(formData.purchase_price) <= 0) {
+      newErrors.purchase_price = "Valid price required (greater than 0)";
+    }
+    if (!formData.purchase_date) {
+      newErrors.purchase_date = "Purchase date is required";
+    } else {
+      const selectedDate = new Date(formData.purchase_date);
+      const today = new Date();
+      if (selectedDate > today) {
+        newErrors.purchase_date = "Purchase date cannot be in the future";
+      }
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -245,6 +260,7 @@ export default function AssetsPage() {
                     <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Quantity</th>
                     <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Purchase Price</th>
                     <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Current Price</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Change</th>
                     <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Value</th>
                     <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Gain/Loss</th>
                     <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
@@ -275,6 +291,13 @@ export default function AssetsPage() {
                         <td className="px-4 py-4 whitespace-nowrap text-right text-gray-900 dark:text-gray-100">
                           ${formatCurrency(asset.current_price)}
                           {lastUpdated && <div className="text-xs text-gray-400">{lastUpdated}</div>}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-right">
+                          {gainLossPercent >= 0 ? (
+                            <span className="text-green-600 dark:text-green-400 font-medium">↑ {gainLossPercent.toFixed(2)}%</span>
+                          ) : (
+                            <span className="text-red-600 dark:text-red-400 font-medium">↓ {Math.abs(gainLossPercent).toFixed(2)}%</span>
+                          )}
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-right font-medium text-gray-900 dark:text-gray-100">${formatCurrency(value)}</td>
                         <td className={`px-4 py-4 whitespace-nowrap text-right font-medium ${gainLoss >= 0 ? "text-green-600" : "text-red-600"}`}>
