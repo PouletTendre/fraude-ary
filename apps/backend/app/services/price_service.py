@@ -1,3 +1,4 @@
+import asyncio
 import httpx
 import yfinance
 from typing import Optional, Dict, List
@@ -67,13 +68,18 @@ class PriceService:
 
         ticker_symbol = STOCK_SYMBOL_MAP.get(symbol.lower(), symbol.upper())
         try:
-            ticker = yfinance.Ticker(ticker_symbol)
-            info = ticker.fast_info
-            price = info.last_price
+            def fetch_price():
+                ticker = yfinance.Ticker(ticker_symbol)
+                info = ticker.fast_info
+                return info.last_price if hasattr(info, 'last_price') else None
+            
+            price = await asyncio.to_thread(fetch_price)
             if price:
                 await cache_service.set_stock_price(symbol, price)
             return price
-        except Exception:
+        except Exception as e:
+            import logging
+            logging.warning(f"Failed to fetch stock price for {symbol}: {e}")
             return None
 
     async def get_real_estate_price(self, symbol: str) -> Optional[float]:
