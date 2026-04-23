@@ -8,6 +8,8 @@ from app.schemas.assets import (
     PortfolioSummary,
     PriceRefreshResponse,
 )
+from app.schemas.alerts import PriceAlertCreate, PriceAlertResponse, PortfolioHistoryEntry, PortfolioHistoryResponse
+from app.schemas.notifications import NotificationResponse
 
 __all__ = [
     "Token",
@@ -20,4 +22,9 @@ __all__ = [
     "AllocationData",
     "PortfolioSummary",
     "PriceRefreshResponse",
+    "PriceAlertCreate",
+    "PriceAlertResponse",
+    "PortfolioHistoryEntry",
+    "PortfolioHistoryResponse",
+    "NotificationResponse",
 ]

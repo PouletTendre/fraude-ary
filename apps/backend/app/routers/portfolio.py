@@ -11,8 +11,10 @@ import json
 
 from app.database import get_db
 from app.models.user import User
-from app.models.asset import Asset, AssetType
+from app.models.asset import Asset, AssetType, PriceHistory
+from app.models.alert import PortfolioSnapshot
 from app.schemas.assets import PortfolioSummary, AssetResponse, PerformanceData, AllocationData, ByTypeEntry, PortfolioStatistics
+from app.schemas.alerts import PortfolioHistoryEntry, PortfolioHistoryResponse
 from app.routers.auth import get_current_user
 from app.services.price_service import price_service
 
@@ -90,6 +92,97 @@ async def get_portfolio_summary(
         allocation=allocation,
         by_type=by_type
     )
+
+@router.get("/history", response_model=PortfolioHistoryResponse)
+async def get_portfolio_history(
+    period: str = Query("1m", pattern="^(1w|1m|3m|1y)$"),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    now = datetime.utcnow()
+    if period == "1w":
+        start_date = now - timedelta(weeks=1)
+    elif period == "1m":
+        start_date = now - timedelta(days=30)
+    elif period == "3m":
+        start_date = now - timedelta(days=90)
+    elif period == "1y":
+        start_date = now - timedelta(days=365)
+    else:
+        start_date = now - timedelta(days=30)
+
+    # Try to get snapshots first
+    snapshot_result = await db.execute(
+        select(PortfolioSnapshot)
+        .where(
+            PortfolioSnapshot.user_email == current_user.email,
+            PortfolioSnapshot.date >= start_date
+        )
+        .order_by(PortfolioSnapshot.date.asc())
+    )
+    snapshots = snapshot_result.scalars().all()
+
+    if snapshots:
+        history = [
+            PortfolioHistoryEntry(date=s.date, total_value=s.total_value)
+            for s in snapshots
+        ]
+        return PortfolioHistoryResponse(period=period, history=history)
+
+    # Fallback: compute from price_history
+    asset_result = await db.execute(
+        select(Asset).where(Asset.user_email == current_user.email)
+    )
+    assets = asset_result.scalars().all()
+
+    if not assets:
+        return PortfolioHistoryResponse(period=period, history=[])
+
+    # Fetch all price history entries for user's assets in the period
+    asset_ids = [a.id for a in assets]
+    history_result = await db.execute(
+        select(PriceHistory)
+        .where(
+            PriceHistory.asset_id.in_(asset_ids),
+            PriceHistory.timestamp >= start_date
+        )
+        .order_by(PriceHistory.timestamp.asc())
+    )
+    price_history_entries = history_result.scalars().all()
+
+    # Group by day and compute total value
+    from collections import defaultdict
+    daily_values = defaultdict(float)
+    asset_map = {a.id: a for a in assets}
+
+    for entry in price_history_entries:
+        asset = asset_map.get(entry.asset_id)
+        if asset:
+            day = entry.timestamp.date()
+            daily_values[day] += asset.quantity * entry.price
+
+    # Also add current portfolio value for today if missing
+    total_current = 0.0
+    for asset in assets:
+        asset_type_str = asset.type.value if hasattr(asset.type, 'value') else asset.type
+        current_price = await price_service.get_price(asset_type_str, asset.symbol)
+        if current_price is None:
+            current_price = asset.current_price
+        total_current += asset.quantity * current_price
+
+    today = now.date()
+    if today not in daily_values and total_current > 0:
+        daily_values[today] = total_current
+
+    history = [
+        PortfolioHistoryEntry(
+            date=datetime.combine(day, datetime.min.time()),
+            total_value=value
+        )
+        for day, value in sorted(daily_values.items())
+    ]
+
+    return PortfolioHistoryResponse(period=period, history=history)
 
 @router.get("/statistics", response_model=PortfolioStatistics)
 async def get_portfolio_statistics(
