@@ -9,13 +9,13 @@ export function useAssets() {
 
   const { data: assets, isLoading, error } = useQuery<Asset[]>({
     queryKey: ["assets"],
-    queryFn: () => fetchApi<Asset[]>("/assets"),
+    queryFn: () => fetchApi<Asset[]>("/api/v1/assets"),
     enabled: typeof window !== "undefined" && !!localStorage.getItem("token"),
   });
 
   const createAsset = useMutation({
     mutationFn: async (asset: Omit<Asset, "id" | "user_id" | "current_price">) => {
-      return fetchApi<Asset>("/assets", {
+      return fetchApi<Asset>("/api/v1/assets", {
         method: "POST",
         body: JSON.stringify(asset),
       });
@@ -28,7 +28,7 @@ export function useAssets() {
 
   const updateAsset = useMutation({
     mutationFn: async ({ id, ...asset }: Asset) => {
-      return fetchApi<Asset>(`/assets/${id}`, {
+      return fetchApi<Asset>(`/api/v1/assets/${id}`, {
         method: "PUT",
         body: JSON.stringify(asset),
       });
@@ -41,7 +41,7 @@ export function useAssets() {
 
   const deleteAsset = useMutation({
     mutationFn: async (id: number) => {
-      return fetchApi<void>(`/assets/${id}`, {
+      return fetchApi<void>(`/api/v1/assets/${id}`, {
         method: "DELETE",
       });
     },

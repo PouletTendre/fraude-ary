@@ -7,7 +7,7 @@ import type { PortfolioSummary } from "@/types";
 export function usePortfolio() {
   const { data, isLoading, error } = useQuery<PortfolioSummary>({
     queryKey: ["portfolio"],
-    queryFn: () => fetchApi<PortfolioSummary>("/portfolio/summary"),
+    queryFn: () => fetchApi<PortfolioSummary>("/api/v1/portfolio/summary"),
     enabled: typeof window !== "undefined" && !!localStorage.getItem("token"),
   });
 
