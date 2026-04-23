@@ -28,12 +28,15 @@ async def refresh_prices(
     prices = {}
     crypto_symbols = set()
     stock_symbols = set()
+    real_estate_symbols = set()
     for asset in assets:
         asset_type_str = asset.type.value if hasattr(asset.type, 'value') else asset.type
         if asset_type_str == "crypto":
             crypto_symbols.add(asset.symbol.lower())
         elif asset_type_str == "stocks":
             stock_symbols.add(asset.symbol.upper())
+        elif asset_type_str == "real_estate":
+            real_estate_symbols.add(asset.symbol.lower())
     if crypto_symbols:
         await cache_service.delete_crypto_prices(list(crypto_symbols))
         crypto_prices = await price_service.refresh_crypto_prices(list(crypto_symbols))
@@ -66,6 +69,22 @@ async def refresh_prices(
                 await price_service.save_price_history(db, asset.id, price)
             prices[symbol.upper()] = price
             prices_updated += 1
+    if real_estate_symbols:
+        for symbol in real_estate_symbols:
+            price = await price_service.get_real_estate_price(symbol)
+            if price:
+                await db.execute(
+                    update(Asset)
+                    .where(Asset.user_email == current_user.email, Asset.symbol == symbol.upper())
+                    .values(current_price=price)
+                )
+                asset_result = await db.execute(
+                    select(Asset).where(Asset.user_email == current_user.email, Asset.symbol == symbol.upper())
+                )
+                for asset in asset_result.scalars().all():
+                    await price_service.save_price_history(db, asset.id, price)
+                prices[symbol.upper()] = price
+                prices_updated += 1
     await db.commit()
     return PriceRefreshResponse(
         status="ok",
