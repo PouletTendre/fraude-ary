@@ -5,48 +5,13 @@ on:
   push:
     branches: [main]
 
-env:
-  REGISTRY: ghcr.io
-  REPO_LOWER: ${{ github.repository }}
-
 jobs:
-  build-push:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
+  deploy:
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v4
 
-      - name: Log in to GHCR
-        run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
-
-      - name: Build and push backend
+      - name: Build and start containers
         run: |
-          REPO_LOWER=$(echo "${{ env.REPO_LOWER }}" | tr '[:upper:]' '[:lower:]')
-          docker build -t ${{ env.REGISTRY }}/${REPO_LOWER}/backend:${{ github.sha }} ./apps/backend
-          docker push ${{ env.REGISTRY }}/${REPO_LOWER}/backend:${{ github.sha }}
-
-      - name: Build and push frontend
-        run: |
-          REPO_LOWER=$(echo "${{ env.REPO_LOWER }}" | tr '[:upper:]' '[:lower:]')
-          docker build -t ${{ env.REGISTRY }}/${REPO_LOWER}/frontend:${{ github.sha }} ./apps/frontend
-          docker push ${{ env.REGISTRY }}/${REPO_LOWER}/frontend:${{ github.sha }}
-
-  deploy:
-    needs: build-push
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy to VM
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.VM_SSH_KEY }}
-          envs: GITHUB_SHA
-          script: |
-            export TAG=${{ github.sha }}
-            cd ~/fraude-ary
-            docker compose -f infra/docker-compose.yml pull
-            docker compose -f infra/docker-compose.yml up -d --no-deps
-            docker image prune -f
+          docker compose -f infra/docker-compose.yml build
+          docker compose -f infra/docker-compose.yml up -d
