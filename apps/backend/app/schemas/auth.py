@@ -1,4 +1,4 @@
-from pydantic import EmailStr
+from pydantic import BaseModel, EmailStr
 from typing import Optional
 
 class Token(BaseModel):
