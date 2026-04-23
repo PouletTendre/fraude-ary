@@ -1,14 +1,18 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { useAssets } from "@/hooks/useAssets";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useToast } from "@/components/ui/Toast";
-import { Search, Filter, X } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { Search, Filter, X, ArrowUpDown, TrendingUp, TrendingDown, ArrowLeft } from "lucide-react";
+import { cn } from "@/lib/utils";
+import type { Asset } from "@/types";
 
 const TYPE_OPTIONS = [
   { value: "all", label: "All Types" },
@@ -17,6 +21,9 @@ const TYPE_OPTIONS = [
   { value: "real_estate", label: "Real Estate" },
 ];
 
+type SortField = "name" | "value" | "performance";
+type SortDirection = "asc" | "desc";
+
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat("en-US", {
     minimumFractionDigits: 2,
@@ -24,12 +31,31 @@ const formatCurrency = (value: number) => {
   }).format(value);
 };
 
+const generateMockHistory = (basePrice: number, days: number = 30) => {
+  const history = [];
+  let price = basePrice * 0.9;
+  for (let i = days; i >= 0; i--) {
+    const date = new Date();
+    date.setDate(date.getDate() - i);
+    price = price * (1 + (Math.random() - 0.48) * 0.05);
+    history.push({
+      date: date.toISOString().split("T")[0],
+      price: parseFloat(price.toFixed(2)),
+    });
+  }
+  return history;
+};
+
 export default function AssetsPage() {
+  const router = useRouter();
   const { assets, isLoading, createAsset, deleteAsset, isCreating, isDeleting } = useAssets();
   const { addToast } = useToast();
   const [showForm, setShowForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
+  const [sortField, setSortField] = useState<SortField>("value");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     type: "crypto" as "crypto" | "stocks" | "real_estate",
@@ -101,15 +127,42 @@ export default function AssetsPage() {
     }
   };
 
-  const filteredAssets = useMemo(() => {
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("desc");
+    }
+  };
+
+  const filteredAndSortedAssets = useMemo(() => {
     if (!assets) return [];
-    return assets.filter((asset) => {
+    let filtered = assets.filter((asset) => {
       const matchesSearch = asset.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (asset.symbol && asset.symbol.toLowerCase().includes(searchQuery.toLowerCase()));
       const matchesType = typeFilter === "all" || asset.type === typeFilter;
       return matchesSearch && matchesType;
     });
-  }, [assets, searchQuery, typeFilter]);
+    filtered.sort((a, b) => {
+      let comparison = 0;
+      switch (sortField) {
+        case "name":
+          comparison = a.name.localeCompare(b.name);
+          break;
+        case "value":
+          comparison = (a.current_price * a.quantity) - (b.current_price * b.quantity);
+          break;
+        case "performance":
+          const perfA = ((a.current_price - a.purchase_price) / a.purchase_price) * 100;
+          const perfB = ((b.current_price - b.purchase_price) / b.purchase_price) * 100;
+          comparison = perfA - perfB;
+          break;
+      }
+      return sortDirection === "asc" ? comparison : -comparison;
+    });
+    return filtered;
+  }, [assets, searchQuery, typeFilter, sortField, sortDirection]);
 
   const clearFilters = () => {
     setSearchQuery("");
@@ -117,6 +170,143 @@ export default function AssetsPage() {
   };
 
   const hasActiveFilters = searchQuery !== "" || typeFilter !== "all";
+
+  if (selectedAsset) {
+    const priceHistory = generateMockHistory(selectedAsset.current_price);
+    const currentValue = selectedAsset.current_price * selectedAsset.quantity;
+    const totalCost = selectedAsset.purchase_price * selectedAsset.quantity;
+    const gainLoss = currentValue - totalCost;
+    const gainLossPercent = ((selectedAsset.current_price - selectedAsset.purchase_price) / selectedAsset.purchase_price) * 100;
+    const performance = gainLossPercent;
+
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => setSelectedAsset(null)}
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{selectedAsset.name}</h1>
+            {selectedAsset.symbol && (
+              <p className="text-gray-500 dark:text-gray-400">{selectedAsset.symbol}</p>
+            )}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Current Price</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">
+                    ${formatCurrency(selectedAsset.current_price)}
+                  </p>
+                </div>
+                {performance >= 0 ? (
+                  <div className="p-3 bg-green-100 dark:bg-green-900 rounded-full">
+                    <TrendingUp className="w-6 h-6 text-green-600 dark:text-green-400" />
+                  </div>
+                ) : (
+                  <div className="p-3 bg-red-100 dark:bg-red-900 rounded-full">
+                    <TrendingDown className="w-6 h-6 text-red-600 dark:text-red-400" />
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Total Value</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">
+                  ${formatCurrency(currentValue)}
+                </p>
+                <p className="text-sm text-gray-500 mt-1">{selectedAsset.quantity} units</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Performance</p>
+                <p className={cn("text-2xl font-bold mt-1", performance >= 0 ? "text-green-600" : "text-red-600")}>
+                  {performance >= 0 ? "+" : ""}{performance.toFixed(2)}%
+                </p>
+                <p className={cn("text-sm mt-1", gainLoss >= 0 ? "text-green-600" : "text-red-600")}>
+                  {gainLoss >= 0 ? "+" : ""}${formatCurrency(gainLoss)}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Price History</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={priceHistory} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={performance >= 0 ? "#10B981" : "#EF4444"} stopOpacity={0.3} />
+                      <stop offset="95%" stopColor={performance >= 0 ? "#10B981" : "#EF4444"} stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <XAxis dataKey="date" stroke="#9CA3AF" fontSize={12} />
+                  <YAxis stroke="#9CA3AF" fontSize={12} tickFormatter={(v) => `$${formatCurrency(v)}`} />
+                  <Tooltip formatter={(value: number) => `$${formatCurrency(value)}`} />
+                  <Area
+                    type="monotone"
+                    dataKey="price"
+                    stroke={performance >= 0 ? "#10B981" : "#EF4444"}
+                    strokeWidth={2}
+                    fill="url(#priceGradient)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Asset Details</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Type</p>
+                <Badge variant={
+                  selectedAsset.type === "crypto" ? "warning" :
+                  selectedAsset.type === "stocks" ? "success" : "info"
+                }>
+                  {selectedAsset.type.replace("_", " ")}
+                </Badge>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Purchase Price</p>
+                <p className="text-gray-900 dark:text-gray-100">${formatCurrency(selectedAsset.purchase_price)}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Quantity</p>
+                <p className="text-gray-900 dark:text-gray-100">{selectedAsset.quantity}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Purchase Date</p>
+                <p className="text-gray-900 dark:text-gray-100">{new Date(selectedAsset.purchase_date).toLocaleDateString()}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -233,7 +423,7 @@ export default function AssetsPage() {
         </div>
       </div>
 
-      {filteredAssets.length === 0 ? (
+      {filteredAndSortedAssets.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
             {assets.length === 0 ? (
@@ -255,25 +445,53 @@ export default function AssetsPage() {
               <table className="w-full min-w-[800px]">
                 <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
+                    <th
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                      onClick={() => handleSort("name")}
+                    >
+                      <div className="flex items-center gap-1">
+                        Name
+                        <ArrowUpDown className="w-3 h-3" />
+                      </div>
+                    </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
                     <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Quantity</th>
                     <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Purchase Price</th>
                     <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Current Price</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Change</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Value</th>
+                    <th
+                      className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                      onClick={() => handleSort("performance")}
+                    >
+                      <div className="flex items-center justify-end gap-1">
+                        Change
+                        <ArrowUpDown className="w-3 h-3" />
+                      </div>
+                    </th>
+                    <th
+                      className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                      onClick={() => handleSort("value")}
+                    >
+                      <div className="flex items-center justify-end gap-1">
+                        Value
+                        <ArrowUpDown className="w-3 h-3" />
+                      </div>
+                    </th>
                     <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Gain/Loss</th>
                     <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                  {filteredAssets.map((asset) => {
+                  {filteredAndSortedAssets.map((asset) => {
                     const value = asset.current_price * asset.quantity;
                     const gainLoss = (asset.current_price - asset.purchase_price) * asset.quantity;
                     const gainLossPercent = ((asset.current_price - asset.purchase_price) / asset.purchase_price) * 100;
                     const lastUpdated = asset.last_updated ? new Date(asset.last_updated).toLocaleString() : null;
                     return (
-                      <tr key={asset.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                      <tr
+                        key={asset.id}
+                        className="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
+                        onClick={() => setSelectedAsset(asset)}
+                      >
                         <td className="px-4 py-4 whitespace-nowrap">
                           <div className="font-medium text-gray-900 dark:text-gray-100">{asset.name}</div>
                           {asset.symbol && <div className="text-sm text-gray-500 dark:text-gray-400">{asset.symbol}</div>}
@@ -303,7 +521,7 @@ export default function AssetsPage() {
                         <td className={`px-4 py-4 whitespace-nowrap text-right font-medium ${gainLoss >= 0 ? "text-green-600" : "text-red-600"}`}>
                           {gainLoss >= 0 ? "+" : ""}${formatCurrency(gainLoss)} ({gainLossPercent.toFixed(2)}%)
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-center">
+                        <td className="px-4 py-4 whitespace-nowrap text-center" onClick={(e) => e.stopPropagation()}>
                           <button
                             onClick={() => handleDelete(asset.id)}
                             disabled={isDeleting}

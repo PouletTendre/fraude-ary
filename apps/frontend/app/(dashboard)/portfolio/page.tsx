@@ -1,10 +1,23 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, Legend, BarChart, Bar } from "recharts";
+import { cn } from "@/lib/utils";
 import { usePortfolio } from "@/hooks/usePortfolio";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { TrendingUp, TrendingDown, DollarSign, Percent } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, Activity } from "lucide-react";
+
+const PERIODS = [
+  { value: "1D", label: "1D" },
+  { value: "1W", label: "1W" },
+  { value: "1M", label: "1M" },
+  { value: "3M", label: "3M" },
+  { value: "1Y", label: "1Y" },
+  { value: "ALL", label: "ALL" },
+] as const;
+
+type Period = typeof PERIODS[number]["value"];
 
 const TYPE_COLORS: Record<string, string> = {
   crypto: "#F59E0B",
@@ -21,6 +34,25 @@ const formatCurrency = (value: number) => {
 
 export default function PortfolioPage() {
   const { portfolio, isLoading, error } = usePortfolio();
+  const [selectedPeriod, setSelectedPeriod] = useState<Period>("1M");
+  const [isLive, setIsLive] = useState(true);
+
+  const filteredHistory = useMemo(() => {
+    if (!portfolio?.history || portfolio.history.length === 0) return [];
+    const now = new Date();
+    const cutoffDays: Record<Period, number> = {
+      "1D": 1,
+      "1W": 7,
+      "1M": 30,
+      "3M": 90,
+      "1Y": 365,
+      "ALL": Infinity,
+    };
+    const days = cutoffDays[selectedPeriod];
+    if (days === Infinity) return portfolio.history;
+    const cutoff = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+    return portfolio.history.filter((point) => new Date(point.date) >= cutoff);
+  }, [portfolio?.history, selectedPeriod]);
 
   if (isLoading) {
     return (
@@ -186,12 +218,38 @@ export default function PortfolioPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Portfolio Evolution</CardTitle>
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <CardTitle>Portfolio Evolution</CardTitle>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Activity className={cn("w-4 h-4", isLive ? "text-green-500" : "text-gray-400")} />
+                <span className={cn("text-xs font-medium", isLive ? "text-green-600 dark:text-green-400" : "text-gray-500")}>
+                  {isLive ? "LIVE" : "DELAYED"}
+                </span>
+              </div>
+              <div className="flex gap-1">
+                {PERIODS.map((period) => (
+                  <button
+                    key={period.value}
+                    onClick={() => setSelectedPeriod(period.value)}
+                    className={cn(
+                      "px-3 py-1 text-sm rounded-lg transition-colors",
+                      selectedPeriod === period.value
+                        ? "bg-blue-600 text-white"
+                        : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    )}
+                  >
+                    {period.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={portfolio.history} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+              <AreaChart data={filteredHistory} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />

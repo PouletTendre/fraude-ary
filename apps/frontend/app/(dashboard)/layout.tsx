@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { fetchApi } from "@/lib/api";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { LayoutDashboard, Wallet, RefreshCw } from "lucide-react";
+import { LayoutDashboard, Wallet, RefreshCw, ChevronLeft, ChevronRight, Activity } from "lucide-react";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -28,6 +28,7 @@ export default function DashboardLayout({
   const [isLoading, setIsLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -63,16 +64,25 @@ export default function DashboardLayout({
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <aside className={cn(
-        "fixed top-0 left-0 z-40 w-64 h-screen bg-white border-r border-gray-200 dark:bg-gray-800 dark:border-gray-700 transition-transform duration-300",
+        "fixed top-0 left-0 z-40 h-screen bg-white border-r border-gray-200 dark:bg-gray-800 dark:border-gray-700 transition-all duration-300",
+        isSidebarCollapsed ? "w-16" : "w-64",
         "transform -translate-x-full md:translate-x-0",
         mobileMenuOpen && "translate-x-0"
       )}>
-        <div className="p-6">
-          <h1 className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-            Fraude-Ary
-          </h1>
+        <div className={cn("p-6 flex items-center justify-between", isSidebarCollapsed && "p-4 justify-center")}>
+          {!isSidebarCollapsed && (
+            <h1 className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+              Fraude-Ary
+            </h1>
+          )}
+          <button
+            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
+          >
+            {isSidebarCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
+          </button>
         </div>
-        <nav className="px-4 space-y-2">
+        <nav className={cn("px-4 space-y-2", isSidebarCollapsed && "px-2")}>
           {navItems.map((item) => (
             <Link
               key={item.href}
@@ -80,43 +90,50 @@ export default function DashboardLayout({
               onClick={() => setMobileMenuOpen(false)}
               className={cn(
                 "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
+                isSidebarCollapsed && "justify-center px-2",
                 pathname === item.href
                   ? "bg-blue-50 text-blue-600 dark:bg-blue-900 dark:text-blue-400"
                   : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
               )}
             >
-              <item.icon className="w-5 h-5" />
-              <span className="font-medium">{item.label}</span>
+              <item.icon className="w-5 h-5 flex-shrink-0" />
+              {!isSidebarCollapsed && <span className="font-medium">{item.label}</span>}
             </Link>
           ))}
         </nav>
-        <div className="px-4 mt-4">
+        <div className={cn("px-4 mt-4", isSidebarCollapsed && "px-2")}>
           <button
             onClick={handleRefresh}
             disabled={isRefreshing}
             className={cn(
               "flex items-center gap-3 w-full px-4 py-3 rounded-lg transition-colors text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700",
+              isSidebarCollapsed && "justify-center px-2",
               isRefreshing && "opacity-50 cursor-not-allowed"
             )}
           >
             <RefreshCw className={cn("w-5 h-5", isRefreshing && "animate-spin")} />
-            <span className="font-medium">{isRefreshing ? "Refreshing..." : "Refresh Prices"}</span>
+            {!isSidebarCollapsed && <span className="font-medium">{isRefreshing ? "Refreshing..." : "Refresh Prices"}</span>}
           </button>
         </div>
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 dark:border-gray-700">
-          <div className="px-4 py-2">
-            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-              {user?.full_name || "User"}
+          <div className={cn("px-4 py-2", isSidebarCollapsed && "px-0 text-center")}>
+            <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+              {isSidebarCollapsed ? user?.full_name?.charAt(0) || "U" : (user?.full_name || "User")}
             </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-              {user?.email}
-            </p>
+            {!isSidebarCollapsed && (
+              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                {user?.email}
+              </p>
+            )}
           </div>
           <button
             onClick={logout}
-            className="w-full mt-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 rounded-lg transition-colors text-left"
+            className={cn(
+              "w-full mt-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 rounded-lg transition-colors text-left",
+              isSidebarCollapsed && "px-0 justify-center"
+            )}
           >
-            Sign Out
+            {!isSidebarCollapsed ? "Sign Out" : "⇥"}
           </button>
         </div>
       </aside>
@@ -143,7 +160,7 @@ export default function DashboardLayout({
         />
       )}
 
-      <main className="md:ml-64 p-4 md:p-8">{children}</main>
+      <main className={cn("transition-all duration-300 md:p-8", isSidebarCollapsed ? "md:ml-16 p-4" : "md:ml-64 p-4")}>{children}</main>
     </div>
   );
 }
