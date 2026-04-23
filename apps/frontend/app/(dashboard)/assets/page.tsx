@@ -95,21 +95,28 @@ export default function AssetsPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validate()) {
-      createAsset({
+      const assetData = {
         type: formData.type,
         symbol: formData.symbol.toUpperCase(),
         quantity: parseFloat(formData.quantity),
         purchase_price: parseFloat(formData.purchase_price),
         purchase_date: formData.purchase_date,
-      }, {
-        onSuccess: () => {
+      };
+      
+      console.log("[handleSubmit] Creating asset:", assetData);
+      console.log("[handleSubmit] Token present:", !!localStorage.getItem("token"));
+      
+      createAsset(assetData, {
+        onSuccess: (data) => {
+          console.log("[handleSubmit] Asset created:", data);
           addToast("Asset created successfully!", "success");
           setFormData({ type: "crypto", symbol: "", quantity: "", purchase_price: "", purchase_date: "" });
           setShowForm(false);
         },
         onError: (error: any) => {
-          console.error("[createAsset] Error:", error);
-          addToast(`Failed to create asset: ${error?.message || 'Unknown error'}`, "error");
+          console.error("[handleSubmit] Error creating asset:", error);
+          const errorMsg = error?.message || error?.error || "Unknown error";
+          addToast(`Failed to create asset: ${errorMsg}`, "error");
         },
       });
     }

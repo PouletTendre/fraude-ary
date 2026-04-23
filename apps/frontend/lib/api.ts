@@ -3,7 +3,10 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || (typeof window !== "unde
 export async function fetchApi<T = unknown>(endpoint: string, options?: RequestInit): Promise<T> {
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
   
-  console.log(`[fetchApi] ${options?.method || 'GET'} ${endpoint} - Token: ${token ? 'present' : 'MISSING'}`);
+  if (!token && endpoint !== "/auth/login" && endpoint !== "/auth/register") {
+    console.error(`[fetchApi] No token found for ${endpoint}`);
+    throw new Error("Authentication required. Please log in.");
+  }
   
   const headers: HeadersInit = {
     "Content-Type": "application/json",
@@ -11,18 +14,31 @@ export async function fetchApi<T = unknown>(endpoint: string, options?: RequestI
     ...options?.headers,
   };
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    headers,
-  });
+  const url = `${API_BASE_URL}${endpoint}`;
+  
+  try {
+    const response = await fetch(url, {
+      ...options,
+      headers,
+    });
 
-  console.log(`[fetchApi] Response: ${response.status} ${response.statusText}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorMessage = `API Error: ${response.status}`;
+      try {
+        const errorJson = JSON.parse(errorText);
+        errorMessage = errorJson.detail || errorJson.message || errorMessage;
+      } catch {
+        errorMessage = errorText || errorMessage;
+      }
+      throw new Error(errorMessage);
+    }
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error(`[fetchApi] Error body: ${errorText}`);
-    throw new Error(`API Error: ${response.status} - ${errorText}`);
+    return response.json();
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error(`Network error: ${error}`);
   }
-
-  return response.json();
 }
