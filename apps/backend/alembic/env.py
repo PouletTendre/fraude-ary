@@ -10,7 +10,7 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 from app.database import Base
-from app.models import User, Asset, PriceHistory
+import app.models
 target_metadata = Base.metadata
 
 def run_migrations_offline() -> None:

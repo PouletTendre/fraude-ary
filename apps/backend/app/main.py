@@ -5,8 +5,10 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+import time
+from datetime import datetime
 
-from app.routers import auth, assets, portfolio, prices, demo, alerts, notifications
+from app.routers import auth, assets, portfolio, prices, demo, alerts, notifications, exchange_rates, cache, monitoring
 from app.services.cache_service import cache_service
 from app.services.price_service import price_service
 from app.database import async_session
@@ -37,6 +39,12 @@ app = FastAPI(title="Fraude-Ary API", version="0.1.0", lifespan=lifespan)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
+app.state.start_time = datetime.utcnow()
+app.state.metrics = {
+    "total_requests": 0,
+    "by_endpoint": {},
+}
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS.split(","),
@@ -45,6 +53,29 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start = time.time()
+    response = await call_next(request)
+    duration = time.time() - start
+
+    app.state.metrics["total_requests"] += 1
+    key = f"{request.method} {request.url.path}"
+    if key not in app.state.metrics["by_endpoint"]:
+        app.state.metrics["by_endpoint"][key] = {
+            "count": 0,
+            "avg_response_time_ms": 0.0,
+        }
+    entry = app.state.metrics["by_endpoint"][key]
+    entry["count"] += 1
+    entry["avg_response_time_ms"] = (
+        (entry["avg_response_time_ms"] * (entry["count"] - 1) + duration * 1000)
+        / entry["count"]
+    )
+
+    print(f"[{request.method}] {request.url.path} - {response.status_code} - {duration:.3f}s")
+    return response
+
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(assets.router, prefix="/api/v1/assets", tags=["assets"])
 app.include_router(portfolio.router, prefix="/api/v1/portfolio", tags=["portfolio"])
@@ -52,6 +83,9 @@ app.include_router(prices.router, prefix="/api/v1/prices", tags=["prices"])
 app.include_router(demo.router, prefix="/api/v1/demo", tags=["demo"])
 app.include_router(alerts.router, prefix="/api/v1/alerts", tags=["alerts"])
 app.include_router(notifications.router, prefix="/api/v1/notifications", tags=["notifications"])
+app.include_router(exchange_rates.router, prefix="/api/v1/exchange-rates", tags=["exchange-rates"])
+app.include_router(cache.router, prefix="/api/v1/cache", tags=["cache"])
+app.include_router(monitoring.router, prefix="/api/v1/health", tags=["health"])
 
 @app.get("/health")
 async def health():

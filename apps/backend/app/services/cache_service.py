@@ -80,4 +80,19 @@ class CacheService:
         key = f"history:{asset_type}:{symbol.upper()}"
         await self._redis.delete(key)
 
+    async def info(self) -> dict:
+        if not self._redis:
+            return {}
+        return await self._redis.info()
+
+    async def dbsize(self) -> int:
+        if not self._redis:
+            return 0
+        return await self._redis.dbsize()
+
+    async def clear(self):
+        if not self._redis:
+            return
+        await self._redis.flushdb()
+
 cache_service = CacheService()

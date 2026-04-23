@@ -11,9 +11,9 @@ class AssetType(str, enum.Enum):
 class Asset(Base):
     __tablename__ = "assets"
     id = Column(String, primary_key=True)
-    user_email = Column(String, nullable=False)
-    type = Column(SQLEnum(AssetType), nullable=False)
-    symbol = Column(String, nullable=False)
+    user_email = Column(String, nullable=False, index=True)
+    type = Column(SQLEnum(AssetType), nullable=False, index=True)
+    symbol = Column(String, nullable=False, index=True)
     quantity = Column(Float, nullable=False)
     purchase_price = Column(Float, nullable=False)
     current_price = Column(Float, default=0.0)
@@ -24,6 +24,6 @@ class Asset(Base):
 class PriceHistory(Base):
     __tablename__ = "price_history"
     id = Column(String, primary_key=True)
-    asset_id = Column(String, nullable=False)
+    asset_id = Column(String, nullable=False, index=True)
     price = Column(Float, nullable=False)
-    timestamp = Column(DateTime(timezone=True), server_default=func.now())
+    timestamp = Column(DateTime(timezone=True), server_default=func.now(), index=True)

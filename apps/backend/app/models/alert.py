@@ -12,7 +12,7 @@ class PriceAlert(Base):
     __tablename__ = "price_alerts"
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     user_email = Column(String, nullable=False, index=True)
-    symbol = Column(String, nullable=False)
+    symbol = Column(String, nullable=False, index=True)
     target_price = Column(Float, nullable=False)
     condition = Column(SQLEnum(AlertCondition), nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
@@ -22,7 +22,7 @@ class PortfolioSnapshot(Base):
     __tablename__ = "portfolio_snapshots"
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     user_email = Column(String, nullable=False, index=True)
-    date = Column(DateTime(timezone=True), nullable=False)
+    date = Column(DateTime(timezone=True), nullable=False, index=True)
     total_value = Column(Float, nullable=False)
 
 class Notification(Base):
