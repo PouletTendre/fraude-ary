@@ -1,38 +1,54 @@
 # .github/workflows/deploy.yml
 name: Deploy to VM
+
 on:
   push:
     branches: [main]
 
+env:
+  REGISTRY: ghcr.io
+  REPO: ${{ github.repository }}
+
 jobs:
   build-push:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v4
+
       - name: Log in to GHCR
-        run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-      - name: Build & push backend
+        run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
+
+      - name: Build and push backend
         run: |
-          docker build -t ghcr.io/${{ github.repository }}/backend:${{ github.sha }} ./apps/backend
-          docker push ghcr.io/${{ github.repository }}/backend:${{ github.sha }}
-      - name: Build & push frontend
+          docker build -t ${{ env.REGISTRY }}/${{ env.REPO }}/backend:${{ github.sha }} ./apps/backend
+          docker push ${{ env.REGISTRY }}/${{ env.REPO }}/backend:${{ github.sha }}
+
+      - name: Build and push frontend
         run: |
-          docker build -t ghcr.io/${{ github.repository }}/frontend:${{ github.sha }} ./apps/frontend
-          docker push ghcr.io/${{ github.repository }}/frontend:${{ github.sha }}
+          docker build -t ${{ env.REGISTRY }}/${{ env.REPO }}/frontend:${{ github.sha }} ./apps/frontend
+          docker push ${{ env.REGISTRY }}/${{ env.REPO }}/frontend:${{ github.sha }}
 
   deploy:
     needs: build-push
     runs-on: ubuntu-latest
     steps:
-      - name: SSH Deploy
+      - name: Deploy to VM
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
+          envs: GITHUB_SHA
           script: |
-            cd ~/fraude-ary
             export TAG=${{ github.sha }}
-            docker compose pull backend frontend
-            docker compose up -d --no-deps backend frontend
+            export REPO=${{ github.repository }}
+            cd ~/fraude-ary
+            # Update docker-compose.yml with correct image paths
+            sed -i "s|image: ghcr.io/.*/fraude-ary-backend:.*|image: ghcr.io/${REPO}/backend:${TAG}|" infra/docker-compose.yml
+            sed -i "s|image: ghcr.io/.*/fraude-ary-frontend:.*|image: ghcr.io/${REPO}/frontend:${TAG}|" infra/docker-compose.yml
+            docker compose -f infra/docker-compose.yml pull
+            docker compose -f infra/docker-compose.yml up -d --no-deps
             docker image prune -f

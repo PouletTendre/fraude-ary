@@ -1,0 +1,48 @@
+from pydantic import BaseModel, EmailStr
+from typing import Optional, List, Dict, Literal
+from datetime import datetime
+from decimal import Decimal
+
+class AssetCreate(BaseModel):
+    type: Literal["crypto", "stocks", "real_estate"]
+    symbol: str
+    quantity: float
+    purchase_price: float
+
+class AssetResponse(BaseModel):
+    id: str
+    user_email: str
+    type: str
+    symbol: str
+    quantity: float
+    purchase_price: float
+    current_price: float
+    total_value: float
+    created_at: Optional[datetime] = None
+
+class PriceHistoryResponse(BaseModel):
+    id: str
+    asset_id: str
+    price: float
+    timestamp: datetime
+
+class PerformanceData(BaseModel):
+    daily: float
+    monthly: float
+    yearly: float
+
+class AllocationData(BaseModel):
+    crypto: float
+    stocks: float
+    real_estate: float
+
+class PortfolioSummary(BaseModel):
+    total_value: float
+    assets: List[AssetResponse]
+    performance: PerformanceData
+    allocation: AllocationData
+
+class PriceRefreshResponse(BaseModel):
+    status: str
+    prices_updated: int
+    errors: List[str] = []
