@@ -1,0 +1,38 @@
+# .github/workflows/deploy.yml
+name: Deploy to VM
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Build & push backend
+        run: |
+          docker build -t ghcr.io/${{ github.repository }}/backend:${{ github.sha }} ./apps/backend
+          docker push ghcr.io/${{ github.repository }}/backend:${{ github.sha }}
+      - name: Build & push frontend
+        run: |
+          docker build -t ghcr.io/${{ github.repository }}/frontend:${{ github.sha }} ./apps/frontend
+          docker push ghcr.io/${{ github.repository }}/frontend:${{ github.sha }}
+
+  deploy:
+    needs: build-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH Deploy
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            cd ~/fraude-ary
+            export TAG=${{ github.sha }}
+            docker compose pull backend frontend
+            docker compose up -d --no-deps backend frontend
+            docker image prune -f
