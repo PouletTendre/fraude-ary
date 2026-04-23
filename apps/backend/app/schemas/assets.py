@@ -9,6 +9,10 @@ class AssetCreate(BaseModel):
     quantity: float
     purchase_price: float
 
+class AssetUpdate(BaseModel):
+    quantity: Optional[float] = None
+    purchase_price: Optional[float] = None
+
 class AssetResponse(BaseModel):
     id: str
     user_email: str
