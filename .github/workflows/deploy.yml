@@ -4,11 +4,25 @@ on:
   push:
     branches: [main]
 
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   deploy:
-    runs-on: self-hosted
+    runs-on: [self-hosted]
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+
+      - name: Wait for any previous deployment
+        run: |
+          echo "Waiting for previous workflow to complete..."
+          while gh run list --status in_progress --limit 1 --json status,name 2>/dev/null | grep -q "deploy"; do
+            echo "Another deployment in progress, waiting 30s..."
+            sleep 30
+          done
+          echo "No other deployment running"
 
       - name: Set environment variables
         run: |
@@ -18,5 +32,12 @@ jobs:
 
       - name: Build and start containers
         run: |
+          cd /root/fraude-ary
           docker compose -f infra/docker-compose.yml build --no-cache
           docker compose -f infra/docker-compose.yml up -d
+
+      - name: Verify deployment
+        run: |
+          sleep 10
+          curl -s http://localhost:8000/health || exit 1
+          echo "Deployment successful"
