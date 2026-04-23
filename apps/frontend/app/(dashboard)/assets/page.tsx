@@ -9,6 +9,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useToast } from "@/components/ui/Toast";
 import { Badge } from "@/components/ui/Badge";
+import { SymbolSearch } from "@/components/SymbolSearch";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { Search, Filter, X, ArrowUpDown, TrendingUp, TrendingDown, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -21,7 +22,7 @@ const TYPE_OPTIONS = [
   { value: "real_estate", label: "Real Estate" },
 ];
 
-type SortField = "name" | "value" | "performance";
+type SortField = "symbol" | "value" | "performance";
 type SortDirection = "asc" | "desc";
 
 const formatCurrency = (value: number) => {
@@ -53,11 +54,10 @@ export default function AssetsPage() {
   const [showForm, setShowForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
-  const [sortField, setSortField] = useState<SortField>("value");
+  const [sortField, setSortField] = useState<SortField>("symbol");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const [formData, setFormData] = useState({
-    name: "",
     type: "crypto" as "crypto" | "stocks" | "real_estate",
     symbol: "",
     quantity: "",
@@ -68,8 +68,9 @@ export default function AssetsPage() {
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
-    if (!formData.name.trim()) newErrors.name = "Name is required";
-    if (formData.symbol && !/^[A-Z0-9]{1,10}$/.test(formData.symbol.toUpperCase())) {
+    if (!formData.symbol.trim()) {
+      newErrors.symbol = "Symbol is required";
+    } else if (!/^[A-Z0-9]{1,10}$/.test(formData.symbol.toUpperCase())) {
       newErrors.symbol = "Symbol must be 1-10 alphanumeric characters";
     }
     if (!formData.quantity || parseFloat(formData.quantity) <= 0) {
@@ -95,16 +96,15 @@ export default function AssetsPage() {
     e.preventDefault();
     if (validate()) {
       createAsset({
-        name: formData.name,
         type: formData.type,
-        symbol: formData.symbol || undefined,
+        symbol: formData.symbol.toUpperCase(),
         quantity: parseFloat(formData.quantity),
         purchase_price: parseFloat(formData.purchase_price),
         purchase_date: formData.purchase_date,
       }, {
         onSuccess: () => {
           addToast("Asset created successfully!", "success");
-          setFormData({ name: "", type: "crypto", symbol: "", quantity: "", purchase_price: "", purchase_date: "" });
+          setFormData({ type: "crypto", symbol: "", quantity: "", purchase_price: "", purchase_date: "" });
           setShowForm(false);
         },
         onError: () => {
@@ -139,16 +139,15 @@ export default function AssetsPage() {
   const filteredAndSortedAssets = useMemo(() => {
     if (!assets) return [];
     let filtered = assets.filter((asset) => {
-      const matchesSearch = asset.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (asset.symbol && asset.symbol.toLowerCase().includes(searchQuery.toLowerCase()));
+      const matchesSearch = asset.symbol.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesType = typeFilter === "all" || asset.type === typeFilter;
       return matchesSearch && matchesType;
     });
     filtered.sort((a, b) => {
       let comparison = 0;
       switch (sortField) {
-        case "name":
-          comparison = a.name.localeCompare(b.name);
+        case "symbol":
+          comparison = a.symbol.localeCompare(b.symbol);
           break;
         case "value":
           comparison = (a.current_price * a.quantity) - (b.current_price * b.quantity);
@@ -189,10 +188,7 @@ export default function AssetsPage() {
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{selectedAsset.name}</h1>
-            {selectedAsset.symbol && (
-              <p className="text-gray-500 dark:text-gray-400">{selectedAsset.symbol}</p>
-            )}
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{selectedAsset.symbol.toUpperCase()}</h1>
           </div>
         </div>
 
@@ -334,12 +330,11 @@ export default function AssetsPage() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Input
-                  label="Name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  error={errors.name}
-                  placeholder="Bitcoin, Apple Stock..."
+                <SymbolSearch
+                  value={formData.symbol}
+                  onChange={(symbol) => setFormData({ ...formData, symbol })}
+                  error={errors.symbol}
+                  assetType={formData.type}
                 />
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -355,12 +350,6 @@ export default function AssetsPage() {
                     ))}
                   </select>
                 </div>
-                <Input
-                  label="Symbol (optional)"
-                  value={formData.symbol}
-                  onChange={(e) => setFormData({ ...formData, symbol: e.target.value })}
-                  placeholder="BTC, AAPL..."
-                />
                 <Input
                   label="Quantity"
                   type="number"
@@ -398,7 +387,7 @@ export default function AssetsPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Search by name or symbol..."
+            placeholder="Search by symbol..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full h-10 pl-10 pr-4 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm placeholder:text-gray-400"
@@ -447,10 +436,10 @@ export default function AssetsPage() {
                   <tr>
                     <th
                       className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
-                      onClick={() => handleSort("name")}
+                      onClick={() => handleSort("symbol")}
                     >
                       <div className="flex items-center gap-1">
-                        Name
+                        Symbol
                         <ArrowUpDown className="w-3 h-3" />
                       </div>
                     </th>
@@ -493,8 +482,7 @@ export default function AssetsPage() {
                         onClick={() => setSelectedAsset(asset)}
                       >
                         <td className="px-4 py-4 whitespace-nowrap">
-                          <div className="font-medium text-gray-900 dark:text-gray-100">{asset.name}</div>
-                          {asset.symbol && <div className="text-sm text-gray-500 dark:text-gray-400">{asset.symbol}</div>}
+                          <div className="font-medium text-gray-900 dark:text-gray-100">{asset.symbol.toUpperCase()}</div>
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap">
                           <Badge variant={

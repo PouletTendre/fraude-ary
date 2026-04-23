@@ -7,9 +7,8 @@ export interface User {
 
 export interface Asset {
   id: number;
-  name: string;
   type: 'crypto' | 'stocks' | 'real_estate';
-  symbol?: string;
+  symbol: string;
   quantity: number;
   purchase_price: number;
   current_price: number;

@@ -188,8 +188,8 @@ export default function DashboardPage() {
                 {assets.slice(0, 5).map((asset) => (
                   <div key={asset.id} className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700 last:border-0">
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-gray-100">{asset.name}</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{asset.symbol || asset.type}</p>
+                      <p className="font-medium text-gray-900 dark:text-gray-100">{asset.symbol.toUpperCase()}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{asset.type}</p>
                     </div>
                     <div className="text-right">
                       <p className="font-medium text-gray-900 dark:text-gray-100">${formatCurrency(asset.current_price * asset.quantity)}</p>
