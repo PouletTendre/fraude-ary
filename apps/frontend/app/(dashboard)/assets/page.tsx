@@ -107,8 +107,9 @@ export default function AssetsPage() {
           setFormData({ type: "crypto", symbol: "", quantity: "", purchase_price: "", purchase_date: "" });
           setShowForm(false);
         },
-        onError: () => {
-          addToast("Failed to create asset", "error");
+        onError: (error: any) => {
+          console.error("[createAsset] Error:", error);
+          addToast(`Failed to create asset: ${error?.message || 'Unknown error'}`, "error");
         },
       });
     }
