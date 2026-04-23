@@ -88,6 +88,16 @@ class PriceService:
             return await self.get_real_estate_price(symbol)
         return None
 
+    async def get_current_price(self, symbol: str) -> Optional[float]:
+        symbol_upper = symbol.upper()
+        for crypto_key in CRYPTO_SYMBOL_MAP:
+            if symbol_upper == crypto_key.upper():
+                return await self.get_crypto_price(symbol)
+        for stock_key in STOCK_SYMBOL_MAP:
+            if symbol_upper == stock_key.upper():
+                return await self.get_stock_price(symbol)
+        return await self.get_stock_price(symbol)
+
     async def refresh_crypto_prices(self, symbols: List[str]) -> Dict[str, float]:
         results = {}
         for symbol in symbols:

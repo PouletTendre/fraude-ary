@@ -5,7 +5,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
-from app.routers import auth, assets, portfolio, prices
+from app.routers import auth, assets, portfolio, prices, demo
 from app.services.cache_service import cache_service
 from app.config import settings
 
@@ -34,6 +34,7 @@ app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(assets.router, prefix="/api/v1/assets", tags=["assets"])
 app.include_router(portfolio.router, prefix="/api/v1/portfolio", tags=["portfolio"])
 app.include_router(prices.router, prefix="/api/v1/prices", tags=["prices"])
+app.include_router(demo.router, prefix="/api/v1/demo", tags=["demo"])
 
 @app.get("/health")
 async def health():
