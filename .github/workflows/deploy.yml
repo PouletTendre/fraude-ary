@@ -1,4 +1,3 @@
-# .github/workflows/deploy.yml
 name: Deploy to VM
 
 on:
@@ -11,7 +10,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set environment variables
+        run: |
+          echo "POSTGRES_PASSWORD=devpassword123" >> $GITHUB_ENV
+          echo "JWT_SECRET=prodsecretchange123" >> $GITHUB_ENV
+          echo "TAG=${{ github.sha }}" >> $GITHUB_ENV
+
       - name: Build and start containers
         run: |
-          docker compose -f infra/docker-compose.yml build
+          docker compose -f infra/docker-compose.yml build --no-cache
           docker compose -f infra/docker-compose.yml up -d
