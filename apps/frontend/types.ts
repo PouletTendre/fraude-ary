@@ -15,6 +15,7 @@ export interface Asset {
   current_price: number;
   purchase_date: string;
   user_id: number;
+  last_updated?: string;
 }
 
 export interface PortfolioSummary {

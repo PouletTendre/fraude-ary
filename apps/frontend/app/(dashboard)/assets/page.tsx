@@ -255,6 +255,7 @@ export default function AssetsPage() {
                     const value = asset.current_price * asset.quantity;
                     const gainLoss = (asset.current_price - asset.purchase_price) * asset.quantity;
                     const gainLossPercent = ((asset.current_price - asset.purchase_price) / asset.purchase_price) * 100;
+                    const lastUpdated = asset.last_updated ? new Date(asset.last_updated).toLocaleString() : null;
                     return (
                       <tr key={asset.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                         <td className="px-4 py-4 whitespace-nowrap">
@@ -271,7 +272,10 @@ export default function AssetsPage() {
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-right text-gray-900 dark:text-gray-100">{asset.quantity}</td>
                         <td className="px-4 py-4 whitespace-nowrap text-right text-gray-900 dark:text-gray-100">${formatCurrency(asset.purchase_price)}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-right text-gray-900 dark:text-gray-100">${formatCurrency(asset.current_price)}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-right text-gray-900 dark:text-gray-100">
+                          ${formatCurrency(asset.current_price)}
+                          {lastUpdated && <div className="text-xs text-gray-400">{lastUpdated}</div>}
+                        </td>
                         <td className="px-4 py-4 whitespace-nowrap text-right font-medium text-gray-900 dark:text-gray-100">${formatCurrency(value)}</td>
                         <td className={`px-4 py-4 whitespace-nowrap text-right font-medium ${gainLoss >= 0 ? "text-green-600" : "text-red-600"}`}>
                           {gainLoss >= 0 ? "+" : ""}${formatCurrency(gainLoss)} ({gainLossPercent.toFixed(2)}%)

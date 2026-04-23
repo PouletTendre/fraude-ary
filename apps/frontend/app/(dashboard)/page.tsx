@@ -32,8 +32,22 @@ export default function DashboardPage() {
           <Skeleton className="h-32" />
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Skeleton className="h-80" />
-          <Skeleton className="h-80" />
+          <Card>
+            <CardHeader>
+              <CardTitle>Asset Allocation</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-64" />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Assets</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-64" />
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
