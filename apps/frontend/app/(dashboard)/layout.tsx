@@ -6,6 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
+import { fetchApi } from "@/lib/api";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { LayoutDashboard, Wallet, RefreshCw } from "lucide-react";
 
@@ -30,9 +31,13 @@ export default function DashboardLayout({
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    await queryClient.invalidateQueries({ queryKey: ["assets"] });
-    await queryClient.invalidateQueries({ queryKey: ["portfolio"] });
-    setTimeout(() => setIsRefreshing(false), 1000);
+    try {
+      await fetchApi("/api/v1/prices/refresh", { method: "POST" });
+      await queryClient.invalidateQueries({ queryKey: ["assets"] });
+      await queryClient.invalidateQueries({ queryKey: ["portfolio"] });
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   useEffect(() => {
