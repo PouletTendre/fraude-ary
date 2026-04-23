@@ -12,7 +12,7 @@ from app.services.price_service import price_service
 
 router = APIRouter()
 
-@router.post("/refresh", response_model=PriceRefreshResponse)
+@router.get("/refresh", response_model=PriceRefreshResponse)
 async def refresh_prices(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
@@ -23,6 +23,7 @@ async def refresh_prices(
     assets = result.scalars().all()
     errors = []
     prices_updated = 0
+    prices = {}
     crypto_symbols = set()
     stock_symbols = set()
     for asset in assets:
@@ -32,6 +33,7 @@ async def refresh_prices(
         elif asset_type_str == "stocks":
             stock_symbols.add(asset.symbol.upper())
     if crypto_symbols:
+        await cache_service.delete_crypto_prices(list(crypto_symbols))
         crypto_prices = await price_service.refresh_crypto_prices(list(crypto_symbols))
         for symbol, price in crypto_prices.items():
             await db.execute(
@@ -39,8 +41,10 @@ async def refresh_prices(
                 .where(Asset.user_email == current_user.email, Asset.symbol == symbol.upper())
                 .values(current_price=price)
             )
+            prices[symbol.upper()] = price
             prices_updated += 1
     if stock_symbols:
+        await cache_service.delete_stock_prices(list(stock_symbols))
         stock_prices = await price_service.refresh_stock_prices(list(stock_symbols))
         for symbol, price in stock_prices.items():
             await db.execute(
@@ -48,11 +52,13 @@ async def refresh_prices(
                 .where(Asset.user_email == current_user.email, Asset.symbol == symbol.upper())
                 .values(current_price=price)
             )
+            prices[symbol.upper()] = price
             prices_updated += 1
     await db.commit()
     return PriceRefreshResponse(
         status="ok",
         prices_updated=prices_updated,
+        prices=prices,
         errors=errors
     )
 

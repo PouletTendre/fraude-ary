@@ -49,4 +49,5 @@ class PortfolioSummary(BaseModel):
 class PriceRefreshResponse(BaseModel):
     status: str
     prices_updated: int
+    prices: Dict[str, float] = {}
     errors: List[str] = []

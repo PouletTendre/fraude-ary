@@ -1,76 +1,38 @@
 "use client";
 
-import { useState } from "react";
-import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, Legend, BarChart, Bar } from "recharts";
 import { usePortfolio } from "@/hooks/usePortfolio";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { Button } from "@/components/ui/Button";
 import { TrendingUp, TrendingDown, DollarSign, Percent } from "lucide-react";
-
-const TYPE_COLORS: Record<string, string> = {
-  crypto: "#F59E0B",
-  stocks: "#10B981",
-  real_estate: "#6366F1",
-};
-
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value);
-};
-
-const DEMO_PORTFOLIO = {
-  total_value: 124580.5,
-  total_gain_loss: 15230.75,
-  gain_loss_percentage: 13.93,
-  by_type: [
-    { type: "crypto", value: 45230.0, percentage: 36.3 },
-    { type: "stocks", value: 54350.5, percentage: 43.6 },
-    { type: "real_estate", value: 25000.0, percentage: 20.1 },
-  ],
-  history: [
-    { date: "2024-01", value: 95000 },
-    { date: "2024-02", value: 102000 },
-    { date: "2024-03", value: 98500 },
-    { date: "2024-04", value: 108000 },
-    { date: "2024-05", value: 115000 },
-    { date: "2024-06", value: 112000 },
-    { date: "2024-07", value: 119500 },
-    { date: "2024-08", value: 124580 },
-  ],
-};
 
 export default function PortfolioPage() {
   const { portfolio, isLoading, error } = usePortfolio();
-  const [showDemo, setShowDemo] = useState(false);
 
-  const displayData = showDemo ? DEMO_PORTFOLIO : portfolio;
-
-  if (isLoading && !showDemo) {
+  if (isLoading) {
     return (
       <div className="space-y-6">
         <Skeleton className="h-12 w-64" />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Skeleton className="h-32" />
+          <Skeleton className="h-32" />
+          <Skeleton className="h-32" />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Skeleton className="h-80" />
           <Skeleton className="h-80" />
         </div>
+        <Skeleton className="h-80" />
       </div>
     );
   }
 
-  if ((error || !displayData) && !showDemo) {
+  if (error || !portfolio) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Portfolio</h1>
-          <Button onClick={() => setShowDemo(true)}>Load Demo Data</Button>
-        </div>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Portfolio</h1>
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-gray-500 dark:text-gray-400 mb-4">Failed to load portfolio data</p>
-            <Button onClick={() => setShowDemo(true)}>Load Demo Data</Button>
+            <p className="text-gray-500 dark:text-gray-400">Failed to load portfolio data. Please try again later.</p>
           </CardContent>
         </Card>
       </div>

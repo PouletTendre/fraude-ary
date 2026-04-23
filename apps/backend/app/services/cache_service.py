@@ -1,6 +1,6 @@
 import redis.asyncio as redis
 import json
-from typing import Optional, Any
+from typing import Optional, Any, List
 from app.config import settings
 
 class CacheService:
@@ -48,6 +48,20 @@ class CacheService:
 
     async def set_stock_price(self, symbol: str, price: float):
         key = f"stock:{symbol.upper()}"
-        await self.set(key, {"price": price, "symbol": symbol}, ttl=900)
+        await self.set(key, {"price": price, "symbol": symbol}, ttl=300)
+
+    async def delete_crypto_prices(self, symbols: List[str]):
+        if not self._redis:
+            return
+        for symbol in symbols:
+            key = f"crypto:{symbol.lower()}"
+            await self._redis.delete(key)
+
+    async def delete_stock_prices(self, symbols: List[str]):
+        if not self._redis:
+            return
+        for symbol in symbols:
+            key = f"stock:{symbol.upper()}"
+            await self._redis.delete(key)
 
 cache_service = CacheService()

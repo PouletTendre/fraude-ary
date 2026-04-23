@@ -10,3 +10,8 @@ class Token(BaseModel):
 class UserResponse(BaseModel):
     email: str
     full_name: Optional[str] = None
+
+class UserCreate(BaseModel):
+    email: str
+    password: str
+    full_name: Optional[str] = None
