@@ -8,7 +8,7 @@ from dateutil.relativedelta import relativedelta
 from app.database import get_db
 from app.models.user import User
 from app.models.asset import Asset, AssetType
-from app.schemas.assets import PortfolioSummary, AssetResponse, PerformanceData, AllocationData
+from app.schemas.assets import PortfolioSummary, AssetResponse, PerformanceData, AllocationData, ByTypeEntry
 from app.routers.auth import get_current_user
 from app.services.price_service import price_service
 
@@ -68,9 +68,21 @@ async def get_portfolio_summary(
         stocks=(stocks_value / total_value * 100) if total_value > 0 else 0,
         real_estate=(real_estate_value / total_value * 100) if total_value > 0 else 0
     )
+    total_gain_loss = total_value - sum(a.quantity * a.purchase_price for a in assets)
+    gain_loss_percentage = (total_gain_loss / sum(a.quantity * a.purchase_price for a in assets) * 100) if sum(a.quantity * a.purchase_price for a in assets) > 0 else 0
+
+    by_type = [
+        ByTypeEntry(type="crypto", value=crypto_value, percentage=(crypto_value / total_value * 100) if total_value > 0 else 0),
+        ByTypeEntry(type="stocks", value=stocks_value, percentage=(stocks_value / total_value * 100) if total_value > 0 else 0),
+        ByTypeEntry(type="real_estate", value=real_estate_value, percentage=(real_estate_value / total_value * 100) if total_value > 0 else 0),
+    ]
+
     return PortfolioSummary(
         total_value=total_value,
+        total_gain_loss=total_gain_loss,
+        gain_loss_percentage=gain_loss_percentage,
         assets=asset_responses,
         performance=PerformanceData(daily=daily_perf, monthly=monthly_perf, yearly=yearly_perf),
-        allocation=allocation
+        allocation=allocation,
+        by_type=by_type
     )

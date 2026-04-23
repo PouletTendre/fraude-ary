@@ -69,7 +69,7 @@ class PriceService:
         try:
             ticker = yfinance.Ticker(ticker_symbol)
             info = ticker.fast_info
-            price = info.get("last_price")
+            price = info.last_price
             if price:
                 await cache_service.set_stock_price(symbol, price)
             return price

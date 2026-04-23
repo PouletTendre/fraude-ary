@@ -40,11 +40,19 @@ class AllocationData(BaseModel):
     stocks: float
     real_estate: float
 
+class ByTypeEntry(BaseModel):
+    type: str
+    value: float
+    percentage: float
+
 class PortfolioSummary(BaseModel):
     total_value: float
+    total_gain_loss: float
+    gain_loss_percentage: float
     assets: List[AssetResponse]
     performance: PerformanceData
     allocation: AllocationData
+    by_type: List[ByTypeEntry]
 
 class PriceRefreshResponse(BaseModel):
     status: str

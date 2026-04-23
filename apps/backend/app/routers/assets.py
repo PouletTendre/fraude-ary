@@ -8,7 +8,7 @@ import uuid
 from app.database import get_db
 from app.models.user import User
 from app.models.asset import Asset, AssetType
-from app.schemas.assets import AssetCreate, AssetUpdate, AssetResponse
+from app.schemas.assets import AssetCreate, AssetUpdate, AssetResponse, PriceRefreshResponse
 from app.routers.auth import get_current_user
 from app.services.price_service import price_service
 
@@ -154,3 +154,36 @@ async def delete_asset(
         raise HTTPException(status_code=404, detail="Asset not found")
     await db.delete(asset)
     await db.commit()
+
+@router.post("/refresh-prices", response_model=PriceRefreshResponse)
+async def refresh_all_prices(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(
+        select(Asset).where(Asset.user_email == current_user.email)
+    )
+    assets = result.scalars().all()
+
+    prices_updated = 0
+    prices = {}
+    errors = []
+
+    for asset in assets:
+        asset_type_str = asset.type.value if hasattr(asset.type, 'value') else asset.type
+        current_price = await price_service.get_price(asset_type_str, asset.symbol)
+        if current_price is not None and current_price != asset.current_price:
+            asset.current_price = current_price
+            prices_updated += 1
+            prices[asset.symbol] = current_price
+        elif current_price is None and asset.current_price == 0:
+            errors.append(f"Could not fetch price for {asset.symbol}")
+
+    await db.commit()
+
+    return PriceRefreshResponse(
+        status="success",
+        prices_updated=prices_updated,
+        prices=prices,
+        errors=errors
+    )
