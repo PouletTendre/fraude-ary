@@ -9,6 +9,7 @@ from app.models.asset import Asset, PriceHistory
 from app.schemas.assets import PriceRefreshResponse, PriceHistoryResponse
 from app.routers.auth import get_current_user
 from app.services.price_service import price_service
+from app.services.cache_service import cache_service
 
 router = APIRouter()
 
