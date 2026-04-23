@@ -4,10 +4,11 @@ import logging
 import random
 import uuid
 import yfinance
-from typing import Optional, Dict, List
-from datetime import datetime
+from typing import Optional, Dict, List, Tuple, Any
+from datetime import datetime, timedelta
 from app.services.cache_service import cache_service
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
 COINGECKO_API = "https://api.coingecko.com/api/v3"
 
@@ -226,5 +227,49 @@ class PriceService:
             if price:
                 results[symbol] = price
         return results
+
+    async def get_benchmark_data(self, symbol: str, period: str = "1y") -> Optional[Dict]:
+        try:
+            def fetch_history():
+                ticker = yfinance.Ticker(symbol.upper())
+                hist = ticker.history(period=period)
+                if hist.empty:
+                    return None
+                first_price = float(hist["Close"].iloc[0])
+                last_price = float(hist["Close"].iloc[-1])
+                returns = hist["Close"].pct_change().dropna().tolist()
+                return {
+                    "first_price": first_price,
+                    "last_price": last_price,
+                    "returns": returns,
+                    "history": hist["Close"].tolist(),
+                }
+            return await asyncio.to_thread(fetch_history)
+        except Exception as e:
+            logging.warning(f"Failed to fetch benchmark data for {symbol}: {e}")
+            return None
+
+    async def auto_refresh_all_prices(self, db: AsyncSession) -> Dict[str, Any]:
+        from app.models.asset import Asset
+        result = await db.execute(select(Asset))
+        assets = result.scalars().all()
+
+        updated = 0
+        errors = []
+        for asset in assets:
+            try:
+                asset_type_str = asset.type.value if hasattr(asset.type, 'value') else asset.type
+                price = await self.get_price(asset_type_str, asset.symbol)
+                if price is not None:
+                    asset.current_price = price
+                    await self.save_price_history(db, asset.id, price)
+                    updated += 1
+                else:
+                    errors.append(f"Could not fetch price for {asset.symbol}")
+            except Exception as e:
+                errors.append(f"Error refreshing {asset.symbol}: {str(e)}")
+
+        await db.commit()
+        return {"updated": updated, "errors": errors}
 
 price_service = PriceService()

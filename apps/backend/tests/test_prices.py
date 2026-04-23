@@ -55,3 +55,28 @@ async def test_get_price_history_asset_not_found(client: AsyncClient, auth_heade
 async def test_refresh_prices_unauthorized(client: AsyncClient):
     response = await client.post("/api/v1/prices/refresh")
     assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+@patch("app.services.price_service.price_service.get_price", new_callable=AsyncMock)
+async def test_auto_refresh_all_prices(mock_get_price, db_session):
+    mock_get_price.return_value = 60000.0
+
+    from app.services.price_service import price_service
+    from app.models.asset import Asset, AssetType
+
+    asset = Asset(
+        id="test-auto-refresh",
+        user_email="test@example.com",
+        type=AssetType.CRYPTO,
+        symbol="BTC",
+        quantity=1.0,
+        purchase_price=45000.0,
+        current_price=45000.0
+    )
+    db_session.add(asset)
+    await db_session.commit()
+
+    result = await price_service.auto_refresh_all_prices(db_session)
+    assert result["updated"] == 1
+    assert asset.current_price == 60000.0

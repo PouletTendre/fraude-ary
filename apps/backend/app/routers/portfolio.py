@@ -13,7 +13,7 @@ from app.database import get_db
 from app.models.user import User
 from app.models.asset import Asset, AssetType, PriceHistory
 from app.models.alert import PortfolioSnapshot
-from app.schemas.assets import PortfolioSummary, AssetResponse, PerformanceData, AllocationData, ByTypeEntry, PortfolioStatistics, HistoryPoint
+from app.schemas.assets import PortfolioSummary, AssetResponse, PerformanceData, AllocationData, ByTypeEntry, PortfolioStatistics, HistoryPoint, BenchmarkResponse
 from app.schemas.alerts import PortfolioHistoryEntry, PortfolioHistoryResponse
 from app.routers.auth import get_current_user
 from app.services.price_service import price_service
@@ -351,3 +351,95 @@ async def export_portfolio(
             media_type="application/json",
             headers={"Content-Disposition": "attachment; filename=portfolio_export.json"}
         )
+
+@router.get("/benchmark", response_model=BenchmarkResponse)
+async def get_benchmark_comparison(
+    symbol: str = Query("SPY", description="Benchmark symbol (e.g. SPY, BTC-USD)"),
+    period: str = Query("1y", pattern="^(1y|6m|3m|1m)$"),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(
+        select(Asset).where(Asset.user_email == current_user.email)
+    )
+    assets = result.scalars().all()
+
+    if not assets:
+        return BenchmarkResponse(
+            portfolio_return=0.0,
+            benchmark_return=0.0,
+            alpha=0.0,
+            beta=0.0,
+            benchmark_symbol=symbol.upper(),
+            period=period
+        )
+
+    total_cost = 0.0
+    total_value = 0.0
+    for asset in assets:
+        asset_type_str = asset.type.value if hasattr(asset.type, 'value') else asset.type
+        current_price = await price_service.get_price(asset_type_str, asset.symbol)
+        if current_price is None:
+            current_price = asset.current_price
+        total_cost += asset.quantity * asset.purchase_price
+        total_value += asset.quantity * current_price
+
+    portfolio_return = ((total_value - total_cost) / total_cost * 100) if total_cost > 0 else 0.0
+
+    benchmark_data = await price_service.get_benchmark_data(symbol, period)
+    if benchmark_data:
+        benchmark_return = ((benchmark_data["last_price"] - benchmark_data["first_price"]) / benchmark_data["first_price"] * 100)
+        benchmark_returns = benchmark_data["returns"]
+    else:
+        benchmark_return = 0.0
+        benchmark_returns = []
+
+    # Simplified alpha = portfolio_return - benchmark_return
+    alpha = portfolio_return - benchmark_return
+
+    # Compute beta if we have benchmark returns; otherwise fallback to 1.0
+    beta = 1.0
+    if benchmark_returns and len(benchmark_returns) > 1:
+        # Approximate portfolio returns as same as benchmark returns for covariance calc
+        # In a real app we'd use portfolio historical values.
+        # Here we weight each asset's individual return to estimate portfolio variance
+        asset_returns = []
+        weights = []
+        for asset in assets:
+            asset_type_str = asset.type.value if hasattr(asset.type, 'value') else asset.type
+            current_price = await price_service.get_price(asset_type_str, asset.symbol)
+            if current_price is None:
+                current_price = asset.current_price
+            cost = asset.quantity * asset.purchase_price
+            value = asset.quantity * current_price
+            weight = value / total_value if total_value > 0 else 0
+            ret = ((value - cost) / cost) if cost > 0 else 0
+            asset_returns.append(ret)
+            weights.append(weight)
+
+        # Use benchmark variance; beta approximated as correlation * (portfolio_std / benchmark_std)
+        # Since we don't have time-series for portfolio, we use a heuristic: if portfolio_return > benchmark_return, beta > 1
+        mean_benchmark = sum(benchmark_returns) / len(benchmark_returns)
+        variance_benchmark = sum((r - mean_benchmark) ** 2 for r in benchmark_returns) / len(benchmark_returns)
+        std_benchmark = variance_benchmark ** 0.5
+
+        # Estimate portfolio std from individual asset returns (weighted)
+        mean_portfolio = sum(r * w for r, w in zip(asset_returns, weights))
+        variance_portfolio = sum((r - mean_portfolio) ** 2 * w for r, w in zip(asset_returns, weights))
+        std_portfolio = variance_portfolio ** 0.5
+
+        if std_benchmark > 0:
+            # Correlation approximated via direction of returns
+            cov = sum((r - mean_portfolio) * (b - mean_benchmark) for r, b in zip(asset_returns * (len(benchmark_returns) // len(asset_returns) or 1), benchmark_returns[:len(asset_returns)])) / len(benchmark_returns[:len(asset_returns)])
+            beta = cov / variance_benchmark if variance_benchmark > 0 else 1.0
+            # Clamp beta to reasonable range
+            beta = max(-3.0, min(3.0, beta))
+
+    return BenchmarkResponse(
+        portfolio_return=round(portfolio_return, 2),
+        benchmark_return=round(benchmark_return, 2),
+        alpha=round(alpha, 2),
+        beta=round(beta, 2),
+        benchmark_symbol=symbol.upper(),
+        period=period
+    )

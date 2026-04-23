@@ -4,17 +4,32 @@ from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from app.routers import auth, assets, portfolio, prices, demo, alerts, notifications
 from app.services.cache_service import cache_service
+from app.services.price_service import price_service
+from app.database import async_session
 from app.config import settings
 
 limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute"])
 
+async def refresh_prices_task():
+    async with async_session() as db:
+        try:
+            result = await price_service.auto_refresh_all_prices(db)
+            print(f"[Auto-Refresh] Updated {result['updated']} prices. Errors: {result['errors']}")
+        except Exception as e:
+            print(f"[Auto-Refresh] Error: {e}")
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await cache_service.connect()
+    scheduler = AsyncIOScheduler()
+    scheduler.add_job(refresh_prices_task, "interval", minutes=5, id="price_refresh", replace_existing=True)
+    scheduler.start()
     yield
+    scheduler.shutdown()
     await cache_service.disconnect()
 
 app = FastAPI(title="Fraude-Ary API", version="0.1.0", lifespan=lifespan)

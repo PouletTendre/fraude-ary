@@ -99,3 +99,18 @@ class AssetPerformance(BaseModel):
     return_amount: float
     return_percentage: float
     weight: float
+
+
+class AssetImportResponse(BaseModel):
+    status: str
+    imported_count: int
+    errors: List[str] = []
+
+
+class BenchmarkResponse(BaseModel):
+    portfolio_return: float
+    benchmark_return: float
+    alpha: float
+    beta: float
+    benchmark_symbol: str
+    period: str

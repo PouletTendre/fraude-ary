@@ -1,14 +1,16 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, status, Request, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 from typing import List, Optional
 from datetime import datetime
 import uuid
+import csv
+import io
 
 from app.database import get_db
 from app.models.user import User
 from app.models.asset import Asset, AssetType, PriceHistory
-from app.schemas.assets import AssetCreate, AssetUpdate, AssetResponse, PriceRefreshResponse, PriceHistoryEnrichedResponse, OHLCData
+from app.schemas.assets import AssetCreate, AssetUpdate, AssetResponse, PriceRefreshResponse, PriceHistoryEnrichedResponse, OHLCData, AssetImportResponse
 from app.routers.auth import get_current_user
 from app.services.price_service import price_service
 
@@ -233,4 +235,88 @@ async def get_asset_history_enriched(
         current_price=current_price or 0,
         ohlc=OHLCData(**ohlc) if ohlc else None,
         history=history
+    )
+
+@router.post("/import", response_model=AssetImportResponse)
+async def import_assets(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    if not file.filename or not file.filename.endswith(".csv"):
+        raise HTTPException(status_code=400, detail="File must be a CSV")
+
+    contents = await file.read()
+    text = contents.decode("utf-8")
+    reader = csv.DictReader(io.StringIO(text))
+
+    expected_fields = {"type", "symbol", "quantity", "purchase_price", "purchase_date"}
+    if not expected_fields.issubset(set(reader.fieldnames or [])):
+        raise HTTPException(
+            status_code=400,
+            detail=f"CSV must contain columns: {', '.join(expected_fields)}"
+        )
+
+    imported_count = 0
+    errors = []
+    row_num = 1
+
+    for row in reader:
+        row_num += 1
+        asset_type_str = row.get("type", "").strip().lower()
+        symbol = row.get("symbol", "").strip().upper()
+        quantity_str = row.get("quantity", "").strip()
+        purchase_price_str = row.get("purchase_price", "").strip()
+        purchase_date = row.get("purchase_date", "").strip() or None
+
+        if asset_type_str not in ["crypto", "stocks", "real_estate"]:
+            errors.append(f"Row {row_num}: invalid type '{asset_type_str}'")
+            continue
+
+        try:
+            quantity = float(quantity_str)
+            if quantity <= 0:
+                errors.append(f"Row {row_num}: quantity must be > 0")
+                continue
+        except ValueError:
+            errors.append(f"Row {row_num}: invalid quantity '{quantity_str}'")
+            continue
+
+        try:
+            purchase_price = float(purchase_price_str)
+            if purchase_price < 0:
+                errors.append(f"Row {row_num}: purchase_price must be >= 0")
+                continue
+        except ValueError:
+            errors.append(f"Row {row_num}: invalid purchase_price '{purchase_price_str}'")
+            continue
+
+        try:
+            asset_type = AssetType(asset_type_str)
+            current_price = await price_service.get_price(asset_type_str, symbol)
+            if current_price is None:
+                current_price = purchase_price
+
+            db_asset = Asset(
+                id=str(uuid.uuid4()),
+                user_email=current_user.email,
+                type=asset_type,
+                symbol=symbol,
+                quantity=quantity,
+                purchase_price=purchase_price,
+                current_price=current_price,
+                purchase_date=purchase_date
+            )
+            db.add(db_asset)
+            imported_count += 1
+        except Exception as e:
+            errors.append(f"Row {row_num}: {str(e)}")
+
+    if imported_count > 0:
+        await db.commit()
+
+    return AssetImportResponse(
+        status="success" if not errors else "partial",
+        imported_count=imported_count,
+        errors=errors
     )

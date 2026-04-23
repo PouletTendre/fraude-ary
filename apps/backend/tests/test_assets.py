@@ -1,4 +1,5 @@
 import pytest
+import io
 from httpx import AsyncClient
 from unittest.mock import AsyncMock, patch
 
@@ -114,3 +115,66 @@ async def test_update_asset_no_fields(client: AsyncClient, auth_headers: dict, d
         json={}
     )
     assert response.status_code == 400
+
+
+@pytest.mark.asyncio
+@patch("app.services.price_service.price_service.get_price", new_callable=AsyncMock)
+async def test_import_assets_csv(mock_get_price, client: AsyncClient, auth_headers: dict, db_session):
+    mock_get_price.return_value = 100.0
+
+    csv_content = "type,symbol,quantity,purchase_price,purchase_date\n"
+    csv_content += "stocks,AAPL,10,150.0,2024-01-01\n"
+    csv_content += "crypto,BTC,0.5,30000.0,2024-02-01\n"
+
+    response = await client.post(
+        "/api/v1/assets/import",
+        headers=auth_headers,
+        files={"file": ("assets.csv", io.BytesIO(csv_content.encode()), "text/csv")}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "success"
+    assert data["imported_count"] == 2
+    assert data["errors"] == []
+
+
+@pytest.mark.asyncio
+async def test_import_assets_csv_invalid_file(client: AsyncClient, auth_headers: dict):
+    response = await client.post(
+        "/api/v1/assets/import",
+        headers=auth_headers,
+        files={"file": ("assets.txt", io.BytesIO(b"not a csv"), "text/plain")}
+    )
+    assert response.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_import_assets_csv_invalid_columns(client: AsyncClient, auth_headers: dict):
+    csv_content = "foo,bar\n1,2\n"
+    response = await client.post(
+        "/api/v1/assets/import",
+        headers=auth_headers,
+        files={"file": ("assets.csv", io.BytesIO(csv_content.encode()), "text/csv")}
+    )
+    assert response.status_code == 400
+
+
+@pytest.mark.asyncio
+@patch("app.services.price_service.price_service.get_price", new_callable=AsyncMock)
+async def test_import_assets_csv_partial(mock_get_price, client: AsyncClient, auth_headers: dict, db_session):
+    mock_get_price.return_value = 100.0
+
+    csv_content = "type,symbol,quantity,purchase_price,purchase_date\n"
+    csv_content += "stocks,AAPL,10,150.0,2024-01-01\n"
+    csv_content += "invalid,XYZ,-5,abc,2024-01-01\n"
+
+    response = await client.post(
+        "/api/v1/assets/import",
+        headers=auth_headers,
+        files={"file": ("assets.csv", io.BytesIO(csv_content.encode()), "text/csv")}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "partial"
+    assert data["imported_count"] == 1
+    assert len(data["errors"]) == 1
