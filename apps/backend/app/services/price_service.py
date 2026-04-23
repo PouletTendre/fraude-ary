@@ -4,6 +4,7 @@ import logging
 import random
 import yfinance
 from typing import Optional, Dict, List
+from datetime import datetime
 from app.services.cache_service import cache_service
 
 COINGECKO_API = "https://api.coingecko.com/api/v3"
@@ -70,6 +71,8 @@ class PriceService:
                     price = data.get(coingecko_id, {}).get("usd")
                     if price:
                         await cache_service.set_crypto_price(symbol, price)
+                        ohlc = self._generate_ohlc(price)
+                        await cache_service.set_price_history(symbol, "crypto", ohlc)
                     return price
         except Exception:
             return None
@@ -90,6 +93,8 @@ class PriceService:
             price = await asyncio.to_thread(fetch_price)
             if price:
                 await cache_service.set_stock_price(symbol, price)
+                ohlc = self._generate_ohlc(price)
+                await cache_service.set_price_history(symbol, "stocks", ohlc)
             return price
         except Exception as e:
             logging.warning(f"Failed to fetch stock price for {symbol}: {e}")
@@ -97,6 +102,8 @@ class PriceService:
             if fallback:
                 logging.warning(f"Using fallback price for {symbol}: {fallback}")
                 await cache_service.set_stock_price(symbol, fallback)
+                ohlc = self._generate_ohlc(fallback)
+                await cache_service.set_price_history(symbol, "stocks", ohlc)
                 return fallback
             return None
 
@@ -105,6 +112,31 @@ class PriceService:
         if symbol_lower in STOCK_FALLBACK_PRICES:
             min_price, max_price = STOCK_FALLBACK_PRICES[symbol_lower]
             return round(random.uniform(min_price, max_price), 2)
+        return None
+
+    def _generate_ohlc(self, price: float) -> Dict:
+        variation = price * random.uniform(0.001, 0.02)
+        open_price = round(price - variation, 2)
+        high_price = round(price + variation * random.uniform(0.5, 1.5), 2)
+        low_price = round(price - variation * random.uniform(0.5, 1.5), 2)
+        close_price = round(price + random.uniform(-variation, variation), 2)
+        return {
+            "open": open_price,
+            "high": high_price,
+            "low": low_price,
+            "close": close_price,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+
+    async def get_price_history_ohlc(self, symbol: str, asset_type: str) -> Optional[Dict]:
+        cached = await cache_service.get_price_history(symbol, asset_type)
+        if cached:
+            return cached
+        price = await self.get_price(asset_type, symbol)
+        if price:
+            ohlc = self._generate_ohlc(price)
+            await cache_service.set_price_history(symbol, asset_type, ohlc)
+            return ohlc
         return None
 
     async def get_real_estate_price(self, symbol: str) -> Optional[float]:

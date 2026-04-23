@@ -1,6 +1,7 @@
 import redis.asyncio as redis
 import json
-from typing import Optional, Any, List
+from typing import Optional, Any, List, Dict
+from datetime import datetime
 from app.config import settings
 
 class CacheService:
@@ -50,6 +51,15 @@ class CacheService:
         key = f"stock:{symbol.upper()}"
         await self.set(key, {"price": price, "symbol": symbol}, ttl=300)
 
+    async def get_price_history(self, symbol: str, asset_type: str) -> Optional[List[Dict]]:
+        key = f"history:{asset_type}:{symbol.upper()}"
+        data = await self.get(key)
+        return data.get("history") if data else None
+
+    async def set_price_history(self, symbol: str, asset_type: str, ohlc_data: Dict):
+        key = f"history:{asset_type}:{symbol.upper()}"
+        await self.set(key, {"symbol": symbol.upper(), "type": asset_type, "history": ohlc_data}, ttl=300)
+
     async def delete_crypto_prices(self, symbols: List[str]):
         if not self._redis:
             return
@@ -63,5 +73,11 @@ class CacheService:
         for symbol in symbols:
             key = f"stock:{symbol.upper()}"
             await self._redis.delete(key)
+
+    async def delete_price_history(self, symbol: str, asset_type: str):
+        if not self._redis:
+            return
+        key = f"history:{asset_type}:{symbol.upper()}"
+        await self._redis.delete(key)
 
 cache_service = CacheService()

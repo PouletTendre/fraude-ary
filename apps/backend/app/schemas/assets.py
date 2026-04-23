@@ -59,3 +59,35 @@ class PriceRefreshResponse(BaseModel):
     prices_updated: int
     prices: Dict[str, float] = {}
     errors: List[str] = []
+
+class OHLCData(BaseModel):
+    open: float
+    high: float
+    low: float
+    close: float
+    timestamp: Optional[str] = None
+
+class PriceHistoryEnrichedResponse(BaseModel):
+    asset_id: str
+    symbol: str
+    current_price: float
+    ohlc: Optional[OHLCData] = None
+    history: List[Dict] = []
+
+class PortfolioStatistics(BaseModel):
+    best_asset: Optional[Dict] = None
+    worst_asset: Optional[Dict] = None
+    portfolio_volatility: float
+    performance_vs_market: float
+    total_return: float
+    sharpe_ratio: Optional[float] = None
+
+class AssetPerformance(BaseModel):
+    symbol: str
+    asset_type: str
+    quantity: float
+    purchase_price: float
+    current_price: float
+    return_amount: float
+    return_percentage: float
+    weight: float

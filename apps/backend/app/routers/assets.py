@@ -7,8 +7,8 @@ import uuid
 
 from app.database import get_db
 from app.models.user import User
-from app.models.asset import Asset, AssetType
-from app.schemas.assets import AssetCreate, AssetUpdate, AssetResponse, PriceRefreshResponse
+from app.models.asset import Asset, AssetType, PriceHistory
+from app.schemas.assets import AssetCreate, AssetUpdate, AssetResponse, PriceRefreshResponse, PriceHistoryEnrichedResponse, OHLCData
 from app.routers.auth import get_current_user
 from app.services.price_service import price_service
 
@@ -186,4 +186,46 @@ async def refresh_all_prices(
         prices_updated=prices_updated,
         prices=prices,
         errors=errors
+    )
+
+@router.get("/{asset_id}/history", response_model=PriceHistoryEnrichedResponse)
+async def get_asset_history_enriched(
+    asset_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(
+        select(Asset).where(Asset.id == asset_id, Asset.user_email == current_user.email)
+    )
+    asset = result.scalar_one_or_none()
+    if not asset:
+        raise HTTPException(status_code=404, detail="Asset not found")
+
+    asset_type_str = asset.type.value if hasattr(asset.type, 'value') else asset.type
+    current_price = await price_service.get_price(asset_type_str, asset.symbol)
+    if current_price is None:
+        current_price = asset.current_price
+
+    ohlc = await price_service.get_price_history_ohlc(asset.symbol, asset_type_str)
+
+    history_result = await db.execute(
+        select(PriceHistory)
+        .where(PriceHistory.asset_id == asset_id)
+        .order_by(PriceHistory.timestamp.desc())
+        .limit(100)
+    )
+    history = [
+        {
+            "price": h.price,
+            "timestamp": h.timestamp.isoformat() if h.timestamp else None
+        }
+        for h in history_result.scalars().all()
+    ]
+
+    return PriceHistoryEnrichedResponse(
+        asset_id=asset_id,
+        symbol=asset.symbol,
+        current_price=current_price or 0,
+        ohlc=OHLCData(**ohlc) if ohlc else None,
+        history=history
     )
