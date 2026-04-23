@@ -48,6 +48,10 @@ class ByTypeEntry(BaseModel):
     value: float
     percentage: float
 
+class HistoryPoint(BaseModel):
+    date: str
+    value: float
+
 class PortfolioSummary(BaseModel):
     total_value: float
     total_gain_loss: float
@@ -56,6 +60,7 @@ class PortfolioSummary(BaseModel):
     performance: PerformanceData
     allocation: AllocationData
     by_type: List[ByTypeEntry]
+    history: List[HistoryPoint]
 
 class PriceRefreshResponse(BaseModel):
     status: str
