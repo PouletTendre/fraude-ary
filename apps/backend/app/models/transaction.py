@@ -12,7 +12,7 @@ class Transaction(Base):
     id = Column(String, primary_key=True)
     user_email = Column(String, nullable=False, index=True)
     asset_id = Column(String, nullable=True, index=True)
-    type = Column(SQLEnum(TransactionType), nullable=False)
+    type = Column(SQLEnum(TransactionType, values_callable=lambda x: [e.value for e in x]), nullable=False)
     symbol = Column(String, nullable=False)
     quantity = Column(Float, nullable=False)
     unit_price = Column(Float, nullable=False)
