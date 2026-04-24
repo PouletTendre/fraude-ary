@@ -3,13 +3,13 @@ import { HTMLAttributes, forwardRef } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 
 const cardVariants = cva(
-  "rounded-xl border bg-white text-gray-900 shadow-sm dark:bg-gray-800 dark:text-gray-100",
+  "rounded-lg border bg-surface text-text-primary",
   {
     variants: {
       variant: {
-        default: "border-gray-200 dark:border-gray-700",
-        elevated: "border-transparent shadow-md dark:shadow-gray-900/50",
-        outline: "border-gray-200 dark:border-gray-700",
+        default: "border-border",
+        elevated: "border-border bg-surface-raised shadow-md",
+        outline: "border-border bg-transparent",
       },
     },
     defaultVariants: {
@@ -53,7 +53,7 @@ export const CardTitle = forwardRef<HTMLHeadingElement, HTMLAttributes<HTMLHeadi
     return (
       <h3
         ref={ref}
-        className={cn("text-lg font-semibold leading-none tracking-tight", className)}
+        className={cn("text-h3 leading-none tracking-tight", className)}
         {...props}
       />
     );

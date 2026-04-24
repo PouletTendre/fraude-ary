@@ -72,7 +72,7 @@ export default function DashboardLayout({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="space-y-4 w-full max-w-md px-4">
           <Skeleton className="h-8 w-full" />
           <Skeleton className="h-64 w-full" />
@@ -82,12 +82,12 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-background">
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed top-0 left-0 z-40 h-screen bg-white border-r border-gray-200 dark:bg-gray-800 dark:border-gray-700 transition-all duration-300 ease-in-out",
-          isSidebarCollapsed ? "w-16" : "w-64",
+          "fixed top-0 left-0 z-40 h-screen bg-surface-sunken border-r border-border transition-all duration-300 ease-in-out",
+          isSidebarCollapsed ? "w-16" : "w-[260px]",
           "transform -translate-x-full md:translate-x-0",
           mobileMenuOpen && "translate-x-0"
         )}
@@ -99,13 +99,13 @@ export default function DashboardLayout({
           )}
         >
           {!isSidebarCollapsed && (
-            <h1 className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+            <h1 className="text-h1 text-primary">
               Fraude-Ary
             </h1>
           )}
           <button
             onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 transition-colors"
+            className="p-2 rounded-md hover:bg-surface-raised text-text-secondary transition-colors"
           >
             {isSidebarCollapsed ? (
               <ChevronRight className="w-5 h-5" />
@@ -124,22 +124,22 @@ export default function DashboardLayout({
                 href={item.href}
                 onClick={() => setMobileMenuOpen(false)}
                 className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors relative",
+                  "flex items-center gap-3 px-4 py-3 rounded-md transition-colors relative",
                   isSidebarCollapsed && "justify-center px-2",
                   isActive
-                    ? "bg-blue-50 text-blue-600 dark:bg-blue-900 dark:text-blue-400"
-                    : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                    ? "bg-primary-muted text-primary border-l-2 border-primary"
+                    : "text-text-secondary hover:text-text-primary hover:bg-surface-raised"
                 )}
               >
                 <item.icon className="w-5 h-5 flex-shrink-0" />
                 {!isSidebarCollapsed && (
-                  <span className="font-medium">{item.label}</span>
+                  <span className="font-medium text-body-sm">{item.label}</span>
                 )}
                 {item.href === "/notifications" && unreadCount > 0 && (
                   <span
                     className={cn(
-                      "flex items-center justify-center bg-red-500 text-white text-xs font-bold rounded-full",
-                      isSidebarCollapsed ? "absolute -top-1 -right-1 w-4 h-4 text-[10px]" : "ml-auto w-5 h-5"
+                      "flex items-center justify-center bg-danger text-text-primary text-label font-bold rounded-full",
+                      isSidebarCollapsed ? "absolute -top-1 -right-1 w-4 h-4" : "ml-auto w-5 h-5"
                     )}
                   >
                     {unreadCount > 9 ? "9+" : unreadCount}
@@ -167,8 +167,8 @@ export default function DashboardLayout({
                 onClick={handleRefresh}
                 disabled={isRefreshing}
                 className={cn(
-                  "flex items-center justify-center w-full px-4 py-3 rounded-lg transition-colors text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700",
-                  isRefreshing && "opacity-50 cursor-not-allowed"
+                  "flex items-center justify-center w-full px-4 py-3 rounded-md transition-colors text-text-secondary hover:text-text-primary hover:bg-surface-raised",
+                  isRefreshing && "opacity-40 cursor-not-allowed"
                 )}
               >
                 <RefreshCw
@@ -181,34 +181,34 @@ export default function DashboardLayout({
               onClick={handleRefresh}
               disabled={isRefreshing}
               className={cn(
-                "flex items-center gap-3 w-full px-4 py-3 rounded-lg transition-colors text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700",
-                isRefreshing && "opacity-50 cursor-not-allowed"
+                "flex items-center gap-3 w-full px-4 py-3 rounded-md transition-colors text-text-secondary hover:text-text-primary hover:bg-surface-raised",
+                isRefreshing && "opacity-40 cursor-not-allowed"
               )}
             >
               <RefreshCw
                 className={cn("w-5 h-5", isRefreshing && "animate-spin")}
               />
-              <span className="font-medium">
+              <span className="font-medium text-body-sm">
                 {isRefreshing ? "Refreshing..." : "Refresh Prices"}
               </span>
             </button>
           )}
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border">
           <div
             className={cn(
               "px-4 py-2",
               isSidebarCollapsed && "px-0 text-center"
             )}
           >
-            <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+            <p className="text-body-sm font-medium text-text-primary truncate">
               {isSidebarCollapsed
                 ? user?.full_name?.charAt(0) || "U"
                 : user?.full_name || "User"}
             </p>
             {!isSidebarCollapsed && (
-              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+              <p className="text-label text-text-tertiary truncate">
                 {user?.email}
               </p>
             )}
@@ -217,7 +217,7 @@ export default function DashboardLayout({
             <Tooltip content="Sign Out" position="right">
               <button
                 onClick={logout}
-                className="w-full mt-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 rounded-lg transition-colors text-center"
+                className="w-full mt-2 px-4 py-2 text-body-sm text-text-secondary hover:text-text-primary hover:bg-surface-raised rounded-md transition-colors text-center"
               >
                 ⇥
               </button>
@@ -225,7 +225,7 @@ export default function DashboardLayout({
           ) : (
             <button
               onClick={logout}
-              className="w-full mt-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 rounded-lg transition-colors text-left"
+              className="w-full mt-2 px-4 py-2 text-body-sm text-text-secondary hover:text-text-primary hover:bg-surface-raised rounded-md transition-colors text-left"
             >
               Sign Out
             </button>
@@ -234,19 +234,19 @@ export default function DashboardLayout({
       </aside>
 
       {/* Mobile header */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700">
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-surface/80 backdrop-blur-sm border-b border-border">
         <div className="flex items-center justify-between px-4 py-3">
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="p-2 rounded-md hover:bg-surface-raised transition-colors"
           >
             {mobileMenuOpen ? (
-              <X className="w-6 h-6 text-gray-700 dark:text-gray-300" />
+              <X className="w-6 h-6 text-text-primary" />
             ) : (
-              <Menu className="w-6 h-6 text-gray-700 dark:text-gray-300" />
+              <Menu className="w-6 h-6 text-text-primary" />
             )}
           </button>
-          <h1 className="text-lg font-bold text-blue-600 dark:text-blue-400">
+          <h1 className="text-h2 text-primary">
             Fraude-Ary
           </h1>
           <div className="w-10" />
@@ -256,7 +256,7 @@ export default function DashboardLayout({
       {/* Mobile overlay */}
       {mobileMenuOpen && (
         <div
-          className="md:hidden fixed inset-0 bg-black/50 z-30 backdrop-blur-sm transition-opacity"
+          className="md:hidden fixed inset-0 bg-overlay z-30 backdrop-blur-sm transition-opacity"
           onClick={() => setMobileMenuOpen(false)}
         />
       )}
@@ -265,7 +265,7 @@ export default function DashboardLayout({
       <div
         className={cn(
           "transition-all duration-300 min-h-screen flex flex-col",
-          isSidebarCollapsed ? "md:ml-16" : "md:ml-64",
+          isSidebarCollapsed ? "md:ml-16" : "md:ml-[260px]",
           "pt-16 md:pt-0"
         )}
       >

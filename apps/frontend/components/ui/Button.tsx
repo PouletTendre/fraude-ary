@@ -3,18 +3,18 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { ButtonHTMLAttributes, forwardRef } from "react";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none",
+  "inline-flex items-center justify-center rounded-md text-body-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:opacity-40 disabled:pointer-events-none",
   {
     variants: {
       variant: {
         primary:
-          "bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 focus-visible:ring-blue-500",
+          "bg-primary text-text-primary hover:bg-primary-hover hover:shadow-glow",
         secondary:
-          "bg-gray-200 text-gray-900 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600 focus-visible:ring-gray-500",
+          "bg-surface-raised text-text-primary border border-border hover:border-border-hover hover:bg-surface",
         ghost:
-          "hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-100",
+          "text-text-secondary hover:text-text-primary hover:bg-surface-raised",
         destructive:
-          "bg-red-600 text-white hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700 focus-visible:ring-red-500",
+          "bg-danger text-text-primary hover:bg-danger-hover",
       },
       size: {
         default: "h-10 px-4 py-2",
