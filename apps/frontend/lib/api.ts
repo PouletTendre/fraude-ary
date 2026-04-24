@@ -31,6 +31,16 @@ export async function fetchApi<T = unknown>(endpoint: string, options?: RequestI
       } catch {
         errorMessage = errorText || errorMessage;
       }
+      
+      // Handle 401 - redirect to login
+      if (response.status === 401) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        if (typeof window !== "undefined") {
+          window.location.href = "/login";
+        }
+      }
+      
       throw new Error(errorMessage);
     }
 
