@@ -19,6 +19,7 @@ class PriceAlertResponse(BaseModel):
 class PortfolioHistoryEntry(BaseModel):
     date: datetime
     total_value: float
+    performance: Optional[float] = None
 
 class PortfolioHistoryResponse(BaseModel):
     period: str

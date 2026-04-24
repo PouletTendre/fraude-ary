@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { 
-  PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid,
+  PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid,
   BarChart, Bar
 } from "recharts";
 import { cn } from "@/lib/utils";
@@ -65,6 +65,7 @@ export default function PortfolioPage() {
   const { assets, isLoading: assetsLoading } = useAssets();
   const [selectedPeriod, setSelectedPeriod] = useState<Period>("1M");
   const [isLive, setIsLive] = useState(true);
+  const [chartView, setChartView] = useState<"value" | "performance">("value");
   const [sortKey, setSortKey] = useState<SortKey>("value");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
 
@@ -82,9 +83,15 @@ export default function PortfolioPage() {
       "ALL": Infinity,
     };
     const days = cutoffDays[selectedPeriod];
-    if (days === Infinity) return portfolio.history;
+    const mapPoint = (point: typeof portfolio.history[0]) => ({
+      ...point,
+      performance: point.performance ?? 0,
+    });
+    if (days === Infinity) return portfolio.history.map(mapPoint);
     const cutoff = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
-    return portfolio.history.filter((point) => new Date(point.date) >= cutoff);
+    return portfolio.history
+      .filter((point) => new Date(point.date) >= cutoff)
+      .map(mapPoint);
   }, [portfolio?.history, selectedPeriod]);
 
   const assetRows: AssetRow[] = useMemo(() => {
@@ -338,6 +345,30 @@ export default function PortfolioPage() {
                   {isLive ? "LIVE" : "DELAYED"}
                 </span>
               </div>
+              <div className="flex rounded-[var(--r-md)] overflow-hidden border border-border">
+                <button
+                  onClick={() => setChartView("value")}
+                  className={cn(
+                    "px-3 py-1 text-sm font-medium transition-colors",
+                    chartView === "value"
+                      ? "bg-primary text-white"
+                      : "bg-surface-raised text-text-secondary hover:bg-surface"
+                  )}
+                >
+                  Valeur
+                </button>
+                <button
+                  onClick={() => setChartView("performance")}
+                  className={cn(
+                    "px-3 py-1 text-sm font-medium transition-colors",
+                    chartView === "performance"
+                      ? "bg-primary text-white"
+                      : "bg-surface-raised text-text-secondary hover:bg-surface"
+                  )}
+                >
+                  Performance
+                </button>
+              </div>
               <div className="flex gap-1">
                 {PERIODS.map((period) => (
                   <button
@@ -366,45 +397,81 @@ export default function PortfolioPage() {
               </div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={filteredHistory} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-                  <XAxis
-                    dataKey="date"
-                    stroke="#9CA3AF"
-                    fontSize={12}
-                    tickFormatter={(value) => {
-                      const date = new Date(value);
-                      return date.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
-                    }}
-                  />
-                  <YAxis
-                    stroke="#9CA3AF"
-                    fontSize={12}
-                    tickFormatter={(v) => `$${formatCurrency(v)}`}
-                    width={80}
-                  />
-                  <Tooltip
-                    formatter={(value: number) => [`$${formatCurrency(value)}`, "Valeur"]}
-                    labelFormatter={(label) => {
-                      const date = new Date(label);
-                      return date.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
-                    }}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="value"
-                    stroke="#3B82F6"
-                    strokeWidth={2}
-                    fill="url(#colorValue)"
-                    activeDot={{ r: 6, strokeWidth: 0 }}
-                  />
-                </AreaChart>
+                {chartView === "value" ? (
+                  <AreaChart data={filteredHistory} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                    <XAxis
+                      dataKey="date"
+                      stroke="#9CA3AF"
+                      fontSize={12}
+                      tickFormatter={(value) => {
+                        const date = new Date(value);
+                        return date.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+                      }}
+                    />
+                    <YAxis
+                      stroke="#9CA3AF"
+                      fontSize={12}
+                      tickFormatter={(v) => `$${formatCurrency(v)}`}
+                      width={80}
+                    />
+                    <Tooltip
+                      formatter={(value: number) => [`$${formatCurrency(value)}`, "Valeur"]}
+                      labelFormatter={(label) => {
+                        const date = new Date(label);
+                        return date.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+                      }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="value"
+                      stroke="#3B82F6"
+                      strokeWidth={2}
+                      fill="url(#colorValue)"
+                      activeDot={{ r: 6, strokeWidth: 0 }}
+                    />
+                  </AreaChart>
+                ) : (
+                  <LineChart data={filteredHistory} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                    <XAxis
+                      dataKey="date"
+                      stroke="#9CA3AF"
+                      fontSize={12}
+                      tickFormatter={(value) => {
+                        const date = new Date(value);
+                        return date.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+                      }}
+                    />
+                    <YAxis
+                      stroke="#9CA3AF"
+                      fontSize={12}
+                      tickFormatter={(v: number) => `${v.toFixed(2)}%`}
+                      width={80}
+                    />
+                    <Tooltip
+                      formatter={(value: number) => [`${value.toFixed(2)}%`, "Performance"]}
+                      labelFormatter={(label) => {
+                        const date = new Date(label);
+                        return date.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+                      }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="performance"
+                      stroke="#6366F1"
+                      strokeWidth={2}
+                      dot={false}
+                      activeDot={{ r: 6, strokeWidth: 0 }}
+                    />
+                  </LineChart>
+                )}
               </ResponsiveContainer>
             )}
           </div>

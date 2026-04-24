@@ -44,6 +44,7 @@ export default function JournalPage() {
       total_invested: tx.total_invested,
       date: tx.date,
       type: tx.type,
+      asset_type: tx.asset_type,
     });
   };
 
@@ -136,6 +137,7 @@ export default function JournalPage() {
                                   <option value="buy">BUY</option>
                                   <option value="sell">SELL</option>
                                 </select>
+                                <p className="text-xs text-text-muted mt-1">Changing type will update your asset holdings.</p>
                               </td>
                               <td className="px-4 py-3 whitespace-nowrap">
                                 <input
@@ -144,6 +146,16 @@ export default function JournalPage() {
                                   onChange={(e) => setEditForm({ ...editForm, symbol: e.target.value.toUpperCase() })}
                                   className="h-8 w-full rounded-md border border-border bg-surface-sunken px-2 text-sm text-text-primary"
                                 />
+                                <select
+                                  value={editForm.asset_type || ""}
+                                  onChange={(e) => setEditForm({ ...editForm, asset_type: e.target.value })}
+                                  className="h-8 w-full rounded-md border border-border bg-surface-sunken px-2 text-sm text-text-primary mt-1"
+                                >
+                                  <option value="">Select type</option>
+                                  <option value="crypto">Crypto</option>
+                                  <option value="stocks">Stocks</option>
+                                  <option value="real_estate">Real Estate</option>
+                                </select>
                               </td>
                               <td className="px-4 py-3 whitespace-nowrap">
                                 <input
@@ -220,7 +232,12 @@ export default function JournalPage() {
                                 </Badge>
                               </td>
                               <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-text-primary">
-                                {tx.symbol.toUpperCase()}
+                                <div className="flex flex-col">
+                                  {tx.symbol.toUpperCase()}
+                                  {tx.asset_id && (
+                                    <span className="text-xs text-text-muted mt-0.5">Linked: {tx.symbol.toUpperCase()}</span>
+                                  )}
+                                </div>
                               </td>
                               <td className="px-4 py-4 whitespace-nowrap text-right text-sm text-text-primary">
                                 {tx.quantity}

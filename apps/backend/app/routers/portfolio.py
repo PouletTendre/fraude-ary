@@ -25,6 +25,23 @@ async def _get_portfolio_history(
     db: AsyncSession,
     start_date: datetime
 ) -> List[PortfolioHistoryEntry]:
+    # Load assets first to compute cost basis for performance
+    asset_result = await db.execute(
+        select(Asset).where(Asset.user_email == user_email)
+    )
+    assets = asset_result.scalars().all()
+
+    def _compute_invested(day) -> float:
+        total = 0.0
+        for a in assets:
+            if a.purchase_date is None:
+                total += a.quantity * a.purchase_price
+            else:
+                pd = datetime.strptime(a.purchase_date, "%Y-%m-%d").date()
+                if pd <= day:
+                    total += a.quantity * a.purchase_price
+        return total
+
     snapshot_result = await db.execute(
         select(PortfolioSnapshot)
         .where(
@@ -36,17 +53,21 @@ async def _get_portfolio_history(
     snapshots = snapshot_result.scalars().all()
 
     if snapshots:
-        return [
-            PortfolioHistoryEntry(date=s.date, total_value=s.total_value)
-            for s in snapshots
-        ]
+        entries = []
+        for s in snapshots:
+            day = s.date.date() if hasattr(s.date, 'date') else s.date
+            invested = _compute_invested(day)
+            perf = ((s.total_value - invested) / invested * 100) if invested > 0 else 0.0
+            entries.append(
+                PortfolioHistoryEntry(
+                    date=s.date,
+                    total_value=s.total_value,
+                    performance=perf
+                )
+            )
+        return entries
 
     # Fallback: compute from price_history
-    asset_result = await db.execute(
-        select(Asset).where(Asset.user_email == user_email)
-    )
-    assets = asset_result.scalars().all()
-
     if not assets:
         return []
 
@@ -94,13 +115,18 @@ async def _get_portfolio_history(
     if today not in daily_values and total_current > 0:
         daily_values[today] = total_current
 
-    return [
-        PortfolioHistoryEntry(
-            date=datetime.combine(day, datetime.min.time()),
-            total_value=value
+    entries = []
+    for day, value in sorted(daily_values.items()):
+        invested = _compute_invested(day)
+        perf = ((value - invested) / invested * 100) if invested > 0 else 0.0
+        entries.append(
+            PortfolioHistoryEntry(
+                date=datetime.combine(day, datetime.min.time()),
+                total_value=value,
+                performance=perf
+            )
         )
-        for day, value in sorted(daily_values.items())
-    ]
+    return entries
 
 @router.get("/summary", response_model=PortfolioSummary)
 async def get_portfolio_summary(
@@ -152,7 +178,11 @@ async def get_portfolio_summary(
     history_entries = await _get_portfolio_history(current_user.email, db, oldest_purchase)
 
     history_points = [
-        HistoryPoint(date=entry.date.isoformat(), value=entry.total_value)
+        HistoryPoint(
+            date=entry.date.isoformat(),
+            value=entry.total_value,
+            performance=entry.performance
+        )
         for entry in history_entries
     ]
 

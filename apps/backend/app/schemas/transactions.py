@@ -4,6 +4,7 @@ from datetime import datetime
 
 class TransactionCreate(BaseModel):
     asset_id: Optional[str] = None
+    asset_type: Optional[str] = None
     type: str  # buy or sell
     symbol: str
     quantity: float
@@ -16,6 +17,7 @@ class TransactionCreate(BaseModel):
 
 class TransactionUpdate(BaseModel):
     asset_id: Optional[str] = None
+    asset_type: Optional[str] = None
     type: Optional[str] = None
     symbol: Optional[str] = None
     quantity: Optional[float] = None

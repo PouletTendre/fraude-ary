@@ -23,6 +23,7 @@ export function useAssets() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["assets"], refetchType: "active" });
       queryClient.invalidateQueries({ queryKey: ["portfolio"], refetchType: "active" });
+      queryClient.invalidateQueries({ queryKey: ["transactions"], refetchType: "active" });
     },
   });
 
@@ -36,6 +37,7 @@ export function useAssets() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["assets"], refetchType: "active" });
       queryClient.invalidateQueries({ queryKey: ["portfolio"], refetchType: "active" });
+      queryClient.invalidateQueries({ queryKey: ["transactions"], refetchType: "active" });
     },
   });
 
@@ -48,6 +50,7 @@ export function useAssets() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["assets"], refetchType: "active" });
       queryClient.invalidateQueries({ queryKey: ["portfolio"], refetchType: "active" });
+      queryClient.invalidateQueries({ queryKey: ["transactions"], refetchType: "active" });
     },
   });
 
@@ -61,6 +64,7 @@ export function useAssets() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["assets"], refetchType: "active" });
       queryClient.invalidateQueries({ queryKey: ["portfolio"], refetchType: "active" });
+      queryClient.invalidateQueries({ queryKey: ["transactions"], refetchType: "active" });
     },
   });
 

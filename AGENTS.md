@@ -416,7 +416,12 @@ docker compose up -d --build
 8. **Use conventional commits:** `feat:`, `fix:`, `docs:`, `ci:`, `test:`.
 9. **Currency matters.** Never hardcode `$`. Use `formatCurrency(value, asset.currency)`.
 10. **No fake data.** Prices must come from real APIs.
-11. **Orchestrator pattern is mandatory.** The current agent is the orchestrator only. For any non-trivial task (feature, bug fix, refactor spanning >2 files), you MUST spawn specialized sub-agents via the `task` tool. Use `subagent_type: "general"` for implementation work. Parallelize front-end and back-end work whenever possible. Never write significant code yourself — delegate to sub-agents, then review, commit, and run E2E tests.
+11. **Orchestrator pattern is mandatory — 4-agent workflow.** The current agent is the orchestrator ONLY and must NEVER write significant code itself. For every non-trivial task (feature, bug fix, refactor spanning >2 files), you MUST spawn exactly 4 specialized sub-agents via the `task` tool:
+    - **Front-End Agent** — owns `apps/frontend/`
+    - **Back-End Agent** — owns `apps/backend/`
+    - **Commits Agent** — owns `git add`, `git commit`, `git push`
+    - **Testing Agent** — owns `e2e/` Playwright validation
+    **If you have 2 tasks, that means 8 sub-agents total.** Parallelize Front-End and Back-End work for each task simultaneously. After both are done, the Commits Agent commits everything, then the Testing Agent runs E2E tests. If tests fail, loop back to Front-End or Back-End agent, fix, re-commit, re-test. Use `subagent_type: "general"` for all implementation work.
 
 ## Contact / Ownership
 

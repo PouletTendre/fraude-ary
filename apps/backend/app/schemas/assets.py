@@ -53,6 +53,7 @@ class ByTypeEntry(BaseModel):
 class HistoryPoint(BaseModel):
     date: str
     value: float
+    performance: Optional[float] = None
 
 class PortfolioSummary(BaseModel):
     total_value: float

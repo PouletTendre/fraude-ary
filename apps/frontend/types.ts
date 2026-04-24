@@ -32,6 +32,7 @@ export interface Transaction {
   total_invested: number;
   date: string;
   created_at?: string;
+  asset_type?: string;
 }
 
 export interface PortfolioSummary {
@@ -46,6 +47,7 @@ export interface PortfolioSummary {
   history: {
     date: string;
     value: number;
+    performance?: number;
   }[];
 }
 

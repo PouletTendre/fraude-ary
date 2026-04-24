@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status, Request, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update
+from sqlalchemy import select, update, delete as sql_delete
 from typing import List, Optional
 from datetime import datetime
 import uuid
@@ -209,6 +209,26 @@ async def update_asset(
     for field, value in update_data.items():
         setattr(db_asset, field, value)
 
+    # Sync associated auto-created BUY transaction
+    if {"symbol", "quantity", "purchase_price"} & set(update_data.keys()):
+        from app.models.transaction import Transaction, TransactionType
+        result = await db.execute(
+            select(Transaction).where(
+                Transaction.asset_id == asset_id,
+                Transaction.user_email == current_user.email,
+                Transaction.type == TransactionType.BUY
+            ).order_by(Transaction.created_at.asc())
+        )
+        tx = result.scalars().first()
+        if tx:
+            if "symbol" in update_data:
+                tx.symbol = db_asset.symbol.upper()
+            if "quantity" in update_data:
+                tx.quantity = db_asset.quantity
+            if "purchase_price" in update_data:
+                tx.unit_price = db_asset.purchase_price
+                tx.total_invested = db_asset.quantity * db_asset.purchase_price
+
     await db.commit()
     await db.refresh(db_asset)
 
@@ -259,6 +279,16 @@ async def delete_asset(
     asset = result.scalar_one_or_none()
     if not asset:
         raise HTTPException(status_code=404, detail="Asset not found")
+
+    # Delete all associated transactions
+    from app.models.transaction import Transaction
+    await db.execute(
+        sql_delete(Transaction).where(
+            Transaction.asset_id == asset_id,
+            Transaction.user_email == current_user.email
+        )
+    )
+
     await db.delete(asset)
     await db.commit()
 
