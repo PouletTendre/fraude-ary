@@ -98,36 +98,55 @@ async def create_asset(
     db: AsyncSession = Depends(get_db)
 ):
     asset_type = AssetType(asset.type)
-    asset_id = str(uuid.uuid4())
-    current_price = await price_service.get_price(asset.type, asset.symbol)
-    if current_price is None:
-        current_price = asset.purchase_price
-    db_asset = Asset(
-        id=asset_id,
-        user_email=current_user.email,
-        type=asset_type,
-        symbol=asset.symbol.upper(),
-        quantity=asset.quantity,
-        purchase_price=asset.purchase_price,
-        current_price=current_price,
-        purchase_date=asset.purchase_date,
-        currency=asset.currency or 'EUR'
+    result = await db.execute(
+        select(Asset).where(
+            Asset.user_email == current_user.email,
+            Asset.symbol == asset.symbol.upper(),
+            Asset.type == asset_type
+        )
     )
-    db.add(db_asset)
-    await db.commit()
-    await db.refresh(db_asset)
+    existing = result.scalar_one_or_none()
+
+    if existing:
+        new_quantity = existing.quantity + asset.quantity
+        existing.purchase_price = (
+            existing.quantity * existing.purchase_price + asset.quantity * asset.purchase_price
+        ) / new_quantity
+        existing.quantity = new_quantity
+        await db.commit()
+        await db.refresh(existing)
+        db_asset = existing
+    else:
+        asset_id = str(uuid.uuid4())
+        current_price = await price_service.get_price(asset.type, asset.symbol)
+        if current_price is None:
+            current_price = asset.purchase_price
+        db_asset = Asset(
+            id=asset_id,
+            user_email=current_user.email,
+            type=asset_type,
+            symbol=asset.symbol.upper(),
+            quantity=asset.quantity,
+            purchase_price=asset.purchase_price,
+            current_price=current_price,
+            purchase_date=asset.purchase_date,
+            currency=asset.currency or 'EUR'
+        )
+        db.add(db_asset)
+        await db.commit()
+        await db.refresh(db_asset)
 
     # Backfill historical prices from purchase_date
     if db_asset.purchase_date:
         try:
             purchase_dt = datetime.strptime(db_asset.purchase_date, "%Y-%m-%d")
-            asset_type_str = asset.type.value if hasattr(asset.type, 'value') else asset.type
+            asset_type_str = asset_type.value if hasattr(asset_type, 'value') else asset_type
             await price_service.backfill_price_history(db, db_asset.id, db_asset.symbol, asset_type_str, purchase_dt)
         except Exception as e:
             logging.warning(f"Failed to backfill history for {db_asset.symbol}: {e}")
 
     # Create transaction
-    purchase_date_str = db_asset.purchase_date or datetime.utcnow().strftime("%Y-%m-%d")
+    purchase_date_str = asset.purchase_date or db_asset.purchase_date or datetime.utcnow().strftime("%Y-%m-%d")
     purchase_dt = datetime.strptime(purchase_date_str, "%Y-%m-%d")
     rate = await price_service.get_historical_exchange_rate(purchase_dt, asset.currency or 'EUR', 'EUR')
 
@@ -138,12 +157,12 @@ async def create_asset(
         asset_id=db_asset.id,
         type=TransactionType.BUY,
         symbol=db_asset.symbol,
-        quantity=db_asset.quantity,
-        unit_price=db_asset.purchase_price,
+        quantity=asset.quantity,
+        unit_price=asset.purchase_price,
         currency=asset.currency or 'EUR',
         exchange_rate=rate,
         fees=0.0,
-        total_invested=db_asset.quantity * db_asset.purchase_price * rate,
+        total_invested=asset.quantity * asset.purchase_price * rate,
         date=purchase_date_str
     )
     db.add(tx)
