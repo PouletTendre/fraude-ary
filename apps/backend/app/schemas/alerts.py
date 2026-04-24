@@ -7,6 +7,11 @@ class PriceAlertCreate(BaseModel):
     target_price: float
     condition: Literal["above", "below"]
 
+class PriceAlertUpdate(BaseModel):
+    target_price: Optional[float] = None
+    condition: Optional[Literal["above", "below"]] = None
+    is_active: Optional[bool] = None
+
 class PriceAlertResponse(BaseModel):
     id: str
     user_email: str

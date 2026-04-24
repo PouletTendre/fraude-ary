@@ -114,8 +114,8 @@ export default function AlertsPage() {
     const newErrors: Record<string, string> = {};
     if (!formData.symbol.trim()) {
       newErrors.symbol = "Symbol is required";
-    } else if (!/^[A-Z0-9]{1,10}$/.test(formData.symbol.toUpperCase())) {
-      newErrors.symbol = "Symbol must be 1-10 alphanumeric characters";
+    } else if (!/^[A-Z0-9.\-]{1,20}$/.test(formData.symbol.toUpperCase())) {
+      newErrors.symbol = "Symbol must be 1-20 characters (letters, numbers, dots, hyphens)";
     }
     if (!formData.target_price || formData.target_price <= 0) {
       newErrors.target_price = "Valid target price required (greater than 0)";

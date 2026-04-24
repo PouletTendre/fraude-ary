@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 
-export type Currency = "USD" | "EUR";
+export type Currency = "USD" | "EUR" | "GBP" | "JPY" | "CHF";
 export type DateFormat = "fr" | "us" | "iso";
 
 interface Settings {
@@ -62,14 +62,24 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   };
 
   const formatCurrency = (value: number, overrideCurrency?: string): string => {
-    const currency = (overrideCurrency || settings.currency) as Currency;
-    const symbol = currency === "EUR" ? "€" : "$";
+    const currency = overrideCurrency || settings.currency;
+    const CURRENCY_SYMBOLS: Record<string, string> = {
+      USD: "$",
+      EUR: "€",
+      GBP: "£",
+      JPY: "¥",
+      CHF: "CHF",
+    };
+    const symbol = CURRENCY_SYMBOLS[currency] || currency;
     const locale = currency === "EUR" ? "fr-FR" : "en-US";
     const formatted = new Intl.NumberFormat(locale, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(value);
-    return currency === "EUR" ? `${formatted} ${symbol}` : `${symbol}${formatted}`;
+    if (currency === "EUR") {
+      return `${formatted} ${symbol}`;
+    }
+    return `${symbol}${formatted}`;
   };
 
   const formatDate = (date: string | Date): string => {

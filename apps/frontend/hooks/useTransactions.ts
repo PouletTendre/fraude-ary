@@ -26,6 +26,20 @@ export function useTransactions() {
     },
   });
 
+  const createTransaction = useMutation({
+    mutationFn: async (data: Omit<Transaction, "id" | "user_email" | "created_at" | "exchange_rate" | "total_invested"> & { exchange_rate?: number; total_invested?: number }) => {
+      return fetchApi<Transaction>("/api/v1/transactions", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["transactions"], refetchType: "active" });
+      queryClient.invalidateQueries({ queryKey: ["portfolio"], refetchType: "active" });
+      queryClient.invalidateQueries({ queryKey: ["assets"], refetchType: "active" });
+    },
+  });
+
   const deleteTransaction = useMutation({
     mutationFn: async (id: string) => {
       return fetchApi<void>(`/api/v1/transactions/${id}`, {
@@ -44,8 +58,10 @@ export function useTransactions() {
     isLoading: query.isLoading,
     error: query.error,
     updateTransaction: updateTransaction.mutate,
+    createTransaction: createTransaction.mutate,
     deleteTransaction: deleteTransaction.mutate,
     isUpdating: updateTransaction.isPending,
+    isCreating: createTransaction.isPending,
     isDeleting: deleteTransaction.isPending,
   };
 }

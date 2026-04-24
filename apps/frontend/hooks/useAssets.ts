@@ -28,7 +28,7 @@ export function useAssets() {
   });
 
   const updateAsset = useMutation({
-    mutationFn: async ({ id, ...asset }: Asset) => {
+    mutationFn: async ({ id, ...asset }: Partial<Asset> & { id: string }) => {
       return fetchApi<Asset>(`/api/v1/assets/${id}`, {
         method: "PUT",
         body: JSON.stringify(asset),

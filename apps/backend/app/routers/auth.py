@@ -52,7 +52,7 @@ async def get_current_user(
         raise credentials_exception
     return user
 
-@router.post("/register", response_model=UserResponse)
+@router.post("/register", response_model=Token)
 async def register(user: UserCreate, db: AsyncSession = Depends(get_db)):
     existing = await db.get(User, user.email)
     if existing:
@@ -62,7 +62,12 @@ async def register(user: UserCreate, db: AsyncSession = Depends(get_db)):
     db.add(db_user)
     await db.commit()
     await db.refresh(db_user)
-    return db_user
+    access_token = create_access_token(data={"sub": db_user.email})
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {"email": db_user.email, "full_name": db_user.full_name}
+    }
 
 @router.post("/login", response_model=Token)
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):

@@ -37,6 +37,7 @@ const navSections = [
     label: "Gestion",
     items: [
       { href: "/alerts", label: "Alertes", icon: Bell, badge: 3 },
+      { href: "/notifications", label: "Notifications", icon: Bell },
       { href: "/journal", label: "Transactions", icon: ArrowLeftRight },
       { href: "/settings", label: "Paramètres", icon: Settings },
     ],

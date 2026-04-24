@@ -7,7 +7,7 @@ import uuid
 from app.database import get_db
 from app.models.user import User
 from app.models.alert import PriceAlert, AlertCondition
-from app.schemas.alerts import PriceAlertCreate, PriceAlertResponse
+from app.schemas.alerts import PriceAlertCreate, PriceAlertResponse, PriceAlertUpdate
 from app.routers.auth import get_current_user
 
 router = APIRouter()
@@ -61,6 +61,43 @@ async def list_alerts(
         )
         for a in alerts
     ]
+
+@router.put("/{alert_id}", response_model=PriceAlertResponse)
+async def update_alert(
+    alert_id: str,
+    alert_update: PriceAlertUpdate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(
+        select(PriceAlert).where(
+            PriceAlert.id == alert_id,
+            PriceAlert.user_email == current_user.email
+        )
+    )
+    alert = result.scalar_one_or_none()
+    if not alert:
+        raise HTTPException(status_code=404, detail="Alert not found")
+
+    if alert_update.target_price is not None:
+        alert.target_price = alert_update.target_price
+    if alert_update.condition is not None:
+        alert.condition = AlertCondition(alert_update.condition)
+    if alert_update.is_active is not None:
+        alert.is_active = alert_update.is_active
+
+    await db.commit()
+    await db.refresh(alert)
+
+    return PriceAlertResponse(
+        id=alert.id,
+        user_email=alert.user_email,
+        symbol=alert.symbol,
+        target_price=alert.target_price,
+        condition=alert.condition.value if hasattr(alert.condition, 'value') else alert.condition,
+        is_active=alert.is_active,
+        created_at=alert.created_at,
+    )
 
 @router.delete("/{alert_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_alert(

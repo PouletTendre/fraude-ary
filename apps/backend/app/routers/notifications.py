@@ -31,11 +31,29 @@ async def list_notifications(
             id=n.id,
             user_email=n.user_email,
             message=n.message,
-            is_read=n.is_read,
+            title=n.message[:50] if len(n.message) > 50 else n.message,
+            type="info",
+            read=n.is_read,
             created_at=n.created_at,
         )
         for n in notifications
     ]
+
+@router.post("/read-all")
+async def mark_all_notifications_read(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(
+        update(Notification)
+        .where(
+            Notification.user_email == current_user.email,
+            Notification.is_read == False
+        )
+        .values(is_read=True)
+    )
+    await db.commit()
+    return {"updated": result.rowcount}
 
 @router.put("/{notification_id}/read", response_model=NotificationResponse)
 async def mark_notification_read(
@@ -61,6 +79,8 @@ async def mark_notification_read(
         id=notification.id,
         user_email=notification.user_email,
         message=notification.message,
-        is_read=notification.is_read,
+        title=notification.message[:50] if len(notification.message) > 50 else notification.message,
+        type="info",
+        read=notification.is_read,
         created_at=notification.created_at,
     )

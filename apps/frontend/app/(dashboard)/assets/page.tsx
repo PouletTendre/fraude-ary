@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAssets } from "@/hooks/useAssets";
 import { Button } from "@/components/ui/Button";
@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/Badge";
 import { SymbolSearch } from "@/components/SymbolSearch";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { Search, Filter, X, ArrowUpDown, TrendingUp, TrendingDown, ArrowLeft } from "lucide-react";
+import { fetchApi } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import type { Asset } from "@/types";
 
@@ -47,24 +48,9 @@ const formatCurrency = (value: number, currency: string = "USD") => {
   return `${symbol}${new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value)}`;
 };
 
-const generateMockHistory = (basePrice: number, days: number = 30) => {
-  const history = [];
-  let price = basePrice * 0.9;
-  for (let i = days; i >= 0; i--) {
-    const date = new Date();
-    date.setDate(date.getDate() - i);
-    price = price * (1 + (Math.random() - 0.48) * 0.05);
-    history.push({
-      date: date.toISOString().split("T")[0],
-      price: parseFloat(price.toFixed(2)),
-    });
-  }
-  return history;
-};
-
 export default function AssetsPage() {
   const router = useRouter();
-  const { assets, isLoading, createAsset, deleteAsset, bulkDeleteAssets, isCreating, isDeleting, isBulkDeleting } = useAssets();
+  const { assets, isLoading, createAsset, updateAsset, deleteAsset, bulkDeleteAssets, isCreating, isUpdating, isDeleting, isBulkDeleting } = useAssets();
   const { addToast } = useToast();
   const [showForm, setShowForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -82,6 +68,37 @@ export default function AssetsPage() {
     currency: "USD",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [priceHistory, setPriceHistory] = useState<{ date: string; price: number }[]>([]);
+  const [isHistoryLoading, setIsHistoryLoading] = useState(false);
+  const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
+  const [editFormData, setEditFormData] = useState({
+    quantity: "",
+    purchase_price: "",
+    currency: "USD",
+  });
+  const [editErrors, setEditErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (!selectedAsset) {
+      setPriceHistory([]);
+      return;
+    }
+    setIsHistoryLoading(true);
+    fetchApi<{ history: { price: number; timestamp: string }[] }>(`/api/v1/assets/${selectedAsset.id}/history`)
+      .then((data) => {
+        const mapped = (data.history || [])
+          .map((h) => ({
+            date: h.timestamp ? h.timestamp.split("T")[0] : "",
+            price: h.price,
+          }))
+          .reverse();
+        setPriceHistory(mapped);
+      })
+      .catch(() => {
+        setPriceHistory([]);
+      })
+      .finally(() => setIsHistoryLoading(false));
+  }, [selectedAsset]);
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
@@ -138,6 +155,46 @@ export default function AssetsPage() {
         },
       });
     }
+  };
+
+  const validateEdit = () => {
+    const newErrors: Record<string, string> = {};
+    if (!editFormData.quantity || parseFloat(editFormData.quantity) <= 0) {
+      newErrors.quantity = "Valid quantity required (greater than 0)";
+    }
+    if (!editFormData.purchase_price || parseFloat(editFormData.purchase_price) <= 0) {
+      newErrors.purchase_price = "Valid price required (greater than 0)";
+    }
+    setEditErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleEditSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (validateEdit() && editingAsset) {
+      updateAsset(
+        {
+          id: editingAsset.id,
+          quantity: parseFloat(editFormData.quantity),
+          purchase_price: parseFloat(editFormData.purchase_price),
+          currency: editFormData.currency,
+        },
+        {
+          onSuccess: () => {
+            addToast("Asset updated successfully!", "success");
+            setEditingAsset(null);
+          },
+          onError: (error: Error) => {
+            addToast(`Failed to update asset: ${error.message}`, "error");
+          },
+        }
+      );
+    }
+  };
+
+  const handleEditCancel = () => {
+    setEditingAsset(null);
+    setEditErrors({});
   };
 
   const handleDelete = (id: string) => {
@@ -211,7 +268,6 @@ export default function AssetsPage() {
   const hasActiveFilters = searchQuery !== "" || typeFilter !== "all";
 
   if (selectedAsset) {
-    const priceHistory = generateMockHistory(selectedAsset.current_price);
     const currentValue = selectedAsset.current_price * selectedAsset.quantity;
     const totalCost = selectedAsset.purchase_price * selectedAsset.quantity;
     const gainLoss = currentValue - totalCost;
@@ -286,6 +342,11 @@ export default function AssetsPage() {
           </CardHeader>
           <CardContent>
             <div className="h-80">
+              {isHistoryLoading ? (
+                <div className="flex items-center justify-center h-full text-text-tertiary">Loading history...</div>
+              ) : priceHistory.length === 0 ? (
+                <div className="flex items-center justify-center h-full text-text-tertiary">No history available</div>
+              ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={priceHistory} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <defs>
@@ -306,6 +367,7 @@ export default function AssetsPage() {
                   />
                 </AreaChart>
               </ResponsiveContainer>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -441,6 +503,58 @@ export default function AssetsPage() {
               <Button type="submit" disabled={isCreating}>
                 {isCreating ? "Creating..." : "Add Asset"}
               </Button>
+            </form>
+          </CardContent>
+        </Card>
+      )}
+
+      {editingAsset && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Edit {editingAsset.symbol.toUpperCase()}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleEditSave} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <Input
+                  label="Quantity"
+                  type="number"
+                  step="any"
+                  value={editFormData.quantity}
+                  onChange={(e) => setEditFormData({ ...editFormData, quantity: e.target.value })}
+                  error={editErrors.quantity}
+                />
+                <Input
+                  label="Purchase Price"
+                  type="number"
+                  step="any"
+                  value={editFormData.purchase_price}
+                  onChange={(e) => setEditFormData({ ...editFormData, purchase_price: e.target.value })}
+                  error={editErrors.purchase_price}
+                />
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-1">
+                    Currency
+                  </label>
+                  <select
+                    value={editFormData.currency}
+                    onChange={(e) => setEditFormData({ ...editFormData, currency: e.target.value })}
+                    className="flex h-10 w-full rounded-lg border border-border bg-surface-sunken px-3 py-2 text-sm"
+                  >
+                    {CURRENCY_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button type="submit" disabled={isUpdating}>
+                  {isUpdating ? "Saving..." : "Save"}
+                </Button>
+                <Button type="button" variant="secondary" onClick={handleEditCancel}>
+                  Cancel
+                </Button>
+              </div>
             </form>
           </CardContent>
         </Card>
@@ -625,6 +739,19 @@ export default function AssetsPage() {
                           {gainLoss >= 0 ? "+" : ""}{formatCurrency(gainLoss, asset.currency)} ({gainLossPercent.toFixed(2)}%)
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-center" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            onClick={() => {
+                              setEditingAsset(asset);
+                              setEditFormData({
+                                quantity: String(asset.quantity),
+                                purchase_price: String(asset.purchase_price),
+                                currency: asset.currency,
+                              });
+                            }}
+                            className="text-text-secondary hover:text-primary text-sm mr-3"
+                          >
+                            Edit
+                          </button>
                           <button
                             onClick={() => handleDelete(asset.id)}
                             disabled={isDeleting}
