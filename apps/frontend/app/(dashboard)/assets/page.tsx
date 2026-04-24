@@ -123,7 +123,7 @@ export default function AssetsPage() {
     }
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => {
     if (confirm("Are you sure you want to delete this asset?")) {
       deleteAsset(id, {
         onSuccess: () => {

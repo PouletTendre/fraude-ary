@@ -40,7 +40,7 @@ export function useAssets() {
   });
 
   const deleteAsset = useMutation({
-    mutationFn: async (id: number) => {
+    mutationFn: async (id: string) => {
       return fetchApi<void>(`/api/v1/assets/${id}`, {
         method: "DELETE",
       });

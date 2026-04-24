@@ -6,14 +6,14 @@ export interface User {
 }
 
 export interface Asset {
-  id: number;
+  id: string;
   type: 'crypto' | 'stocks' | 'real_estate';
   symbol: string;
   quantity: number;
   purchase_price: number;
   current_price: number;
   purchase_date: string;
-  user_id: number;
+  user_id: string;
   last_updated?: string;
 }
 
@@ -50,8 +50,8 @@ export interface RegisterCredentials {
 }
 
 export interface Notification {
-  id: number;
-  user_id: number;
+  id: string;
+  user_id: string;
   title: string;
   message: string;
   type: string;
@@ -60,8 +60,8 @@ export interface Notification {
 }
 
 export interface PriceAlert {
-  id: number;
-  user_id: number;
+  id: string;
+  user_id: string;
   symbol: string;
   target_price: number;
   condition: "above" | "below";
