@@ -44,6 +44,7 @@ async def seed_demo_assets(
             symbol=demo_asset["symbol"].upper(),
             quantity=demo_asset["quantity"],
             purchase_price=demo_asset["purchase_price"],
+            purchase_price_eur=demo_asset["purchase_price"],
             current_price=current_price
         )
         db.add(db_asset)
@@ -62,6 +63,7 @@ async def seed_demo_assets(
             symbol=a.symbol,
             quantity=a.quantity,
             purchase_price=a.purchase_price,
+            purchase_price_eur=a.purchase_price_eur,
             current_price=a.current_price,
             total_value=a.quantity * a.current_price if a.current_price else 0,
             created_at=a.created_at

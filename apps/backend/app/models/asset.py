@@ -16,6 +16,7 @@ class Asset(Base):
     symbol = Column(String, nullable=False, index=True)
     quantity = Column(Float, nullable=False)
     purchase_price = Column(Float, nullable=False)
+    purchase_price_eur = Column(Float, default=0.0)
     current_price = Column(Float, default=0.0)
     purchase_date = Column(String, nullable=True)
     currency = Column(String, default="EUR")

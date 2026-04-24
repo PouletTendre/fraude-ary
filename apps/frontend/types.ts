@@ -11,6 +11,7 @@ export interface Asset {
   symbol: string;
   quantity: number;
   purchase_price: number;
+  purchase_price_eur?: number;
   current_price: number;
   purchase_date: string;
   user_id: string;

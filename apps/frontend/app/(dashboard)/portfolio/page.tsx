@@ -48,6 +48,7 @@ interface AssetRow {
   type: string;
   quantity: number;
   purchase_price: number;
+  purchase_price_eur?: number;
   current_price: number;
   value: number;
   pnl: number;
@@ -98,6 +99,7 @@ export default function PortfolioPage() {
       type: asset.type,
       quantity: asset.quantity,
       purchase_price: asset.purchase_price,
+      purchase_price_eur: asset.purchase_price_eur,
       current_price: asset.current_price,
       value: asset.current_price * asset.quantity,
       pnl: (asset.current_price - asset.purchase_price) * asset.quantity,
@@ -589,6 +591,11 @@ export default function PortfolioPage() {
                       </td>
                       <td className="px-6 py-4 text-right text-text-secondary text-text-muted">
                         {formatCurrency(row.purchase_price, row.currency)}
+                        {row.purchase_price_eur !== undefined && row.purchase_price_eur !== row.purchase_price && (
+                          <div className="text-text-tertiary text-[11px]">
+                            ≈ {formatCurrency(row.purchase_price_eur, "EUR")}
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-4 text-right text-text-primary font-medium">
                         {formatCurrency(row.current_price, row.currency)}

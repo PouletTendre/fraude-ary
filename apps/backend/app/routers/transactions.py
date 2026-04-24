@@ -103,6 +103,8 @@ async def create_transaction(
         if asset:
             new_quantity = asset.quantity + transaction.quantity
             asset.purchase_price = (asset.quantity * asset.purchase_price + transaction.quantity * transaction.unit_price) / new_quantity
+            eur_cost = transaction.quantity * transaction.unit_price * exchange_rate
+            asset.purchase_price_eur = (asset.quantity * (asset.purchase_price_eur or 0.0) + eur_cost) / new_quantity
             asset.quantity = new_quantity
             tx.asset_id = asset.id
         else:
@@ -119,6 +121,7 @@ async def create_transaction(
                 symbol=transaction.symbol.upper(),
                 quantity=transaction.quantity,
                 purchase_price=transaction.unit_price,
+                purchase_price_eur=transaction.unit_price * exchange_rate,
                 current_price=current_price,
                 purchase_date=transaction.date,
                 currency=transaction.currency
@@ -178,6 +181,7 @@ async def update_transaction(
     old_symbol = tx.symbol
     old_quantity = tx.quantity
     old_unit_price = tx.unit_price
+    old_exchange_rate = tx.exchange_rate
     old_asset_id = tx.asset_id
 
     if update.asset_id is not None:
@@ -231,6 +235,7 @@ async def update_transaction(
             reverted_quantity = old_asset.quantity - old_quantity
             if reverted_quantity > 0:
                 old_asset.purchase_price = (old_asset.quantity * old_asset.purchase_price - old_quantity * old_unit_price) / reverted_quantity
+                old_asset.purchase_price_eur = (old_asset.quantity * (old_asset.purchase_price_eur or 0.0) - old_quantity * old_unit_price * old_exchange_rate) / reverted_quantity
                 old_asset.quantity = reverted_quantity
             else:
                 old_asset.quantity = reverted_quantity
@@ -267,6 +272,8 @@ async def update_transaction(
         if target_asset:
             new_qty = target_asset.quantity + new_quantity
             target_asset.purchase_price = (target_asset.quantity * target_asset.purchase_price + new_quantity * new_unit_price) / new_qty
+            eur_cost = new_quantity * new_unit_price * tx.exchange_rate
+            target_asset.purchase_price_eur = (target_asset.quantity * (target_asset.purchase_price_eur or 0.0) + eur_cost) / new_qty
             target_asset.quantity = new_qty
             tx.asset_id = target_asset.id
         else:
@@ -284,6 +291,7 @@ async def update_transaction(
                 symbol=new_symbol.upper(),
                 quantity=new_quantity,
                 purchase_price=new_unit_price,
+                purchase_price_eur=new_unit_price * tx.exchange_rate,
                 current_price=current_price,
                 purchase_date=tx.date,
                 currency=tx.currency
@@ -370,6 +378,7 @@ async def delete_transaction(
             reverted_quantity = asset.quantity - tx_quantity
             if reverted_quantity > 0:
                 asset.purchase_price = (asset.quantity * asset.purchase_price - tx_quantity * tx.unit_price) / reverted_quantity
+                asset.purchase_price_eur = (asset.quantity * (asset.purchase_price_eur or 0.0) - tx_quantity * tx.unit_price * tx.exchange_rate) / reverted_quantity
                 asset.quantity = reverted_quantity
             else:
                 await db.delete(asset)

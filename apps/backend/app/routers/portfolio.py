@@ -45,13 +45,12 @@ async def _get_portfolio_history(
     def _compute_invested(day) -> float:
         total = 0.0
         for a in assets:
-            qty_price = a.quantity * a.purchase_price
             if a.purchase_date is None:
-                total += _to_eur(qty_price, a.currency, rates)
+                total += a.quantity * (a.purchase_price_eur or 0)
             else:
                 pd = datetime.strptime(a.purchase_date, "%Y-%m-%d").date()
                 if pd <= day:
-                    total += _to_eur(qty_price, a.currency, rates)
+                    total += a.quantity * (a.purchase_price_eur or 0)
         return total
 
     snapshot_result = await db.execute(
@@ -165,7 +164,7 @@ async def get_portfolio_summary(
             asset.current_price = current_price
         total_asset_value_native = asset.quantity * current_price
         total_asset_value = _to_eur(total_asset_value_native, asset.currency, rates)
-        cost_basis = _to_eur(asset.quantity * asset.purchase_price, asset.currency, rates)
+        cost_basis = asset.quantity * (asset.purchase_price_eur or 0)
         total_value += total_asset_value
         total_cost += cost_basis
         if asset_type_str == "crypto":
@@ -181,6 +180,7 @@ async def get_portfolio_summary(
             symbol=asset.symbol,
             quantity=asset.quantity,
             purchase_price=asset.purchase_price,
+            purchase_price_eur=asset.purchase_price_eur,
             current_price=current_price,
             total_value=total_asset_value_native,
             purchase_date=asset.purchase_date,
@@ -316,7 +316,7 @@ async def get_portfolio_statistics(
         if current_price is None:
             current_price = asset.current_price
         current_value = _to_eur(asset.quantity * current_price, asset.currency, rates)
-        cost_basis = _to_eur(asset.quantity * asset.purchase_price, asset.currency, rates)
+        cost_basis = asset.quantity * (asset.purchase_price_eur or 0)
         total_value += current_value
         total_cost += cost_basis
         return_amount = current_value - cost_basis
@@ -383,7 +383,7 @@ async def export_portfolio(
         if current_price is None:
             current_price = asset.current_price
         current_value = _to_eur(asset.quantity * current_price, asset.currency, rates)
-        cost_basis = _to_eur(asset.quantity * asset.purchase_price, asset.currency, rates)
+        cost_basis = asset.quantity * (asset.purchase_price_eur or 0)
         portfolio_data.append({
             "id": asset.id,
             "type": asset_type_str,
@@ -446,7 +446,7 @@ async def get_benchmark_comparison(
         current_price = await price_service.get_price(asset_type_str, asset.symbol)
         if current_price is None:
             current_price = asset.current_price
-        total_cost += _to_eur(asset.quantity * asset.purchase_price, asset.currency, rates)
+        total_cost += asset.quantity * (asset.purchase_price_eur or 0)
         total_value += _to_eur(asset.quantity * current_price, asset.currency, rates)
 
     portfolio_return = ((total_value - total_cost) / total_cost * 100) if total_cost > 0 else 0.0
@@ -475,7 +475,7 @@ async def get_benchmark_comparison(
             current_price = await price_service.get_price(asset_type_str, asset.symbol)
             if current_price is None:
                 current_price = asset.current_price
-            cost = _to_eur(asset.quantity * asset.purchase_price, asset.currency, rates)
+            cost = asset.quantity * (asset.purchase_price_eur or 0)
             value = _to_eur(asset.quantity * current_price, asset.currency, rates)
             weight = value / total_value if total_value > 0 else 0
             ret = ((value - cost) / cost) if cost > 0 else 0

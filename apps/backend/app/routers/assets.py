@@ -66,10 +66,15 @@ async def deduplicate_assets(
             if total_quantity > 0
             else 0.0
         )
+        weighted_price_eur = (
+            sum(a.quantity * (a.purchase_price_eur or 0.0) for a in group) / total_quantity
+            if total_quantity > 0
+            else 0.0
+        )
 
         logging.info(
             "Merging %d duplicates for user=%s symbol=%s type=%s master=%s: "
-            "quantity %s -> %s, purchase_price %s -> %s",
+            "quantity %s -> %s, purchase_price %s -> %s, purchase_price_eur %s -> %s",
             len(duplicates),
             current_user.email,
             symbol,
@@ -79,10 +84,13 @@ async def deduplicate_assets(
             total_quantity,
             master.purchase_price,
             weighted_price,
+            master.purchase_price_eur,
+            weighted_price_eur,
         )
 
         master.quantity = total_quantity
         master.purchase_price = weighted_price
+        master.purchase_price_eur = weighted_price_eur
 
         dup_ids = [dup.id for dup in duplicates]
         await db.execute(
@@ -125,6 +133,7 @@ async def list_all_assets(
             symbol=a.symbol,
             quantity=a.quantity,
             purchase_price=a.purchase_price,
+            purchase_price_eur=a.purchase_price_eur,
             current_price=a.current_price,
             total_value=a.quantity * a.current_price if a.current_price else 0,
             purchase_date=a.purchase_date,
@@ -158,6 +167,7 @@ async def get_assets(
             symbol=a.symbol,
             quantity=a.quantity,
             purchase_price=a.purchase_price,
+            purchase_price_eur=a.purchase_price_eur,
             current_price=a.current_price,
             total_value=a.quantity * a.current_price if a.current_price else 0,
             purchase_date=a.purchase_date,
@@ -226,6 +236,14 @@ async def create_asset(
     purchase_dt = datetime.strptime(purchase_date_str, "%Y-%m-%d")
     rate = await price_service.get_historical_exchange_rate(purchase_dt, asset.currency or 'EUR', 'EUR')
 
+    if existing:
+        old_quantity = existing.quantity - asset.quantity
+        existing.purchase_price_eur = (
+            old_quantity * (existing.purchase_price_eur or 0.0) + asset.quantity * asset.purchase_price * rate
+        ) / existing.quantity
+    else:
+        db_asset.purchase_price_eur = asset.purchase_price * rate
+
     from app.models.transaction import Transaction, TransactionType
     tx = Transaction(
         id=str(uuid.uuid4()),
@@ -251,6 +269,7 @@ async def create_asset(
         symbol=db_asset.symbol,
         quantity=db_asset.quantity,
         purchase_price=db_asset.purchase_price,
+        purchase_price_eur=db_asset.purchase_price_eur,
         current_price=db_asset.current_price,
         total_value=db_asset.quantity * db_asset.current_price,
         purchase_date=db_asset.purchase_date,
@@ -338,6 +357,7 @@ async def update_asset(
         symbol=db_asset.symbol,
         quantity=db_asset.quantity,
         purchase_price=db_asset.purchase_price,
+        purchase_price_eur=db_asset.purchase_price_eur,
         current_price=db_asset.current_price,
         total_value=db_asset.quantity * db_asset.current_price if db_asset.current_price else 0,
         purchase_date=db_asset.purchase_date,
@@ -533,6 +553,7 @@ async def import_assets(
                 symbol=symbol,
                 quantity=quantity,
                 purchase_price=purchase_price,
+                purchase_price_eur=purchase_price,
                 current_price=current_price,
                 purchase_date=purchase_date,
                 currency="EUR"

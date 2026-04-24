@@ -15,6 +15,7 @@ class AssetCreate(BaseModel):
 class AssetUpdate(BaseModel):
     quantity: Optional[float] = None
     purchase_price: Optional[float] = None
+    purchase_price_eur: Optional[float] = None
 
 class AssetResponse(BaseModel):
     id: str
@@ -23,6 +24,7 @@ class AssetResponse(BaseModel):
     symbol: str
     quantity: float
     purchase_price: float
+    purchase_price_eur: Optional[float] = None
     current_price: float
     total_value: float
     purchase_date: Optional[str] = None

@@ -601,7 +601,14 @@ export default function AssetsPage() {
                           </Badge>
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-right text-text-primary">{asset.quantity}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-right text-text-primary">{formatCurrency(asset.purchase_price, asset.currency)}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-right text-text-primary">
+                          {formatCurrency(asset.purchase_price, asset.currency)}
+                          {asset.purchase_price_eur !== undefined && asset.purchase_price_eur !== asset.purchase_price && (
+                            <div className="text-text-tertiary text-[11px]">
+                              ≈ {formatCurrency(asset.purchase_price_eur, "EUR")}
+                            </div>
+                          )}
+                        </td>
                         <td className="px-4 py-4 whitespace-nowrap text-right text-text-primary">
                           {formatCurrency(asset.current_price, asset.currency)}
                           {lastUpdated && <div className="text-xs text-text-muted">{lastUpdated}</div>}
