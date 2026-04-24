@@ -499,9 +499,9 @@ export default function PortfolioPage() {
                         <div className="flex items-center gap-3">
                           <div className={cn(
                             "w-2 h-8 rounded-full",
-                            row.type === "crypto" && "bg-amber-500",
-                            row.type === "stocks" && "bg-emerald-500",
-                            row.type === "real_estate" && "bg-indigo-500"
+                            row.type === "crypto" && "bg-secondary",
+                            row.type === "stocks" && "bg-gain",
+                            row.type === "real_estate" && "bg-primary"
                           )} />
                           <span className="font-semibold text-text-primary uppercase">
                             {row.symbol}

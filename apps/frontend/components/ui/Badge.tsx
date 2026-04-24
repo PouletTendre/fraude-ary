@@ -3,19 +3,19 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { HTMLAttributes, forwardRef } from "react";
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full px-2.5 py-0.5 text-label font-medium transition-colors uppercase tracking-wide",
+  "inline-flex items-center rounded-full px-[10px] py-[4px] text-label font-medium uppercase tracking-wide transition-colors",
   {
     variants: {
       variant: {
-        default: "bg-surface-raised text-text-secondary border border-border",
-        success: "bg-gain-muted text-gain border border-gain/20",
-        warning: "bg-warning-muted text-warning border border-warning/20",
-        error: "bg-loss-muted text-loss border border-loss/20",
-        info: "bg-primary-subtle text-primary-hover border border-primary/20",
+        gain: "bg-gain-muted text-gain",
+        loss: "bg-loss-muted text-loss",
+        warning: "bg-warning-muted text-warning",
+        info: "bg-primary-subtle text-primary-hover",
+        neutral: "bg-surface-raised text-text-secondary",
       },
     },
     defaultVariants: {
-      variant: "default",
+      variant: "neutral",
     },
   }
 );

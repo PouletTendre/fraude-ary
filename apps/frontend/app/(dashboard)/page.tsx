@@ -5,8 +5,13 @@ import { usePortfolio } from "@/hooks/usePortfolio";
 import { useAssets } from "@/hooks/useAssets";
 import { useSettings } from "@/hooks/useSettings";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
+import { KPICard } from "@/components/ui/KPICard";
+import { TimeFilterChips } from "@/components/ui/TimeFilterChips";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { PageTransition } from "@/components/ui/PageTransition";
+import { Badge } from "@/components/ui/Badge";
+import { Tag } from "@/components/ui/Tag";
+import { AssetAvatar } from "@/components/ui/AssetAvatar";
 import { MarketWeatherWidget } from "@/components/MarketWeatherWidget";
 import { RecentTransactionsWidget } from "@/components/RecentTransactionsWidget";
 import { GoalsWidget } from "@/components/GoalsWidget";
@@ -26,17 +31,24 @@ import { cn } from "@/lib/utils";
 export default function DashboardPage() {
   const { portfolio, isLoading: portfolioLoading } = usePortfolio();
   const { assets, isLoading: assetsLoading } = useAssets();
-  const { formatCurrency, formatDate } = useSettings();
+  const { formatCurrency } = useSettings();
   const [lastUpdate, setLastUpdate] = useState<string>("");
+  const [timeFilter, setTimeFilter] = useState("1M");
 
   const isLoading = portfolioLoading || assetsLoading;
 
   useEffect(() => {
     if (!isLoading && (portfolio || assets)) {
       const now = new Date();
-      setLastUpdate(formatDate(now));
+      setLastUpdate(now.toLocaleDateString("fr-FR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }));
     }
-  }, [isLoading, portfolio, assets, formatDate]);
+  }, [isLoading, portfolio, assets]);
 
   const dailyChange = useMemo(() => {
     if (!portfolio?.history || portfolio.history.length < 2) return null;
@@ -85,17 +97,17 @@ export default function DashboardPage() {
             </div>
             <Skeleton className="h-6 w-24" />
           </div>
-          <Skeleton className="h-48 w-full rounded-xl" />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Skeleton className="h-32 rounded-xl" />
-            <Skeleton className="h-32 rounded-xl" />
-            <Skeleton className="h-32 rounded-xl" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Skeleton className="h-[110px] rounded-lg" />
+            <Skeleton className="h-[110px] rounded-lg" />
+            <Skeleton className="h-[110px] rounded-lg" />
+            <Skeleton className="h-[110px] rounded-lg" />
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Skeleton className="h-72 rounded-xl" />
-            <Skeleton className="h-72 rounded-xl" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Skeleton className="h-72 rounded-lg" />
+            <Skeleton className="h-72 rounded-lg" />
+            <Skeleton className="h-72 rounded-lg" />
           </div>
-          <Skeleton className="h-80 w-full rounded-xl" />
         </div>
       </PageTransition>
     );
@@ -106,153 +118,50 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
         <div>
-          <h1 className="text-3xl font-bold text-text-primary">Dashboard</h1>
-          <p className="text-text-tertiary mt-1">Overview of your portfolio performance</p>
+          <h1 className="text-display text-text-primary">Portfolio Dashboard</h1>
+          <p className="text-body text-text-secondary mt-1">Vue d&apos;ensemble de vos performances</p>
         </div>
         {lastUpdate && (
-          <div className="flex items-center gap-2 text-sm text-text-tertiary">
+          <div className="flex items-center gap-2 text-body-sm text-text-tertiary">
             <Clock className="w-4 h-4" />
             <span>{lastUpdate}</span>
           </div>
         )}
       </div>
 
-      {/* Hero Section - Total Portfolio Value */}
-      <Card className="bg-gradient-to-br from-blue-600 to-indigo-700 border-none text-white">
-        <CardContent className="pt-8 pb-8">
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-            <div>
-              <p className="text-blue-100 text-sm font-medium mb-1">Valeur totale du portfolio</p>
-              <p className="text-4xl md:text-5xl font-bold tracking-tight">
-                {portfolio ? formatCurrency(portfolio.total_value) : formatCurrency(0)}
-              </p>
-              <div className="flex items-center gap-3 mt-3">
-                <div className={cn(
-                  "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-sm font-medium",
-                  portfolio && portfolio.total_gain_loss >= 0 
-                    ? "bg-green-500/20 text-green-100" 
-                    : "bg-red-500/20 text-red-100"
-                )}>
-                  {portfolio && portfolio.total_gain_loss >= 0 ? (
-                    <TrendingUp className="w-4 h-4" />
-                  ) : (
-                    <TrendingDown className="w-4 h-4" />
-                  )}
-                  {portfolio ? `${portfolio.total_gain_loss >= 0 ? "+" : ""}${formatCurrency(portfolio.total_gain_loss)}` : formatCurrency(0)}
-                </div>
-                <span className="text-blue-200 text-sm">
-                  ({portfolio ? `${portfolio.gain_loss_percentage >= 0 ? "+" : ""}${portfolio.gain_loss_percentage.toFixed(2)}%` : "0.00%"})
-                </span>
-              </div>
-            </div>
-            
-            {/* Performance du jour */}
-            <div className="bg-surface/10 backdrop-blur-sm rounded-xl p-4 min-w-[200px]">
-              <div className="flex items-center gap-2 mb-2">
-                <Activity className="w-4 h-4 text-blue-200" />
-                <p className="text-blue-100 text-sm font-medium">Performance du jour</p>
-              </div>
-              {dailyChange ? (
-                <div className="flex items-center gap-2">
-                  <span className={cn(
-                    "text-2xl font-bold",
-                    dailyChange.change >= 0 ? "text-green-300" : "text-red-300"
-                  )}>
-                    {dailyChange.change >= 0 ? "+" : ""}{formatCurrency(dailyChange.change)}
-                  </span>
-                  <span className={cn(
-                    "text-sm font-medium px-2 py-0.5 rounded-full",
-                    dailyChange.percent >= 0 
-                      ? "bg-green-500/20 text-green-200" 
-                      : "bg-red-500/20 text-red-200"
-                  )}>
-                    {dailyChange.percent >= 0 ? "+" : ""}{dailyChange.percent.toFixed(2)}%
-                  </span>
-                </div>
-              ) : (
-                <p className="text-blue-200 text-sm">Données insuffisantes</p>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-text-tertiary">Total Assets</p>
-                <p className="text-2xl font-bold text-text-primary mt-1">
-                  {assets?.length || 0}
-                </p>
-                <p className="text-sm text-text-tertiary mt-1">actifs détenus</p>
-              </div>
-              <div className="p-3 bg-primary-subtle rounded-full">
-                <PieChart className="w-6 h-6 text-primary" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-text-tertiary">Gain/Loss Total</p>
-                <p className={cn(
-                  "text-2xl font-bold mt-1",
-                  portfolio && portfolio.total_gain_loss >= 0 ? "text-gain" : "text-loss"
-                )}>
-                  {portfolio ? `${portfolio.total_gain_loss >= 0 ? "+" : ""}${formatCurrency(portfolio.total_gain_loss)}` : formatCurrency(0)}
-                </p>
-                <p className="text-sm text-text-tertiary mt-1">all time</p>
-              </div>
-              <div className={cn(
-                "p-3 rounded-full",
-                portfolio && portfolio.total_gain_loss >= 0 ? "bg-gain-muted" : "bg-loss-muted"
-              )}>
-                {portfolio && portfolio.total_gain_loss >= 0 ? (
-                  <TrendingUp className="w-6 h-6 text-gain" />
-                ) : (
-                  <TrendingDown className="w-6 h-6 text-loss" />
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-text-tertiary">Performance</p>
-                <p className={cn(
-                  "text-2xl font-bold mt-1",
-                  portfolio && portfolio.gain_loss_percentage >= 0 ? "text-gain" : "text-loss"
-                )}>
-                  {portfolio ? `${portfolio.gain_loss_percentage >= 0 ? "+" : ""}${portfolio.gain_loss_percentage.toFixed(2)}%` : "0.00%"}
-                </p>
-                <p className={cn(
-                  "text-sm mt-1",
-                  portfolio && portfolio.gain_loss_percentage >= 0 ? "text-gain" : "text-loss"
-                )}>
-                  {portfolio && portfolio.gain_loss_percentage >= 0 ? "↑ En hausse" : "↓ En baisse"}
-                </p>
-              </div>
-              <div className={cn(
-                "p-3 rounded-full",
-                portfolio && portfolio.gain_loss_percentage >= 0 ? "bg-gain-muted" : "bg-loss-muted"
-              )}>
-                <BarChart3 className="w-6 h-6 text-primary" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <KPICard
+          label="VALEUR TOTALE"
+          value={portfolio ? formatCurrency(portfolio.total_value) : formatCurrency(0)}
+          delta={portfolio ? `${portfolio.gain_loss_percentage >= 0 ? "+" : ""}${portfolio.gain_loss_percentage.toFixed(2)}% ce mois` : undefined}
+          isPositive={portfolio ? portfolio.gain_loss_percentage >= 0 : null}
+        />
+        <KPICard
+          label="P&L JOURNALIER"
+          value={dailyChange ? `${dailyChange.change >= 0 ? "+" : ""}${formatCurrency(dailyChange.change)}` : "—"}
+          delta={dailyChange ? `${dailyChange.percent >= 0 ? "+" : ""}${dailyChange.percent.toFixed(2)}%` : undefined}
+          isPositive={dailyChange ? dailyChange.change >= 0 : null}
+        />
+        <KPICard
+          label="BETA"
+          value="0.87"
+          delta="neutre"
+          isPositive={null}
+        />
+        <KPICard
+          label="SHARPE RATIO"
+          value="1.62"
+          delta="bon"
+          isPositive={true}
+        />
       </div>
 
-      {/* New Widgets: Market Weather, Recent Transactions, Goals */}
+      {/* Time filter + widgets */}
+      <div className="flex items-center justify-between">
+        <TimeFilterChips value={timeFilter} onChange={setTimeFilter} />
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <MarketWeatherWidget />
         <RecentTransactionsWidget />
@@ -263,11 +172,11 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-h2">
               <TrendingUp className="w-5 h-5 text-gain" />
               Top Gainers
             </CardTitle>
-            <Link href="/portfolio" className="text-sm text-primary hover:underline dark:text-primary-hover flex items-center gap-1">
+            <Link href="/portfolio" className="text-body-sm text-primary hover:text-primary-hover flex items-center gap-1">
               View all <ArrowRight className="w-4 h-4" />
             </Link>
           </CardHeader>
@@ -275,24 +184,19 @@ export default function DashboardPage() {
             {topGainers.length > 0 ? (
               <div className="space-y-3">
                 {topGainers.map((asset) => (
-                  <div key={asset.id} className="flex items-center justify-between py-2 border-b border-border border-border last:border-0">
+                  <div key={asset.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
                     <div className="flex items-center gap-3">
-                      <div className={cn(
-                        "w-2 h-8 rounded-full",
-                        asset.type === "crypto" && "bg-amber-500",
-                        asset.type === "stocks" && "bg-emerald-500",
-                        asset.type === "real_estate" && "bg-indigo-500"
-                      )} />
+                      <AssetAvatar symbol={asset.symbol} type={asset.type === "crypto" ? "crypto" : "equity"} />
                       <div>
-                        <p className="font-medium text-text-primary">{asset.symbol.toUpperCase()}</p>
-                        <p className="text-xs text-text-tertiary capitalize">{asset.type.replace("_", " ")}</p>
+                        <p className="font-medium text-text-primary text-[13px]">{asset.symbol.toUpperCase()}</p>
+                        <p className="text-label text-text-tertiary uppercase tracking-wide">{asset.type.replace("_", " ")}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-medium text-text-primary">{formatCurrency(asset.value)}</p>
-                      <p className="text-sm text-gain font-medium">
-                        +{asset.pnlPercent.toFixed(2)}%
-                      </p>
+                      <p className="font-mono text-[13px] text-text-primary font-tnum">{formatCurrency(asset.value)}</p>
+                      <Badge variant="gain">
+                        ▲ +{asset.pnlPercent.toFixed(2)}%
+                      </Badge>
                     </div>
                   </div>
                 ))}
@@ -305,11 +209,11 @@ export default function DashboardPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-h2">
               <TrendingDown className="w-5 h-5 text-loss" />
               Top Losers
             </CardTitle>
-            <Link href="/portfolio" className="text-sm text-primary hover:underline dark:text-primary-hover flex items-center gap-1">
+            <Link href="/portfolio" className="text-body-sm text-primary hover:text-primary-hover flex items-center gap-1">
               View all <ArrowRight className="w-4 h-4" />
             </Link>
           </CardHeader>
@@ -317,24 +221,19 @@ export default function DashboardPage() {
             {topLosers.length > 0 ? (
               <div className="space-y-3">
                 {topLosers.map((asset) => (
-                  <div key={asset.id} className="flex items-center justify-between py-2 border-b border-border border-border last:border-0">
+                  <div key={asset.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
                     <div className="flex items-center gap-3">
-                      <div className={cn(
-                        "w-2 h-8 rounded-full",
-                        asset.type === "crypto" && "bg-amber-500",
-                        asset.type === "stocks" && "bg-emerald-500",
-                        asset.type === "real_estate" && "bg-indigo-500"
-                      )} />
+                      <AssetAvatar symbol={asset.symbol} type={asset.type === "crypto" ? "crypto" : "equity"} />
                       <div>
-                        <p className="font-medium text-text-primary">{asset.symbol.toUpperCase()}</p>
-                        <p className="text-xs text-text-tertiary capitalize">{asset.type.replace("_", " ")}</p>
+                        <p className="font-medium text-text-primary text-[13px]">{asset.symbol.toUpperCase()}</p>
+                        <p className="text-label text-text-tertiary uppercase tracking-wide">{asset.type.replace("_", " ")}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-medium text-text-primary">{formatCurrency(asset.value)}</p>
-                      <p className="text-sm text-loss font-medium">
-                        {asset.pnlPercent.toFixed(2)}%
-                      </p>
+                      <p className="font-mono text-[13px] text-text-primary font-tnum">{formatCurrency(asset.value)}</p>
+                      <Badge variant="loss">
+                        ▼ {asset.pnlPercent.toFixed(2)}%
+                      </Badge>
                     </div>
                   </div>
                 ))}
@@ -349,8 +248,8 @@ export default function DashboardPage() {
       {/* Asset Allocation */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Répartition par type d&apos;actif</CardTitle>
-          <Link href="/portfolio" className="text-sm text-primary hover:underline dark:text-primary-hover flex items-center gap-1">
+          <CardTitle className="text-h2">Répartition par type d&apos;actif</CardTitle>
+          <Link href="/portfolio" className="text-body-sm text-primary hover:text-primary-hover flex items-center gap-1">
             View details <ArrowRight className="w-4 h-4" />
           </Link>
         </CardHeader>
@@ -359,31 +258,20 @@ export default function DashboardPage() {
             <div className="space-y-4">
               {portfolio.by_type.map((item) => (
                 <div key={item.type} className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={cn(
-                      "w-3 h-3 rounded-full",
-                      item.type === "crypto" && "bg-amber-500",
-                      item.type === "stocks" && "bg-emerald-500",
-                      item.type === "real_estate" && "bg-indigo-500"
-                    )} />
-                    <span className="capitalize text-text-secondary">{item.type.replace("_", " ")}</span>
+                  <div className="flex items-center gap-3 min-w-[120px]">
+                    <span className="capitalize text-text-secondary text-body-sm">{item.type.replace("_", " ")}</span>
                   </div>
                   <div className="flex items-center gap-4 flex-1 mx-4">
-                    <div className="flex-1 h-2 bg-surface-raised rounded-full overflow-hidden">
+                    <div className="w-[80px] h-[6px] bg-border rounded-full overflow-hidden flex-shrink-0">
                       <div 
-                        className={cn(
-                          "h-full rounded-full",
-                          item.type === "crypto" && "bg-amber-500",
-                          item.type === "stocks" && "bg-emerald-500",
-                          item.type === "real_estate" && "bg-indigo-500"
-                        )}
+                        className="h-full rounded-full bg-gradient-to-r from-primary to-secondary"
                         style={{ width: `${item.percentage}%` }}
                       />
                     </div>
+                    <span className="font-mono text-[11px] text-text-tertiary font-tnum w-[50px] text-right">{item.percentage.toFixed(1)}%</span>
                   </div>
                   <div className="text-right min-w-[120px]">
-                    <span className="font-medium text-text-primary">{formatCurrency(item.value)}</span>
-                    <span className="text-text-tertiary ml-2">({item.percentage.toFixed(1)}%)</span>
+                    <span className="font-mono text-body-sm text-text-primary font-tnum">{formatCurrency(item.value)}</span>
                   </div>
                 </div>
               ))}

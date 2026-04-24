@@ -502,7 +502,7 @@ export default function AssetsPage() {
                 <button
                   onClick={handleBulkDelete}
                   disabled={isBulkDeleting}
-                  className="text-loss hover:text-red-800 dark:text-loss dark:hover:text-red-300 text-sm disabled:opacity-50"
+                  className="text-loss hover:text-red-800 dark:text-loss dark:hover:text-loss text-sm disabled:opacity-50"
                 >
                   {isBulkDeleting ? "Deleting..." : `Delete ${selectedAssets.size} selected`}
                 </button>
@@ -621,7 +621,7 @@ export default function AssetsPage() {
                           <button
                             onClick={() => handleDelete(asset.id)}
                             disabled={isDeleting}
-                            className="text-loss hover:text-red-800 dark:text-loss dark:hover:text-red-300 text-sm disabled:opacity-50"
+                            className="text-loss hover:text-red-800 dark:text-loss dark:hover:text-loss text-sm disabled:opacity-50"
                           >
                             {isDeleting ? "Deleting..." : "Delete"}
                           </button>
