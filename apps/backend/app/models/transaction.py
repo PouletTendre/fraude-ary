@@ -16,7 +16,7 @@ class Transaction(Base):
     symbol = Column(String, nullable=False)
     quantity = Column(Float, nullable=False)
     unit_price = Column(Float, nullable=False)
-    currency = Column(String, default="USD")
+    currency = Column(String, default="EUR")
     exchange_rate = Column(Float, default=1.0)
     fees = Column(Float, default=0.0)
     total_invested = Column(Float, nullable=False)

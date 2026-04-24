@@ -11,4 +11,4 @@ class ExchangeRateResponse(BaseModel):
 
 class ExchangeRatesListResponse(BaseModel):
     rates: List[ExchangeRateResponse]
-    base_currency: str = "USD"
+    base_currency: str = "EUR"

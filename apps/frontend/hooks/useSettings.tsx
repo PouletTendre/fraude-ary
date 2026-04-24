@@ -19,7 +19,7 @@ interface SettingsContextType {
 }
 
 const defaultSettings: Settings = {
-  currency: "USD",
+  currency: "EUR",
   dateFormat: "fr",
 };
 

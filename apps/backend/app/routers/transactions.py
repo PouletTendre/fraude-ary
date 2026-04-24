@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import List
+from datetime import datetime
 import uuid
 import logging
 
@@ -51,6 +52,11 @@ async def create_transaction(
 ):
     from app.models.transaction import TransactionType
     tx_type = TransactionType(transaction.type)
+
+    tx_date = datetime.strptime(transaction.date, "%Y-%m-%d")
+    exchange_rate = await price_service.get_historical_exchange_rate(tx_date, transaction.currency, "EUR")
+    total_invested = transaction.quantity * transaction.unit_price * exchange_rate
+
     tx = Transaction(
         id=str(uuid.uuid4()),
         user_email=current_user.email,
@@ -60,9 +66,9 @@ async def create_transaction(
         quantity=transaction.quantity,
         unit_price=transaction.unit_price,
         currency=transaction.currency,
-        exchange_rate=transaction.exchange_rate,
+        exchange_rate=exchange_rate,
         fees=transaction.fees,
-        total_invested=transaction.total_invested,
+        total_invested=total_invested,
         date=transaction.date
     )
     db.add(tx)
@@ -72,6 +78,15 @@ async def create_transaction(
     if transaction.asset_id:
         result = await db.execute(
             select(Asset).where(Asset.id == transaction.asset_id, Asset.user_email == current_user.email)
+        )
+        asset = result.scalar_one_or_none()
+    if not asset and transaction.asset_type:
+        result = await db.execute(
+            select(Asset).where(
+                Asset.user_email == current_user.email,
+                Asset.symbol == transaction.symbol.upper(),
+                Asset.type == AssetType(transaction.asset_type)
+            )
         )
         asset = result.scalar_one_or_none()
     if not asset:
@@ -177,14 +192,16 @@ async def update_transaction(
         tx.unit_price = update.unit_price
     if update.currency is not None:
         tx.currency = update.currency
-    if update.exchange_rate is not None:
-        tx.exchange_rate = update.exchange_rate
     if update.fees is not None:
         tx.fees = update.fees
-    if update.total_invested is not None:
-        tx.total_invested = update.total_invested
     if update.date is not None:
         tx.date = update.date
+
+    # Recalculate exchange_rate and total_invested server-side if relevant fields changed
+    if update.date is not None or update.currency is not None or update.quantity is not None or update.unit_price is not None:
+        tx_date = datetime.strptime(tx.date, "%Y-%m-%d")
+        tx.exchange_rate = await price_service.get_historical_exchange_rate(tx_date, tx.currency, "EUR")
+        tx.total_invested = tx.quantity * tx.unit_price * tx.exchange_rate
 
     new_type = tx.type.value if hasattr(tx.type, 'value') else str(tx.type)
     new_symbol = tx.symbol
@@ -225,6 +242,15 @@ async def update_transaction(
     if new_asset_id:
         result = await db.execute(
             select(Asset).where(Asset.id == new_asset_id, Asset.user_email == current_user.email)
+        )
+        target_asset = result.scalar_one_or_none()
+    if not target_asset and update.asset_type is not None:
+        result = await db.execute(
+            select(Asset).where(
+                Asset.user_email == current_user.email,
+                Asset.symbol == new_symbol.upper(),
+                Asset.type == AssetType(update.asset_type)
+            )
         )
         target_asset = result.scalar_one_or_none()
     if not target_asset:

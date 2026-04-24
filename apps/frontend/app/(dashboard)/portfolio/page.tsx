@@ -187,7 +187,7 @@ export default function PortfolioPage() {
               <div>
                 <p className="text-sm text-text-tertiary">Total Value</p>
                 <p className="text-2xl font-bold text-text-primary mt-1">
-                  {formatCurrency(portfolio.total_value, "USD")}
+                  {formatCurrency(portfolio.total_value, "EUR")}
                 </p>
               </div>
               <div className="p-3 bg-primary-subtle rounded-full">
@@ -202,7 +202,7 @@ export default function PortfolioPage() {
               <div>
                 <p className="text-sm text-text-tertiary">Total Gain/Loss</p>
                 <p className={`text-2xl font-bold mt-1 ${portfolio.total_gain_loss >= 0 ? "text-gain" : "text-loss"}`}>
-                  {portfolio.total_gain_loss >= 0 ? "+" : ""}{formatCurrency(portfolio.total_gain_loss, "USD")}
+                  {portfolio.total_gain_loss >= 0 ? "+" : ""}{formatCurrency(portfolio.total_gain_loss, "EUR")}
                 </p>
                 {portfolio.total_gain_loss >= 0 ? (
                   <TrendingUp className="w-4 h-4 text-gain inline mr-1" />
@@ -271,11 +271,11 @@ export default function PortfolioPage() {
                       <Cell key={entry.type} fill={TYPE_COLORS[entry.type] || "#9CA3AF"} />
                     ))}
                   </Pie>
-                  <Tooltip 
+                  <Tooltip
                     formatter={(value: number, name: string) => [
-                      formatCurrency(value, "USD"), 
+                      formatCurrency(value, "EUR"),
                       TYPE_LABELS[name] || name
-                    ]} 
+                    ]}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -283,7 +283,7 @@ export default function PortfolioPage() {
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                 <p className="text-xs text-text-tertiary">Total</p>
                 <p className="text-lg font-bold text-text-primary">
-                  {formatCurrency(portfolio.total_value, "USD")}
+                  {formatCurrency(portfolio.total_value, "EUR")}
                 </p>
               </div>
             </div>
@@ -309,7 +309,7 @@ export default function PortfolioPage() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={portfolio.by_type} layout="vertical" margin={{ top: 10, right: 10, left: 60, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E5E7EB" />
-                  <XAxis type="number" stroke="#9CA3AF" fontSize={12} tickFormatter={(v) => formatCurrency(v, "USD")} />
+                  <XAxis type="number" stroke="#9CA3AF" fontSize={12} tickFormatter={(v) => formatCurrency(v, "EUR")} />
                   <YAxis 
                     type="category" 
                     dataKey="type" 
@@ -317,7 +317,7 @@ export default function PortfolioPage() {
                     fontSize={12} 
                     tickFormatter={(v) => TYPE_LABELS[v] || v.replace("_", " ")} 
                   />
-                  <Tooltip formatter={(value: number) => formatCurrency(value, "USD")} />
+                  <Tooltip formatter={(value: number) => formatCurrency(value, "EUR")} />
                   <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={32}>
                     {portfolio.by_type.map((entry) => (
                       <Cell key={entry.type} fill={TYPE_COLORS[entry.type] || "#9CA3AF"} />
@@ -415,11 +415,11 @@ export default function PortfolioPage() {
                     <YAxis
                       stroke="#9CA3AF"
                       fontSize={12}
-                      tickFormatter={(v) => formatCurrency(v, "USD")}
+                      tickFormatter={(v) => formatCurrency(v, "EUR")}
                       width={80}
                     />
                     <Tooltip
-                      formatter={(value: number) => [formatCurrency(value, "USD"), "Valeur"]}
+                      formatter={(value: number) => [formatCurrency(value, "EUR"), "Valeur"]}
                       labelFormatter={(label) => {
                         const date = new Date(label);
                         return date.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });

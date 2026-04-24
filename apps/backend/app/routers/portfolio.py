@@ -21,8 +21,8 @@ from app.services.price_service import price_service, get_exchange_rates
 router = APIRouter()
 
 
-def _to_usd(amount: float, currency: str, rates: dict) -> float:
-    if currency == "USD" or not currency:
+def _to_eur(amount: float, currency: str, rates: dict) -> float:
+    if currency == "EUR" or not currency:
         return amount
     rate = rates.get(currency)
     if not rate:
@@ -40,16 +40,18 @@ async def _get_portfolio_history(
     )
     assets = asset_result.scalars().all()
 
+    rates = await get_exchange_rates()
+
     def _compute_invested(day) -> float:
         total = 0.0
         for a in assets:
             qty_price = a.quantity * a.purchase_price
             if a.purchase_date is None:
-                total += _to_usd(qty_price, a.currency, rates)
+                total += _to_eur(qty_price, a.currency, rates)
             else:
                 pd = datetime.strptime(a.purchase_date, "%Y-%m-%d").date()
                 if pd <= day:
-                    total += _to_usd(qty_price, a.currency, rates)
+                    total += _to_eur(qty_price, a.currency, rates)
         return total
 
     snapshot_result = await db.execute(
@@ -95,8 +97,6 @@ async def _get_portfolio_history(
     from collections import defaultdict
     asset_map = {a.id: a for a in assets}
 
-    rates = await get_exchange_rates()
-
     # Track latest price per asset per day to avoid double-counting
     daily_asset_prices: dict = defaultdict(dict)
     for entry in price_history_entries:
@@ -111,7 +111,7 @@ async def _get_portfolio_history(
         for aid, price in asset_prices.items():
             asset = asset_map.get(aid)
             if asset:
-                total += _to_usd(asset.quantity * price, asset.currency, rates)
+                total += _to_eur(asset.quantity * price, asset.currency, rates)
         daily_values[day] = total
 
     # Add current portfolio value for today if missing
@@ -121,7 +121,7 @@ async def _get_portfolio_history(
         current_price = await price_service.get_price(asset_type_str, asset.symbol)
         if current_price is None:
             current_price = asset.current_price
-        total_current += _to_usd(asset.quantity * current_price, asset.currency, rates)
+        total_current += _to_eur(asset.quantity * current_price, asset.currency, rates)
 
     today = datetime.utcnow().date()
     if today not in daily_values and total_current > 0:
@@ -164,8 +164,8 @@ async def get_portfolio_summary(
         else:
             asset.current_price = current_price
         total_asset_value_native = asset.quantity * current_price
-        total_asset_value = _to_usd(total_asset_value_native, asset.currency, rates)
-        cost_basis = _to_usd(asset.quantity * asset.purchase_price, asset.currency, rates)
+        total_asset_value = _to_eur(total_asset_value_native, asset.currency, rates)
+        cost_basis = _to_eur(asset.quantity * asset.purchase_price, asset.currency, rates)
         total_value += total_asset_value
         total_cost += cost_basis
         if asset_type_str == "crypto":
@@ -184,7 +184,7 @@ async def get_portfolio_summary(
             current_price=current_price,
             total_value=total_asset_value_native,
             purchase_date=asset.purchase_date,
-            currency=asset.currency or 'USD',
+            currency=asset.currency or 'EUR',
             created_at=asset.created_at
         ))
     # Compute history from the oldest purchase date so the chart shows full range
@@ -315,8 +315,8 @@ async def get_portfolio_statistics(
         current_price = await price_service.get_price(asset_type_str, asset.symbol)
         if current_price is None:
             current_price = asset.current_price
-        current_value = _to_usd(asset.quantity * current_price, asset.currency, rates)
-        cost_basis = _to_usd(asset.quantity * asset.purchase_price, asset.currency, rates)
+        current_value = _to_eur(asset.quantity * current_price, asset.currency, rates)
+        cost_basis = _to_eur(asset.quantity * asset.purchase_price, asset.currency, rates)
         total_value += current_value
         total_cost += cost_basis
         return_amount = current_value - cost_basis
@@ -382,8 +382,8 @@ async def export_portfolio(
         current_price = await price_service.get_price(asset_type_str, asset.symbol)
         if current_price is None:
             current_price = asset.current_price
-        current_value = _to_usd(asset.quantity * current_price, asset.currency, rates)
-        cost_basis = _to_usd(asset.quantity * asset.purchase_price, asset.currency, rates)
+        current_value = _to_eur(asset.quantity * current_price, asset.currency, rates)
+        cost_basis = _to_eur(asset.quantity * asset.purchase_price, asset.currency, rates)
         portfolio_data.append({
             "id": asset.id,
             "type": asset_type_str,
@@ -446,8 +446,8 @@ async def get_benchmark_comparison(
         current_price = await price_service.get_price(asset_type_str, asset.symbol)
         if current_price is None:
             current_price = asset.current_price
-        total_cost += _to_usd(asset.quantity * asset.purchase_price, asset.currency, rates)
-        total_value += _to_usd(asset.quantity * current_price, asset.currency, rates)
+        total_cost += _to_eur(asset.quantity * asset.purchase_price, asset.currency, rates)
+        total_value += _to_eur(asset.quantity * current_price, asset.currency, rates)
 
     portfolio_return = ((total_value - total_cost) / total_cost * 100) if total_cost > 0 else 0.0
 
@@ -475,8 +475,8 @@ async def get_benchmark_comparison(
             current_price = await price_service.get_price(asset_type_str, asset.symbol)
             if current_price is None:
                 current_price = asset.current_price
-            cost = _to_usd(asset.quantity * asset.purchase_price, asset.currency, rates)
-            value = _to_usd(asset.quantity * current_price, asset.currency, rates)
+            cost = _to_eur(asset.quantity * asset.purchase_price, asset.currency, rates)
+            value = _to_eur(asset.quantity * current_price, asset.currency, rates)
             weight = value / total_value if total_value > 0 else 0
             ret = ((value - cost) / cost) if cost > 0 else 0
             asset_returns.append(ret)

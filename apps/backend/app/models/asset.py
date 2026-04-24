@@ -18,7 +18,7 @@ class Asset(Base):
     purchase_price = Column(Float, nullable=False)
     current_price = Column(Float, default=0.0)
     purchase_date = Column(String, nullable=True)
-    currency = Column(String, default="USD")
+    currency = Column(String, default="EUR")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 

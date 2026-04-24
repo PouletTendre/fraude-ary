@@ -10,7 +10,7 @@ class AssetCreate(BaseModel):
     purchase_price: float
     name: Optional[str] = None
     purchase_date: Optional[str] = None
-    currency: Optional[str] = "USD"
+    currency: Optional[str] = "EUR"
 
 class AssetUpdate(BaseModel):
     quantity: Optional[float] = None

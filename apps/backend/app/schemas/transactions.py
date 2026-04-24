@@ -9,7 +9,7 @@ class TransactionCreate(BaseModel):
     symbol: str
     quantity: float
     unit_price: float
-    currency: str = "USD"
+    currency: str = "EUR"
     exchange_rate: float = 1.0
     fees: float = 0.0
     total_invested: float

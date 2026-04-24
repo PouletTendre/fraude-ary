@@ -270,6 +270,69 @@ class PriceService:
         await db.commit()
         return inserted
 
+    async def get_historical_exchange_rate(self, date: datetime, from_currency: str, to_currency: str = "EUR") -> float:
+        if from_currency.upper() == to_currency.upper():
+            return 1.0
+
+        date_str = date.strftime("%Y-%m-%d") if hasattr(date, "strftime") else str(date)
+        cache_key = f"historical_rate:{date_str}:{from_currency.upper()}:{to_currency.upper()}"
+
+        try:
+            cached = await cache_service.get(cache_key)
+            if cached is not None and isinstance(cached, dict):
+                rate = cached.get("rate")
+                if rate is not None:
+                    return float(rate)
+        except Exception as e:
+            logging.warning(f"Redis cache miss for historical rate: {e}")
+
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                url = f"https://api.frankfurter.app/{date_str}"
+                params = {"from": from_currency.upper(), "to": to_currency.upper()}
+                resp = await client.get(url, params=params)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    rates = data.get("rates", {})
+                    rate = rates.get(to_currency.upper())
+                    if rate is not None and rate > 0:
+                        try:
+                            await cache_service.set(cache_key, {"rate": rate}, ttl=86400)
+                        except Exception as e:
+                            logging.warning(f"Redis cache set for historical rate failed: {e}")
+                        return float(rate)
+        except Exception as e:
+            logging.warning(f"Frankfurter historical API failed for {date_str} {from_currency}->{to_currency}: {e}")
+
+        # Fallback to current rates
+        try:
+            rates = await get_exchange_rates()
+            from_rate = rates.get(from_currency.upper())
+            to_rate = rates.get(to_currency.upper())
+            if from_rate and to_rate and from_rate > 0:
+                return to_rate / from_rate
+        except Exception as e:
+            logging.warning(f"Current rate fallback failed: {e}")
+
+        # Hardcoded fallback
+        fallback_rates: Dict[Tuple[str, str], float] = {
+            ("USD", "EUR"): 0.9234,
+            ("EUR", "USD"): 1.083,
+            ("GBP", "EUR"): 1.18,
+            ("EUR", "GBP"): 0.847,
+            ("JPY", "EUR"): 0.0061,
+            ("EUR", "JPY"): 164.0,
+            ("CHF", "EUR"): 1.06,
+            ("EUR", "CHF"): 0.94,
+            ("USD", "GBP"): 0.782,
+            ("GBP", "USD"): 1.278,
+        }
+        rate = fallback_rates.get((from_currency.upper(), to_currency.upper()))
+        if rate:
+            return rate
+
+        return 1.0
+
     async def auto_refresh_all_prices(self, db: AsyncSession) -> Dict[str, Any]:
         from app.models.asset import Asset
         result = await db.execute(select(Asset))
@@ -301,8 +364,8 @@ async def get_exchange_rates() -> Dict[str, float]:
     return await fetch_and_update_rates()
 
 
-async def convert_to_usd(amount: float, currency: str, db: AsyncSession = None) -> float:
-    if currency == "USD" or not currency:
+async def convert_to_eur(amount: float, currency: str, db: AsyncSession = None) -> float:
+    if currency == "EUR" or not currency:
         return amount
     rates = await get_exchange_rates()
     rate = rates.get(currency)

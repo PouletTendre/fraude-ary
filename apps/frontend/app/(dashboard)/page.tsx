@@ -167,7 +167,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[12px]">
           <KPICard
             label="Valeur totale"
-            value={portfolio ? formatCurrency(portfolio.total_value, "USD") : "—"}
+            value={portfolio ? formatCurrency(portfolio.total_value, "EUR") : "—"}
             delta={
               portfolio
                 ? `${portfolio.gain_loss_percentage >= 0 ? "+" : ""}${portfolio.gain_loss_percentage.toFixed(2)}% ce mois`
@@ -181,7 +181,7 @@ export default function DashboardPage() {
             label="P&L journalier"
             value={
               dailyChange
-                ? `${dailyChange.change >= 0 ? "+" : ""}${formatCurrency(dailyChange.change, "USD")}`
+                ? `${dailyChange.change >= 0 ? "+" : ""}${formatCurrency(dailyChange.change, "EUR")}`
                 : "—"
             }
             delta={

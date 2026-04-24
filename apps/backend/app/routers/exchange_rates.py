@@ -12,14 +12,14 @@ from app.services.cache_service import cache_service
 router = APIRouter()
 
 DEFAULT_RATES = {
-    "USD": 1.0,
-    "EUR": 0.92,
-    "GBP": 0.79,
-    "JPY": 150.0,
-    "CHF": 0.88,
+    "EUR": 1.0,
+    "USD": 1.087,
+    "GBP": 0.85,
+    "JPY": 162.0,
+    "CHF": 0.95,
 }
 
-EXCHANGE_RATE_API_URL = "https://api.exchangerate-api.com/v4/latest/USD"
+EXCHANGE_RATE_API_URL = "https://api.frankfurter.app/latest?from=EUR"
 REDIS_KEY = "exchange_rates"
 CACHE_TTL = 3600
 
@@ -50,8 +50,8 @@ async def fetch_and_update_rates() -> dict:
                 data = resp.json()
                 api_rates = data.get("rates", {})
                 rates = {
-                    "USD": 1.0,
-                    "EUR": api_rates.get("EUR", DEFAULT_RATES["EUR"]),
+                    "EUR": 1.0,
+                    "USD": api_rates.get("USD", DEFAULT_RATES["USD"]),
                     "GBP": api_rates.get("GBP", DEFAULT_RATES["GBP"]),
                     "JPY": api_rates.get("JPY", DEFAULT_RATES["JPY"]),
                     "CHF": api_rates.get("CHF", DEFAULT_RATES["CHF"]),
@@ -96,7 +96,7 @@ async def get_exchange_rates(db: AsyncSession = Depends(get_db)):
         db_rates = result.scalars().all()
 
     return ExchangeRatesListResponse(
-        base_currency="USD",
+        base_currency="EUR",
         rates=[
             ExchangeRateResponse(
                 currency=r.currency,

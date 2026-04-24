@@ -52,7 +52,7 @@ async def list_all_assets(
             current_price=a.current_price,
             total_value=a.quantity * a.current_price if a.current_price else 0,
             purchase_date=a.purchase_date,
-            currency=a.currency or 'USD',
+            currency=a.currency or 'EUR',
             created_at=a.created_at
         )
         for a in assets
@@ -85,7 +85,7 @@ async def get_assets(
             current_price=a.current_price,
             total_value=a.quantity * a.current_price if a.current_price else 0,
             purchase_date=a.purchase_date,
-            currency=a.currency or 'USD',
+            currency=a.currency or 'EUR',
             created_at=a.created_at
         )
         for a in assets
@@ -111,7 +111,7 @@ async def create_asset(
         purchase_price=asset.purchase_price,
         current_price=current_price,
         purchase_date=asset.purchase_date,
-        currency=asset.currency or 'USD'
+        currency=asset.currency or 'EUR'
     )
     db.add(db_asset)
     await db.commit()
@@ -127,9 +127,9 @@ async def create_asset(
             logging.warning(f"Failed to backfill history for {db_asset.symbol}: {e}")
 
     # Create transaction
-    from app.services.price_service import get_exchange_rates
-    rates = await get_exchange_rates()
-    rate = rates.get(asset.currency or 'USD', 1.0)
+    purchase_date_str = db_asset.purchase_date or datetime.utcnow().strftime("%Y-%m-%d")
+    purchase_dt = datetime.strptime(purchase_date_str, "%Y-%m-%d")
+    rate = await price_service.get_historical_exchange_rate(purchase_dt, asset.currency or 'EUR', 'EUR')
 
     from app.models.transaction import Transaction, TransactionType
     tx = Transaction(
@@ -140,11 +140,11 @@ async def create_asset(
         symbol=db_asset.symbol,
         quantity=db_asset.quantity,
         unit_price=db_asset.purchase_price,
-        currency=asset.currency or 'USD',
+        currency=asset.currency or 'EUR',
         exchange_rate=rate,
         fees=0.0,
-        total_invested=db_asset.quantity * db_asset.purchase_price,
-        date=db_asset.purchase_date or datetime.utcnow().strftime("%Y-%m-%d")
+        total_invested=db_asset.quantity * db_asset.purchase_price * rate,
+        date=purchase_date_str
     )
     db.add(tx)
     await db.commit()
@@ -246,7 +246,7 @@ async def update_asset(
         current_price=db_asset.current_price,
         total_value=db_asset.quantity * db_asset.current_price if db_asset.current_price else 0,
         purchase_date=db_asset.purchase_date,
-        currency=db_asset.currency or 'USD',
+        currency=db_asset.currency or 'EUR',
         created_at=db_asset.created_at
     )
 
@@ -440,7 +440,7 @@ async def import_assets(
                 purchase_price=purchase_price,
                 current_price=current_price,
                 purchase_date=purchase_date,
-                currency="USD"
+                currency="EUR"
             )
             db.add(db_asset)
             imported_count += 1
