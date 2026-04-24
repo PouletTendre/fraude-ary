@@ -6,6 +6,8 @@ from datetime import datetime
 import uuid
 import csv
 import io
+import httpx
+import logging
 
 from app.database import get_db
 from app.models.user import User
@@ -109,6 +111,35 @@ async def list_all_assets(
         )
         for a in assets
     ]
+
+@router.get("/search/symbols")
+async def search_symbols(q: str = Query(..., min_length=1)):
+    try:
+        async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
+            resp = await client.get(
+                "https://query1.finance.yahoo.com/v1/finance/search",
+                params={"q": q, "quotesCount": 10, "newsCount": 0},
+                headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            quotes = data.get("quotes", [])
+            results = []
+            for quote in quotes:
+                qtype = quote.get("quoteType", "")
+                asset_type = "stocks"
+                if qtype == "CRYPTOCURRENCY":
+                    asset_type = "crypto"
+                results.append({
+                    "symbol": quote.get("symbol"),
+                    "name": quote.get("shortname") or quote.get("longname") or quote.get("symbol"),
+                    "type": asset_type,
+                    "exchange": quote.get("exchange"),
+                })
+            return results
+    except Exception as e:
+        logging.warning(f"Yahoo search failed: {e}")
+        return []
 
 @router.put("/{asset_id}", response_model=AssetResponse)
 async def update_asset(

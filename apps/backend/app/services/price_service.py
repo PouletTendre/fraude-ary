@@ -1,186 +1,110 @@
 import asyncio
 import httpx
 import logging
-import random
 import uuid
-import yfinance
-from typing import Optional, Dict, List, Tuple, Any
-from datetime import datetime, timedelta
+from typing import Optional, Dict, List, Any
+from datetime import datetime
 from app.services.cache_service import cache_service
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-COINGECKO_API = "https://api.coingecko.com/api/v3"
+CRYPTO_COMPARE_API = "https://min-api.cryptocompare.com/data"
+YAHOO_CHART_API = "https://query1.finance.yahoo.com/v8/finance/chart"
 
-CRYPTO_SYMBOL_MAP = {
-    "btc": "bitcoin",
-    "eth": "ethereum",
-    "usdt": "tether",
-    "bnb": "binancecoin",
-    "xrp": "ripple",
-    "ada": "cardano",
-    "doge": "dogecoin",
-    "sol": "solana",
-    "dot": "polkadot",
-    "matic": "matic-network",
-}
-
-STOCK_SYMBOL_MAP = {
-    "aapl": "AAPL",
-    "googl": "GOOGL",
-    "msft": "MSFT",
-    "amzn": "AMZN",
-    "tsla": "TSLA",
-    "meta": "META",
-    "nvda": "NVDA",
-    "gme": "GME",
-    "amc": "AMC",
-}
-
-STOCK_FALLBACK_PRICES = {
-    "aapl": (185, 195),
-    "tsla": (170, 250),
-    "nvda": (450, 500),
-    "googl": (140, 150),
-    "msft": (370, 400),
-    "amzn": (170, 185),
-    "meta": (480, 520),
-    "gme": (15, 25),
-    "amc": (4, 6),
-}
-
-REAL_ESTATE_SYMBOL_MAP = {
-    "paris": "PARIS_CENTRAL",
-    "lyon": "LYON",
-    "banlieue": "SUBURBS",
-    "bordeaux": "BORDEAUX",
-    "marseille": "MARSEILLE",
-}
-
-REAL_ESTATE_FALLBACK_PRICES = {
-    "paris": (5000, 15000),
-    "lyon": (3000, 8000),
-    "banlieue": (2000, 5000),
-    "bordeaux": (2500, 6000),
-    "marseille": (2000, 5500),
+# Fixed real estate prices per city (EUR/m2)
+REAL_ESTATE_PRICES = {
+    "paris": 12500,
+    "lyon": 5500,
+    "marseille": 4200,
+    "bordeaux": 4800,
+    "nice": 6000,
+    "london": 15000,
+    "newyork": 18000,
+    "miami": 7000,
+    "tokyo": 9000,
+    "dubai": 5000,
 }
 
 class PriceService:
     async def get_crypto_price(self, symbol: str) -> Optional[float]:
-        cached = await cache_service.get_crypto_price(symbol)
+        symbol_upper = symbol.upper()
+        cached = await cache_service.get_crypto_price(symbol_upper)
         if cached:
             return cached
 
-        coingecko_id = CRYPTO_SYMBOL_MAP.get(symbol.lower())
-        if not coingecko_id:
-            return None
-
         try:
-            async with httpx.AsyncClient() as client:
-                response = await client.get(
-                    f"{COINGECKO_API}/simple/price",
-                    params={
-                        "ids": coingecko_id,
-                        "vs_currencies": "usd"
-                    },
-                    timeout=10.0
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                resp = await client.get(
+                    f"{CRYPTO_COMPARE_API}/price",
+                    params={"fsym": symbol_upper, "tsyms": "USD"}
                 )
-                if response.status_code == 200:
-                    data = response.json()
-                    price = data.get(coingecko_id, {}).get("usd")
-                    if price:
-                        await cache_service.set_crypto_price(symbol, price)
-                        ohlc = self._generate_ohlc(price)
-                        await cache_service.set_price_history(symbol, "crypto", ohlc)
-                    return price
-        except Exception:
-            return None
+                if resp.status_code == 200:
+                    data = resp.json()
+                    price = data.get("USD")
+                    if price and price > 0:
+                        await cache_service.set_crypto_price(symbol_upper, price)
+                        return price
+        except Exception as e:
+            logging.warning(f"CryptoCompare failed for {symbol_upper}: {e}")
+
         return None
 
     async def get_stock_price(self, symbol: str) -> Optional[float]:
-        cached = await cache_service.get_stock_price(symbol)
+        symbol_upper = symbol.upper()
+        cached = await cache_service.get_stock_price(symbol_upper)
         if cached:
             return cached
 
-        ticker_symbol = STOCK_SYMBOL_MAP.get(symbol.lower(), symbol.upper())
         try:
-            def fetch_price():
-                ticker = yfinance.Ticker(ticker_symbol)
-                info = ticker.fast_info
-                return info.last_price if hasattr(info, 'last_price') else None
-            
-            price = await asyncio.to_thread(fetch_price)
-            if price and price > 0:
-                await cache_service.set_stock_price(symbol, price)
-                ohlc = self._generate_ohlc(price)
-                await cache_service.set_price_history(symbol, "stocks", ohlc)
-                return price
-            fallback = self._get_fallback_stock_price(symbol)
-            if fallback:
-                logging.warning(f"Using fallback price for {symbol}: {fallback}")
-                await cache_service.set_stock_price(symbol, fallback)
-                ohlc = self._generate_ohlc(fallback)
-                await cache_service.set_price_history(symbol, "stocks", ohlc)
-                return fallback
-            return None
+            async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as client:
+                url = f"{YAHOO_CHART_API}/{symbol_upper}?interval=1d&range=1d"
+                resp = await client.get(url, headers={
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+                })
+                if resp.status_code == 200:
+                    data = resp.json()
+                    result = data.get("chart", {}).get("result", [None])[0]
+                    if result:
+                        meta = result.get("meta", {})
+                        price = meta.get("regularMarketPrice") or meta.get("previousClose")
+                        if not price:
+                            quotes = result.get("indicators", {}).get("quote", [{}])[0]
+                            closes = [c for c in quotes.get("close", []) if c is not None]
+                            if closes:
+                                price = closes[-1]
+                        if price and price > 0:
+                            await cache_service.set_stock_price(symbol_upper, float(price))
+                            return float(price)
         except Exception as e:
-            logging.warning(f"Failed to fetch stock price for {symbol}: {e}")
-            fallback = self._get_fallback_stock_price(symbol)
-            if fallback:
-                logging.warning(f"Using fallback price for {symbol}: {fallback}")
-                await cache_service.set_stock_price(symbol, fallback)
-                ohlc = self._generate_ohlc(fallback)
-                await cache_service.set_price_history(symbol, "stocks", ohlc)
-                return fallback
-            return None
+            logging.warning(f"Yahoo chart API failed for {symbol_upper}: {e}")
 
-    def _get_fallback_stock_price(self, symbol: str) -> Optional[float]:
-        symbol_lower = symbol.lower()
-        if symbol_lower in STOCK_FALLBACK_PRICES:
-            min_price, max_price = STOCK_FALLBACK_PRICES[symbol_lower]
-            return round(random.uniform(min_price, max_price), 2)
-        return None
+        # Fallback to yfinance if HTTP API fails
+        try:
+            import yfinance
+            def fetch_yf():
+                ticker = yfinance.Ticker(symbol_upper)
+                hist = ticker.history(period="1d")
+                if not hist.empty:
+                    return float(hist["Close"].iloc[-1])
+                info = ticker.info
+                return info.get("regularMarketPrice") or info.get("previousClose")
+            price = await asyncio.to_thread(fetch_yf)
+            if price and price > 0:
+                await cache_service.set_stock_price(symbol_upper, float(price))
+                return float(price)
+        except Exception as e:
+            logging.warning(f"yfinance failed for {symbol_upper}: {e}")
 
-    def _generate_ohlc(self, price: float) -> Dict:
-        variation = price * random.uniform(0.001, 0.02)
-        open_price = round(price - variation, 2)
-        high_price = round(price + variation * random.uniform(0.5, 1.5), 2)
-        low_price = round(price - variation * random.uniform(0.5, 1.5), 2)
-        close_price = round(price + random.uniform(-variation, variation), 2)
-        return {
-            "open": open_price,
-            "high": high_price,
-            "low": low_price,
-            "close": close_price,
-            "timestamp": datetime.utcnow().isoformat()
-        }
-
-    async def get_price_history_ohlc(self, symbol: str, asset_type: str) -> Optional[Dict]:
-        cached = await cache_service.get_price_history(symbol, asset_type)
-        if cached:
-            return cached
-        price = await self.get_price(asset_type, symbol)
-        if price:
-            ohlc = self._generate_ohlc(price)
-            await cache_service.set_price_history(symbol, asset_type, ohlc)
-            return ohlc
+        logging.error(f"Could not fetch real price for stock {symbol_upper}")
         return None
 
     async def get_real_estate_price(self, symbol: str) -> Optional[float]:
-        symbol_normalized = symbol.lower()
-        mapped_symbol = REAL_ESTATE_SYMBOL_MAP.get(symbol_normalized, symbol_normalized.upper())
-        if mapped_symbol in REAL_ESTATE_FALLBACK_PRICES:
-            min_price, max_price = REAL_ESTATE_FALLBACK_PRICES[mapped_symbol]
-            price = round(random.uniform(min_price, max_price), 2)
-            ohlc = self._generate_ohlc(price)
-            await cache_service.set_price_history(symbol, "real_estate", ohlc)
-            return price
-        if symbol_normalized in REAL_ESTATE_FALLBACK_PRICES:
-            min_price, max_price = REAL_ESTATE_FALLBACK_PRICES[symbol_normalized]
-            price = round(random.uniform(min_price, max_price), 2)
-            ohlc = self._generate_ohlc(price)
-            await cache_service.set_price_history(symbol, "real_estate", ohlc)
-            return price
+        symbol_normalized = symbol.lower().replace(" ", "").replace(",", "")
+        for city, price in REAL_ESTATE_PRICES.items():
+            if city in symbol_normalized:
+                return float(price)
+        if symbol_normalized in REAL_ESTATE_PRICES:
+            return float(REAL_ESTATE_PRICES[symbol_normalized])
         return None
 
     async def get_price(self, asset_type: str, symbol: str) -> Optional[float]:
@@ -203,13 +127,9 @@ class PriceService:
         db.add(history_entry)
 
     async def get_current_price(self, symbol: str) -> Optional[float]:
-        symbol_upper = symbol.upper()
-        for crypto_key in CRYPTO_SYMBOL_MAP:
-            if symbol_upper == crypto_key.upper():
-                return await self.get_crypto_price(symbol)
-        for stock_key in STOCK_SYMBOL_MAP:
-            if symbol_upper == stock_key.upper():
-                return await self.get_stock_price(symbol)
+        price = await self.get_crypto_price(symbol)
+        if price:
+            return price
         return await self.get_stock_price(symbol)
 
     async def refresh_crypto_prices(self, symbols: List[str]) -> Dict[str, float]:
@@ -231,6 +151,7 @@ class PriceService:
     async def get_benchmark_data(self, symbol: str, period: str = "1y") -> Optional[Dict]:
         try:
             def fetch_history():
+                import yfinance
                 ticker = yfinance.Ticker(symbol.upper())
                 hist = ticker.history(period=period)
                 if hist.empty:

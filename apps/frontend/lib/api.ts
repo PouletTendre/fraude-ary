@@ -31,7 +31,7 @@ export async function fetchApi<T = unknown>(endpoint: string, options?: RequestI
       } catch {
         errorMessage = errorText || errorMessage;
       }
-      
+
       // Handle 401 - redirect to login
       if (response.status === 401) {
         localStorage.removeItem("token");
@@ -40,8 +40,12 @@ export async function fetchApi<T = unknown>(endpoint: string, options?: RequestI
           window.location.href = "/login";
         }
       }
-      
+
       throw new Error(errorMessage);
+    }
+
+    if (response.status === 204 || response.headers.get("content-length") === "0") {
+      return undefined as T;
     }
 
     return response.json();
