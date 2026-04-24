@@ -21,7 +21,7 @@ def test_currency_display_on_assets(page: Page):
         page.click("text=Add Asset")
         page.wait_for_selector("text=Currency", timeout=5000)
         # Verify currency dropdown exists
-        expect(page.locator("select").locator("option:text-is('EUR')")).to_be_visible()
+        expect(page.locator("select").locator("option:text-is('EUR')")).to_have_count(1)
 
 def test_bulk_selection_checkboxes(page: Page):
     login(page)
