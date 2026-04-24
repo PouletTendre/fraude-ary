@@ -105,7 +105,7 @@ async def create_asset(
             Asset.type == asset_type
         )
     )
-    existing = result.scalar_one_or_none()
+    existing = result.scalars().first()
 
     if existing:
         new_quantity = existing.quantity + asset.quantity
@@ -221,7 +221,7 @@ async def update_asset(
     result = await db.execute(
         select(Asset).where(Asset.id == asset_id, Asset.user_email == current_user.email)
     )
-    db_asset = result.scalar_one_or_none()
+    db_asset = result.scalars().first()
     if not db_asset:
         raise HTTPException(status_code=404, detail="Asset not found")
 
@@ -278,7 +278,7 @@ async def backfill_asset_history(
     result = await db.execute(
         select(Asset).where(Asset.id == asset_id, Asset.user_email == current_user.email)
     )
-    asset = result.scalar_one_or_none()
+    asset = result.scalars().first()
     if not asset:
         raise HTTPException(status_code=404, detail="Asset not found")
 
@@ -299,7 +299,7 @@ async def delete_asset(
     result = await db.execute(
         select(Asset).where(Asset.id == asset_id, Asset.user_email == current_user.email)
     )
-    asset = result.scalar_one_or_none()
+    asset = result.scalars().first()
     if not asset:
         raise HTTPException(status_code=404, detail="Asset not found")
 
@@ -357,7 +357,7 @@ async def get_asset_history_enriched(
     result = await db.execute(
         select(Asset).where(Asset.id == asset_id, Asset.user_email == current_user.email)
     )
-    asset = result.scalar_one_or_none()
+    asset = result.scalars().first()
     if not asset:
         raise HTTPException(status_code=404, detail="Asset not found")
 

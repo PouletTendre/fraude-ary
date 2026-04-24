@@ -79,7 +79,7 @@ async def create_transaction(
         result = await db.execute(
             select(Asset).where(Asset.id == transaction.asset_id, Asset.user_email == current_user.email)
         )
-        asset = result.scalar_one_or_none()
+        asset = result.scalars().first()
     if not asset and transaction.asset_type:
         result = await db.execute(
             select(Asset).where(
@@ -88,7 +88,7 @@ async def create_transaction(
                 Asset.type == AssetType(transaction.asset_type)
             )
         )
-        asset = result.scalar_one_or_none()
+        asset = result.scalars().first()
     if not asset:
         result = await db.execute(
             select(Asset).where(
@@ -96,7 +96,7 @@ async def create_transaction(
                 Asset.symbol == transaction.symbol.upper()
             )
         )
-        asset = result.scalar_one_or_none()
+        asset = result.scalars().first()
 
     tx_type_str = transaction.type.lower()
     if tx_type_str == "buy":
@@ -169,7 +169,7 @@ async def update_transaction(
             Transaction.user_email == current_user.email
         )
     )
-    tx = result.scalar_one_or_none()
+    tx = result.scalars().first()
     if not tx:
         raise HTTPException(status_code=404, detail="Transaction not found")
 
@@ -215,7 +215,7 @@ async def update_transaction(
         result = await db.execute(
             select(Asset).where(Asset.id == old_asset_id, Asset.user_email == current_user.email)
         )
-        old_asset = result.scalar_one_or_none()
+        old_asset = result.scalars().first()
     if not old_asset:
         result = await db.execute(
             select(Asset).where(
@@ -223,7 +223,7 @@ async def update_transaction(
                 Asset.symbol == old_symbol.upper()
             )
         )
-        old_asset = result.scalar_one_or_none()
+        old_asset = result.scalars().first()
 
     # Undo old transaction effect
     if old_asset:
@@ -243,7 +243,7 @@ async def update_transaction(
         result = await db.execute(
             select(Asset).where(Asset.id == new_asset_id, Asset.user_email == current_user.email)
         )
-        target_asset = result.scalar_one_or_none()
+        target_asset = result.scalars().first()
     if not target_asset and update.asset_type is not None:
         result = await db.execute(
             select(Asset).where(
@@ -252,7 +252,7 @@ async def update_transaction(
                 Asset.type == AssetType(update.asset_type)
             )
         )
-        target_asset = result.scalar_one_or_none()
+        target_asset = result.scalars().first()
     if not target_asset:
         result = await db.execute(
             select(Asset).where(
@@ -260,7 +260,7 @@ async def update_transaction(
                 Asset.symbol == new_symbol.upper()
             )
         )
-        target_asset = result.scalar_one_or_none()
+        target_asset = result.scalars().first()
 
     # Apply new transaction effect
     if new_type == "buy":
@@ -340,7 +340,7 @@ async def delete_transaction(
             Transaction.user_email == current_user.email
         )
     )
-    tx = result.scalar_one_or_none()
+    tx = result.scalars().first()
     if not tx:
         raise HTTPException(status_code=404, detail="Transaction not found")
 
@@ -355,7 +355,7 @@ async def delete_transaction(
         result = await db.execute(
             select(Asset).where(Asset.id == tx_asset_id, Asset.user_email == current_user.email)
         )
-        asset = result.scalar_one_or_none()
+        asset = result.scalars().first()
     if not asset:
         result = await db.execute(
             select(Asset).where(
@@ -363,7 +363,7 @@ async def delete_transaction(
                 Asset.symbol == tx_symbol.upper()
             )
         )
-        asset = result.scalar_one_or_none()
+        asset = result.scalars().first()
 
     if asset:
         if tx_type == "buy":
