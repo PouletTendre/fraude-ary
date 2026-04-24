@@ -462,8 +462,6 @@ async def get_asset_history_enriched(
     if current_price is None:
         current_price = asset.current_price
 
-    ohlc = await price_service.get_price_history_ohlc(asset.symbol, asset_type_str)
-
     history_result = await db.execute(
         select(PriceHistory)
         .where(PriceHistory.asset_id == asset_id)
@@ -482,7 +480,7 @@ async def get_asset_history_enriched(
         asset_id=asset_id,
         symbol=asset.symbol,
         current_price=current_price or 0,
-        ohlc=OHLCData(**ohlc) if ohlc else None,
+        ohlc=None,
         history=history
     )
 
