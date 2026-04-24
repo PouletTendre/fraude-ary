@@ -49,17 +49,13 @@ export function SymbolSearch({ value, onChange, error, assetType }: SymbolSearch
     setLoading(true);
     try {
       const data = await fetchApi<SearchResult[]>(`/api/v1/assets/search/symbols?q=${encodeURIComponent(q)}`);
-      let filtered = data || [];
-      if (assetType && assetType !== "all" && assetType !== "real_estate") {
-        filtered = filtered.filter((r) => r.type === assetType);
-      }
-      setResults(filtered);
+      setResults(data || []);
     } catch (e) {
       setResults([]);
     } finally {
       setLoading(false);
     }
-  }, [assetType]);
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
