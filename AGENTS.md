@@ -422,6 +422,13 @@ docker compose up -d --build
     - **Commits Agent** — owns `git add`, `git commit`, `git push`
     - **Testing Agent** — owns `e2e/` Playwright validation
     **If you have 2 tasks, that means 8 sub-agents total.** Parallelize Front-End and Back-End work for each task simultaneously. After both are done, the Commits Agent commits everything, then the Testing Agent runs E2E tests. If tests fail, loop back to Front-End or Back-End agent, fix, re-commit, re-test. Use `subagent_type: "general"` for all implementation work.
+12. **Branch-based workflow is mandatory.** Never push directly to `main`. For every feature or bug fix:
+    - Create a branch from `main`: `git checkout -b feat/short-description`
+    - All sub-agents work on this branch
+    - Commits Agent commits and pushes the branch: `git push -u origin feat/short-description`
+    - The orchestrator creates a Pull Request via `gh pr create`
+    - The orchestrator merges the PR via `gh pr merge` (squash or merge) after tests pass
+    - This allows multiple features to be developed in parallel without conflicts.
 
 ## Contact / Ownership
 

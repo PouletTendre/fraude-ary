@@ -8,6 +8,7 @@ import {
 import { cn } from "@/lib/utils";
 import { usePortfolio } from "@/hooks/usePortfolio";
 import { useAssets } from "@/hooks/useAssets";
+import { useSettings } from "@/hooks/useSettings";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { PageTransition } from "@/components/ui/PageTransition";
@@ -38,13 +39,6 @@ const TYPE_LABELS: Record<string, string> = {
   real_estate: "Real Estate",
 };
 
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value);
-};
-
 type SortKey = "symbol" | "type" | "quantity" | "purchase_price" | "current_price" | "value" | "pnl" | "pnlPercent";
 type SortDirection = "asc" | "desc";
 
@@ -58,11 +52,13 @@ interface AssetRow {
   value: number;
   pnl: number;
   pnlPercent: number;
+  currency: string;
 }
 
 export default function PortfolioPage() {
   const { portfolio, isLoading: portfolioLoading, error } = usePortfolio();
   const { assets, isLoading: assetsLoading } = useAssets();
+  const { formatCurrency } = useSettings();
   const [selectedPeriod, setSelectedPeriod] = useState<Period>("1M");
   const [isLive, setIsLive] = useState(true);
   const [chartView, setChartView] = useState<"value" | "performance">("value");
@@ -106,6 +102,7 @@ export default function PortfolioPage() {
       value: asset.current_price * asset.quantity,
       pnl: (asset.current_price - asset.purchase_price) * asset.quantity,
       pnlPercent: ((asset.current_price - asset.purchase_price) / asset.purchase_price) * 100,
+      currency: asset.currency,
     }));
   }, [assets]);
 
@@ -190,7 +187,7 @@ export default function PortfolioPage() {
               <div>
                 <p className="text-sm text-text-tertiary">Total Value</p>
                 <p className="text-2xl font-bold text-text-primary mt-1">
-                  ${formatCurrency(portfolio.total_value)}
+                  {formatCurrency(portfolio.total_value, "USD")}
                 </p>
               </div>
               <div className="p-3 bg-primary-subtle rounded-full">
@@ -205,7 +202,7 @@ export default function PortfolioPage() {
               <div>
                 <p className="text-sm text-text-tertiary">Total Gain/Loss</p>
                 <p className={`text-2xl font-bold mt-1 ${portfolio.total_gain_loss >= 0 ? "text-gain" : "text-loss"}`}>
-                  {portfolio.total_gain_loss >= 0 ? "+" : ""}${formatCurrency(portfolio.total_gain_loss)}
+                  {portfolio.total_gain_loss >= 0 ? "+" : ""}{formatCurrency(portfolio.total_gain_loss, "USD")}
                 </p>
                 {portfolio.total_gain_loss >= 0 ? (
                   <TrendingUp className="w-4 h-4 text-gain inline mr-1" />
@@ -276,7 +273,7 @@ export default function PortfolioPage() {
                   </Pie>
                   <Tooltip 
                     formatter={(value: number, name: string) => [
-                      `$${formatCurrency(value)}`, 
+                      formatCurrency(value, "USD"), 
                       TYPE_LABELS[name] || name
                     ]} 
                   />
@@ -286,7 +283,7 @@ export default function PortfolioPage() {
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                 <p className="text-xs text-text-tertiary">Total</p>
                 <p className="text-lg font-bold text-text-primary">
-                  ${formatCurrency(portfolio.total_value)}
+                  {formatCurrency(portfolio.total_value, "USD")}
                 </p>
               </div>
             </div>
@@ -312,7 +309,7 @@ export default function PortfolioPage() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={portfolio.by_type} layout="vertical" margin={{ top: 10, right: 10, left: 60, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E5E7EB" />
-                  <XAxis type="number" stroke="#9CA3AF" fontSize={12} tickFormatter={(v) => `$${formatCurrency(v)}`} />
+                  <XAxis type="number" stroke="#9CA3AF" fontSize={12} tickFormatter={(v) => formatCurrency(v, "USD")} />
                   <YAxis 
                     type="category" 
                     dataKey="type" 
@@ -320,7 +317,7 @@ export default function PortfolioPage() {
                     fontSize={12} 
                     tickFormatter={(v) => TYPE_LABELS[v] || v.replace("_", " ")} 
                   />
-                  <Tooltip formatter={(value: number) => `$${formatCurrency(value)}`} />
+                  <Tooltip formatter={(value: number) => formatCurrency(value, "USD")} />
                   <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={32}>
                     {portfolio.by_type.map((entry) => (
                       <Cell key={entry.type} fill={TYPE_COLORS[entry.type] || "#9CA3AF"} />
@@ -418,11 +415,11 @@ export default function PortfolioPage() {
                     <YAxis
                       stroke="#9CA3AF"
                       fontSize={12}
-                      tickFormatter={(v) => `$${formatCurrency(v)}`}
+                      tickFormatter={(v) => formatCurrency(v, "USD")}
                       width={80}
                     />
                     <Tooltip
-                      formatter={(value: number) => [`$${formatCurrency(value)}`, "Valeur"]}
+                      formatter={(value: number) => [formatCurrency(value, "USD"), "Valeur"]}
                       labelFormatter={(label) => {
                         const date = new Date(label);
                         return date.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
@@ -591,20 +588,20 @@ export default function PortfolioPage() {
                         {row.quantity}
                       </td>
                       <td className="px-6 py-4 text-right text-text-secondary text-text-muted">
-                        ${formatCurrency(row.purchase_price)}
+                        {formatCurrency(row.purchase_price, row.currency)}
                       </td>
                       <td className="px-6 py-4 text-right text-text-primary font-medium">
-                        ${formatCurrency(row.current_price)}
+                        {formatCurrency(row.current_price, row.currency)}
                       </td>
                       <td className="px-6 py-4 text-right text-text-primary font-medium">
-                        ${formatCurrency(row.value)}
+                        {formatCurrency(row.value, row.currency)}
                       </td>
                       <td className="px-6 py-4 text-right">
                         <span className={cn(
                           "font-medium",
                           row.pnl >= 0 ? "text-gain" : "text-loss"
                         )}>
-                          {row.pnl >= 0 ? "+" : ""}${formatCurrency(row.pnl)}
+                          {row.pnl >= 0 ? "+" : ""}{formatCurrency(row.pnl, row.currency)}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right">

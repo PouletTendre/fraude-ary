@@ -167,7 +167,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[12px]">
           <KPICard
             label="Valeur totale"
-            value={portfolio ? formatCurrency(portfolio.total_value) : "—"}
+            value={portfolio ? formatCurrency(portfolio.total_value, "USD") : "—"}
             delta={
               portfolio
                 ? `${portfolio.gain_loss_percentage >= 0 ? "+" : ""}${portfolio.gain_loss_percentage.toFixed(2)}% ce mois`
@@ -181,7 +181,7 @@ export default function DashboardPage() {
             label="P&L journalier"
             value={
               dailyChange
-                ? `${dailyChange.change >= 0 ? "+" : ""}${formatCurrency(dailyChange.change)}`
+                ? `${dailyChange.change >= 0 ? "+" : ""}${formatCurrency(dailyChange.change, "USD")}`
                 : "—"
             }
             delta={
@@ -334,7 +334,7 @@ export default function DashboardPage() {
                           color: "var(--text-primary)",
                         }}
                       >
-                        {formatCurrency(asset.current_price)}
+                        {formatCurrency(asset.current_price, asset.currency)}
                       </td>
                       <td
                         className={cn(
@@ -359,7 +359,7 @@ export default function DashboardPage() {
                           color: "var(--text-primary)",
                         }}
                       >
-                        {formatCurrency(asset.value)}
+                        {formatCurrency(asset.value, asset.currency)}
                       </td>
                       <td style={{ padding: "14px 16px", textAlign: "right" }}>
                         <div className="flex items-center gap-[8px] justify-end">

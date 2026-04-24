@@ -127,6 +127,10 @@ async def create_asset(
             logging.warning(f"Failed to backfill history for {db_asset.symbol}: {e}")
 
     # Create transaction
+    from app.services.price_service import get_exchange_rates
+    rates = await get_exchange_rates()
+    rate = rates.get(asset.currency or 'USD', 1.0)
+
     from app.models.transaction import Transaction, TransactionType
     tx = Transaction(
         id=str(uuid.uuid4()),
@@ -137,7 +141,7 @@ async def create_asset(
         quantity=db_asset.quantity,
         unit_price=db_asset.purchase_price,
         currency=asset.currency or 'USD',
-        exchange_rate=1.0,
+        exchange_rate=rate,
         fees=0.0,
         total_invested=db_asset.quantity * db_asset.purchase_price,
         date=db_asset.purchase_date or datetime.utcnow().strftime("%Y-%m-%d")

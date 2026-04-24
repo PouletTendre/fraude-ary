@@ -294,3 +294,18 @@ class PriceService:
         return {"updated": updated, "errors": errors}
 
 price_service = PriceService()
+
+
+async def get_exchange_rates() -> Dict[str, float]:
+    from app.routers.exchange_rates import fetch_and_update_rates
+    return await fetch_and_update_rates()
+
+
+async def convert_to_usd(amount: float, currency: str, db: AsyncSession = None) -> float:
+    if currency == "USD" or not currency:
+        return amount
+    rates = await get_exchange_rates()
+    rate = rates.get(currency)
+    if rate is None or rate == 0:
+        return amount
+    return amount / rate

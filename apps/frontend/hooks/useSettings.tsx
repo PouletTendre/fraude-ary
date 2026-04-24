@@ -14,7 +14,7 @@ interface SettingsContextType {
   settings: Settings;
   setCurrency: (currency: Currency) => void;
   setDateFormat: (format: DateFormat) => void;
-  formatCurrency: (value: number) => string;
+  formatCurrency: (value: number, currency?: string) => string;
   formatDate: (date: string | Date) => string;
 }
 
@@ -61,10 +61,11 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     setSettings((prev) => ({ ...prev, dateFormat }));
   };
 
-  const formatCurrency = (value: number): string => {
-    const { currency } = settings;
+  const formatCurrency = (value: number, overrideCurrency?: string): string => {
+    const currency = (overrideCurrency || settings.currency) as Currency;
     const symbol = currency === "EUR" ? "€" : "$";
-    const formatted = new Intl.NumberFormat(currency === "EUR" ? "fr-FR" : "en-US", {
+    const locale = currency === "EUR" ? "fr-FR" : "en-US";
+    const formatted = new Intl.NumberFormat(locale, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(value);
