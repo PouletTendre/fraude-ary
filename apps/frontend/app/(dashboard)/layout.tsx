@@ -10,6 +10,7 @@ import { useNotifications } from "@/hooks/useNotifications";
 import { fetchApi } from "@/lib/api";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Badge } from "@/components/ui/Badge";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   LayoutDashboard,
   Wallet,
@@ -204,6 +205,7 @@ export default function DashboardLayout({
 
         {/* User */}
         <div className="mt-auto pt-4" style={{ borderTop: "1px solid var(--border)" }}>
+          <ThemeToggle />
           <div style={{ padding: "8px 12px" }}>
             <p className="text-[13px] font-medium text-text-primary truncate">
               {user?.full_name || "User"}

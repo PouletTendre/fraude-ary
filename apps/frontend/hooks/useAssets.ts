@@ -21,8 +21,8 @@ export function useAssets() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["assets"] });
-      queryClient.invalidateQueries({ queryKey: ["portfolio"] });
+      queryClient.invalidateQueries({ queryKey: ["assets"], refetchType: "active" });
+      queryClient.invalidateQueries({ queryKey: ["portfolio"], refetchType: "active" });
     },
   });
 
@@ -34,8 +34,8 @@ export function useAssets() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["assets"] });
-      queryClient.invalidateQueries({ queryKey: ["portfolio"] });
+      queryClient.invalidateQueries({ queryKey: ["assets"], refetchType: "active" });
+      queryClient.invalidateQueries({ queryKey: ["portfolio"], refetchType: "active" });
     },
   });
 
@@ -46,8 +46,8 @@ export function useAssets() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["assets"] });
-      queryClient.invalidateQueries({ queryKey: ["portfolio"] });
+      queryClient.invalidateQueries({ queryKey: ["assets"], refetchType: "active" });
+      queryClient.invalidateQueries({ queryKey: ["portfolio"], refetchType: "active" });
     },
   });
 
@@ -59,8 +59,8 @@ export function useAssets() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["assets"] });
-      queryClient.invalidateQueries({ queryKey: ["portfolio"] });
+      queryClient.invalidateQueries({ queryKey: ["assets"], refetchType: "active" });
+      queryClient.invalidateQueries({ queryKey: ["portfolio"], refetchType: "active" });
     },
   });
 

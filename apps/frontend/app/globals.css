@@ -42,6 +42,21 @@
   --r-full: 9999px;
 }
 
+html.light {
+  --bg:              #F8FAFC;
+  --surface:         #FFFFFF;
+  --surface-raised:  #F1F5F9;
+  --surface-sunken:  #E2E8F0;
+  --skeleton:        #E2E8F0;
+  --text-primary:    #0F172A;
+  --text-secondary:  #475569;
+  --text-tertiary:   #64748B;
+  --text-muted:      #94A3B8;
+  --text-disabled:   #CBD5E1;
+  --border:          #E2E8F0;
+  --border-hover:    #CBD5E1;
+}
+
 html, body {
   background: var(--bg);
   color: var(--text-primary);

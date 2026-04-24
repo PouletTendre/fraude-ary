@@ -32,6 +32,32 @@ async def bulk_delete_assets(
         await db.delete(asset)
     await db.commit()
 
+@router.get("", response_model=List[AssetResponse])
+async def list_all_assets(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(
+        select(Asset).where(Asset.user_email == current_user.email)
+    )
+    assets = result.scalars().all()
+    return [
+        AssetResponse(
+            id=a.id,
+            user_email=a.user_email,
+            type=a.type.value if hasattr(a.type, 'value') else a.type,
+            symbol=a.symbol,
+            quantity=a.quantity,
+            purchase_price=a.purchase_price,
+            current_price=a.current_price,
+            total_value=a.quantity * a.current_price if a.current_price else 0,
+            purchase_date=a.purchase_date,
+            currency=a.currency or 'USD',
+            created_at=a.created_at
+        )
+        for a in assets
+    ]
+
 @router.get("/{asset_type}", response_model=List[AssetResponse])
 async def get_assets(
     asset_type: str,
@@ -59,7 +85,7 @@ async def get_assets(
             current_price=a.current_price,
             total_value=a.quantity * a.current_price if a.current_price else 0,
             purchase_date=a.purchase_date,
-            currency=getattr(a, 'currency', 'USD'),
+            currency=a.currency or 'USD',
             created_at=a.created_at
         )
         for a in assets
@@ -85,7 +111,7 @@ async def create_asset(
         purchase_price=asset.purchase_price,
         current_price=current_price,
         purchase_date=asset.purchase_date,
-        currency=getattr(asset, 'currency', 'USD')
+        currency=asset.currency or 'USD'
     )
     db.add(db_asset)
     await db.commit()
@@ -101,7 +127,7 @@ async def create_asset(
         symbol=db_asset.symbol,
         quantity=db_asset.quantity,
         unit_price=db_asset.purchase_price,
-        currency=getattr(asset, 'currency', 'USD'),
+        currency=asset.currency or 'USD',
         exchange_rate=1.0,
         fees=0.0,
         total_invested=db_asset.quantity * db_asset.purchase_price,
@@ -123,32 +149,6 @@ async def create_asset(
         currency=db_asset.currency,
         created_at=db_asset.created_at
     )
-
-@router.get("", response_model=List[AssetResponse])
-async def list_all_assets(
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-):
-    result = await db.execute(
-        select(Asset).where(Asset.user_email == current_user.email)
-    )
-    assets = result.scalars().all()
-    return [
-        AssetResponse(
-            id=a.id,
-            user_email=a.user_email,
-            type=a.type.value if hasattr(a.type, 'value') else a.type,
-            symbol=a.symbol,
-            quantity=a.quantity,
-            purchase_price=a.purchase_price,
-            current_price=a.current_price,
-            total_value=a.quantity * a.current_price if a.current_price else 0,
-            purchase_date=a.purchase_date,
-            currency=getattr(a, 'currency', 'USD'),
-            created_at=a.created_at
-        )
-        for a in assets
-    ]
 
 @router.get("/search/symbols")
 async def search_symbols(q: str = Query(..., min_length=1)):
@@ -213,7 +213,7 @@ async def update_asset(
         current_price=db_asset.current_price,
         total_value=db_asset.quantity * db_asset.current_price if db_asset.current_price else 0,
         purchase_date=db_asset.purchase_date,
-        currency=getattr(db_asset, 'currency', 'USD'),
+        currency=db_asset.currency or 'USD',
         created_at=db_asset.created_at
     )
 
