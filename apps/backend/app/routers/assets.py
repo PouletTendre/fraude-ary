@@ -1,17 +1,19 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status, Request, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update, delete as sql_delete
-from typing import List, Optional
+from sqlalchemy import select, update, delete
+from typing import List, Optional, DefaultDict, Tuple
 from datetime import datetime
 import uuid
 import csv
 import io
+from collections import defaultdict
 import httpx
 import logging
 
 from app.database import get_db
 from app.models.user import User
 from app.models.asset import Asset, AssetType, PriceHistory
+from app.models.transaction import Transaction
 from app.schemas.assets import AssetCreate, AssetUpdate, AssetResponse, PriceRefreshResponse, PriceHistoryEnrichedResponse, OHLCData, AssetImportResponse
 from app.routers.auth import get_current_user
 from app.services.price_service import price_service
@@ -31,6 +33,80 @@ async def bulk_delete_assets(
     for asset in assets:
         await db.delete(asset)
     await db.commit()
+
+@router.post("/dedup", response_model=dict)
+async def deduplicate_assets(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(
+        select(Asset).where(Asset.user_email == current_user.email)
+    )
+    assets = result.scalars().all()
+    total_assets_before = len(assets)
+
+    groups: DefaultDict[Tuple[str, AssetType], List[Asset]] = defaultdict(list)
+    for asset in assets:
+        groups[(asset.symbol, asset.type)].append(asset)
+
+    merged_groups = 0
+
+    for (symbol, asset_type), group in groups.items():
+        if len(group) < 2:
+            continue
+
+        merged_groups += 1
+        group.sort(key=lambda a: (a.created_at is None, a.created_at))
+        master = group[0]
+        duplicates = group[1:]
+
+        total_quantity = sum(a.quantity for a in group)
+        weighted_price = (
+            sum(a.quantity * a.purchase_price for a in group) / total_quantity
+            if total_quantity > 0
+            else 0.0
+        )
+
+        logging.info(
+            "Merging %d duplicates for user=%s symbol=%s type=%s master=%s: "
+            "quantity %s -> %s, purchase_price %s -> %s",
+            len(duplicates),
+            current_user.email,
+            symbol,
+            asset_type.value if hasattr(asset_type, "value") else asset_type,
+            master.id,
+            master.quantity,
+            total_quantity,
+            master.purchase_price,
+            weighted_price,
+        )
+
+        master.quantity = total_quantity
+        master.purchase_price = weighted_price
+
+        dup_ids = [dup.id for dup in duplicates]
+        await db.execute(
+            update(Transaction)
+            .where(Transaction.asset_id.in_(dup_ids))
+            .values(asset_id=master.id)
+        )
+
+        await db.execute(
+            delete(Asset).where(Asset.id.in_(dup_ids))
+        )
+
+    await db.commit()
+
+    result_after = await db.execute(
+        select(Asset).where(Asset.user_email == current_user.email)
+    )
+    total_assets_after = len(result_after.scalars().all())
+
+    return {
+        "merged_groups": merged_groups,
+        "total_assets_before": total_assets_before,
+        "total_assets_after": total_assets_after,
+    }
 
 @router.get("", response_model=List[AssetResponse])
 async def list_all_assets(
@@ -306,7 +382,7 @@ async def delete_asset(
     # Delete all associated transactions
     from app.models.transaction import Transaction
     await db.execute(
-        sql_delete(Transaction).where(
+        delete(Transaction).where(
             Transaction.asset_id == asset_id,
             Transaction.user_email == current_user.email
         )
