@@ -1,32 +1,15 @@
 import { cn } from "@/lib/utils";
 import { HTMLAttributes, forwardRef } from "react";
-import { cva, type VariantProps } from "class-variance-authority";
 
-const cardVariants = cva(
-  "rounded-lg border bg-surface text-text-primary",
-  {
-    variants: {
-      variant: {
-        default: "border-border",
-        elevated: "border-border bg-surface-raised shadow-md",
-        outline: "border-border bg-transparent",
-        sunken: "border-border bg-surface-sunken",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-    },
-  }
-);
+const cardBase = "border border-border rounded-[var(--r-lg)]";
 
-export interface CardProps extends HTMLAttributes<HTMLDivElement>, VariantProps<typeof cardVariants> {}
-
-export const Card = forwardRef<HTMLDivElement, CardProps>(
-  ({ className, variant, ...props }, ref) => {
+export const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
+  ({ className, style, ...props }, ref) => {
     return (
       <div
         ref={ref}
-        className={cn(cardVariants({ variant }), className)}
+        className={cn(cardBase, "bg-surface", className)}
+        style={{ padding: "20px 24px", ...style }}
         {...props}
       />
     );
@@ -35,12 +18,13 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
 
 Card.displayName = "Card";
 
-export const CardHeader = forwardRef<HTMLDivElement, CardProps>(
-  ({ className, ...props }, ref) => {
+export const CardHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
+  ({ className, style, ...props }, ref) => {
     return (
       <div
         ref={ref}
-        className={cn("flex flex-col space-y-1.5 p-6", className)}
+        className={cn("flex flex-col gap-[6px]", className)}
+        style={{ paddingBottom: "12px", ...style }}
         {...props}
       />
     );
@@ -54,7 +38,7 @@ export const CardTitle = forwardRef<HTMLHeadingElement, HTMLAttributes<HTMLHeadi
     return (
       <h3
         ref={ref}
-        className={cn("text-h3 leading-none tracking-tight", className)}
+        className={cn("text-[1rem] font-semibold text-text-primary", className)}
         {...props}
       />
     );
@@ -63,26 +47,12 @@ export const CardTitle = forwardRef<HTMLHeadingElement, HTMLAttributes<HTMLHeadi
 
 CardTitle.displayName = "CardTitle";
 
-export const CardContent = forwardRef<HTMLDivElement, CardProps>(
+export const CardContent = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => {
     return (
-      <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
+      <div ref={ref} className={cn("flex flex-col gap-[12px]", className)} {...props} />
     );
   }
 );
 
 CardContent.displayName = "CardContent";
-
-export const CardFooter = forwardRef<HTMLDivElement, CardProps>(
-  ({ className, ...props }, ref) => {
-    return (
-      <div
-        ref={ref}
-        className={cn("flex items-center p-6 pt-0", className)}
-        {...props}
-      />
-    );
-  }
-);
-
-CardFooter.displayName = "CardFooter";

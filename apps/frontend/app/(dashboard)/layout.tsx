@@ -9,30 +9,37 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNotifications } from "@/hooks/useNotifications";
 import { fetchApi } from "@/lib/api";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { Tooltip } from "@/components/ui/Tooltip";
+import { Badge } from "@/components/ui/Badge";
 import {
   LayoutDashboard,
   Wallet,
-  RefreshCw,
-  ChevronLeft,
-  ChevronRight,
+  TrendingUp,
+  BarChart3,
   Bell,
-  AlertTriangle,
-  Menu,
-  X,
+  ArrowLeftRight,
   Settings,
+  RefreshCw,
   BookOpen,
 } from "lucide-react";
-import { Footer } from "@/components/Footer";
 
-const navItems = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/portfolio", label: "Portfolio", icon: Wallet },
-  { href: "/assets", label: "Assets", icon: Wallet },
-  { href: "/journal", label: "Journal", icon: BookOpen },
-  { href: "/alerts", label: "Alerts", icon: AlertTriangle },
-  { href: "/notifications", label: "Notifications", icon: Bell },
-  { href: "/settings", label: "Settings", icon: Settings },
+const navSections = [
+  {
+    label: "Principal",
+    items: [
+      { href: "/", label: "Dashboard", icon: LayoutDashboard },
+      { href: "/portfolio", label: "Portefeuille", icon: Wallet },
+      { href: "/assets", label: "Marchés", icon: TrendingUp },
+      { href: "/journal", label: "Analyse", icon: BarChart3 },
+    ],
+  },
+  {
+    label: "Gestion",
+    items: [
+      { href: "/alerts", label: "Alertes", icon: Bell, badge: 3 },
+      { href: "/journal", label: "Transactions", icon: ArrowLeftRight },
+      { href: "/settings", label: "Paramètres", icon: Settings },
+    ],
+  },
 ];
 
 export default function DashboardLayout({
@@ -46,9 +53,7 @@ export default function DashboardLayout({
   const { user, logout } = useAuth();
   const { unreadCount } = useNotifications();
   const [isLoading, setIsLoading] = useState(true);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -72,7 +77,10 @@ export default function DashboardLayout({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div
+        className="flex items-center justify-center"
+        style={{ minHeight: "100vh", background: "var(--bg)" }}
+      >
         <div className="space-y-4 w-full max-w-md px-4">
           <Skeleton className="h-8 w-full" />
           <Skeleton className="h-64 w-full" />
@@ -82,198 +90,148 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="flex" style={{ minHeight: "100vh", background: "var(--bg)" }}>
       {/* Sidebar */}
       <aside
-        className={cn(
-          "fixed top-0 left-0 z-40 h-screen bg-surface-sunken border-r border-border transition-all duration-300 ease-in-out",
-          isSidebarCollapsed ? "w-16" : "w-[260px]",
-          "transform -translate-x-full md:translate-x-0",
-          mobileMenuOpen && "translate-x-0"
-        )}
+        className="flex flex-col flex-shrink-0 sticky top-0"
+        style={{
+          width: "260px",
+          background: "var(--surface-sunken)",
+          borderRight: "1px solid var(--border)",
+          padding: "24px 12px",
+          gap: "2px",
+          height: "100vh",
+        }}
       >
+        {/* Logo */}
         <div
-          className={cn(
-            "p-6 flex items-center justify-between",
-            isSidebarCollapsed && "p-4 justify-center"
-          )}
+          style={{
+            fontSize: "1.125rem",
+            fontWeight: 700,
+            color: "var(--text-primary)",
+            letterSpacing: "-0.01em",
+            padding: "8px 12px 20px",
+            borderBottom: "1px solid var(--border)",
+            marginBottom: "8px",
+          }}
         >
-          {!isSidebarCollapsed && (
-            <h1 className="text-h1 text-primary">
-              Fraude-Ary
-            </h1>
-          )}
-          <button
-            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-            className="p-2 rounded-md hover:bg-surface-raised text-text-secondary transition-colors"
-          >
-            {isSidebarCollapsed ? (
-              <ChevronRight className="w-5 h-5" />
-            ) : (
-              <ChevronLeft className="w-5 h-5" />
-            )}
-          </button>
+          Fraude<span style={{ color: "var(--primary-hover)" }}>·Ary</span>
         </div>
 
-        <nav className={cn("px-4 space-y-1", isSidebarCollapsed && "px-2")}>
-          {navItems.map((item) => {
-            const isActive = pathname === item.href;
-            const linkContent = (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-md transition-colors relative",
-                  isSidebarCollapsed && "justify-center px-2",
-                  isActive
-                    ? "bg-primary-muted text-primary border-l-2 border-primary"
-                    : "text-text-secondary hover:text-text-primary hover:bg-surface-raised"
-                )}
-              >
-                <item.icon className="w-5 h-5 flex-shrink-0" />
-                {!isSidebarCollapsed && (
-                  <span className="font-medium text-body-sm">{item.label}</span>
-                )}
-                {item.href === "/notifications" && unreadCount > 0 && (
-                  <span
-                    className={cn(
-                      "flex items-center justify-center bg-danger text-text-primary text-label font-bold rounded-full",
-                      isSidebarCollapsed ? "absolute -top-1 -right-1 w-4 h-4" : "ml-auto w-5 h-5"
-                    )}
-                  >
-                    {unreadCount > 9 ? "9+" : unreadCount}
-                  </span>
-                )}
-              </Link>
-            );
-
-            if (isSidebarCollapsed) {
+        {navSections.map((section) => (
+          <div key={section.label}>
+            <div
+              style={{
+                fontSize: "0.75rem",
+                fontWeight: 500,
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+                color: "var(--text-muted)",
+                padding: "12px 12px 6px",
+              }}
+            >
+              {section.label}
+            </div>
+            {section.items.map((item) => {
+              const isActive = pathname === item.href;
               return (
-                <Tooltip key={item.href} content={item.label} position="right">
-                  {linkContent}
-                </Tooltip>
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-[10px] cursor-pointer transition-all duration-150 ease-out no-underline",
+                    isActive
+                      ? "text-primary-hover"
+                      : "text-text-secondary hover:bg-surface-raised hover:text-text-primary"
+                  )}
+                  style={{
+                    padding: "9px 12px",
+                    borderRadius: "8px",
+                    fontSize: "13px",
+                    fontWeight: 500,
+                    borderLeft: isActive ? "2px solid var(--primary)" : "2px solid transparent",
+                    paddingLeft: isActive ? "10px" : "12px",
+                    background: isActive ? "var(--primary-subtle)" : undefined,
+                  }}
+                >
+                  <item.icon
+                    className="flex-shrink-0"
+                    style={{ width: "16px", height: "16px" }}
+                  />
+                  <span>{item.label}</span>
+                  {item.badge !== undefined && (
+                    <span className="ml-auto">
+                      <Badge variant="loss" style={{ fontSize: "9px", padding: "2px 6px" }}>
+                        {item.badge}
+                      </Badge>
+                    </span>
+                  )}
+                  {item.href === "/notifications" && unreadCount > 0 && !item.badge && (
+                    <span className="ml-auto">
+                      <Badge variant="loss" style={{ fontSize: "9px", padding: "2px 6px" }}>
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                      </Badge>
+                    </span>
+                  )}
+                </Link>
               );
-            }
-
-            return linkContent;
-          })}
-        </nav>
-
-        <div className={cn("px-4 mt-2", isSidebarCollapsed && "px-2")}>
-          {isSidebarCollapsed ? (
-            <Tooltip content="Refresh Prices" position="right">
-              <button
-                onClick={handleRefresh}
-                disabled={isRefreshing}
-                className={cn(
-                  "flex items-center justify-center w-full px-4 py-3 rounded-md transition-colors text-text-secondary hover:text-text-primary hover:bg-surface-raised",
-                  isRefreshing && "opacity-40 cursor-not-allowed"
-                )}
-              >
-                <RefreshCw
-                  className={cn("w-5 h-5", isRefreshing && "animate-spin")}
-                />
-              </button>
-            </Tooltip>
-          ) : (
-            <button
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-              className={cn(
-                "flex items-center gap-3 w-full px-4 py-3 rounded-md transition-colors text-text-secondary hover:text-text-primary hover:bg-surface-raised",
-                isRefreshing && "opacity-40 cursor-not-allowed"
-              )}
-            >
-              <RefreshCw
-                className={cn("w-5 h-5", isRefreshing && "animate-spin")}
-              />
-              <span className="font-medium text-body-sm">
-                {isRefreshing ? "Refreshing..." : "Refresh Prices"}
-              </span>
-            </button>
-          )}
-        </div>
-
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border">
-          <div
-            className={cn(
-              "px-4 py-2",
-              isSidebarCollapsed && "px-0 text-center"
-            )}
-          >
-            <p className="text-body-sm font-medium text-text-primary truncate">
-              {isSidebarCollapsed
-                ? user?.full_name?.charAt(0) || "U"
-                : user?.full_name || "User"}
-            </p>
-            {!isSidebarCollapsed && (
-              <p className="text-label text-text-tertiary truncate">
-                {user?.email}
-              </p>
-            )}
+            })}
           </div>
-          {isSidebarCollapsed ? (
-            <Tooltip content="Sign Out" position="right">
-              <button
-                onClick={logout}
-                className="w-full mt-2 px-4 py-2 text-body-sm text-text-secondary hover:text-text-primary hover:bg-surface-raised rounded-md transition-colors text-center"
-              >
-                ⇥
-              </button>
-            </Tooltip>
-          ) : (
-            <button
-              onClick={logout}
-              className="w-full mt-2 px-4 py-2 text-body-sm text-text-secondary hover:text-text-primary hover:bg-surface-raised rounded-md transition-colors text-left"
-            >
-              Sign Out
-            </button>
-          )}
+        ))}
+
+        {/* Refresh button */}
+        <button
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+          className="flex items-center gap-[10px] cursor-pointer transition-all duration-150 ease-out mt-2 text-text-secondary hover:bg-surface-raised hover:text-text-primary"
+          style={{
+            padding: "9px 12px",
+            borderRadius: "8px",
+            fontSize: "13px",
+            fontWeight: 500,
+            borderLeft: "2px solid transparent",
+            background: "transparent",
+            border: "none",
+            width: "100%",
+          }}
+        >
+          <RefreshCw
+            className={cn("flex-shrink-0", isRefreshing && "animate-spin")}
+            style={{ width: "16px", height: "16px" }}
+          />
+          <span>Refresh Prices</span>
+        </button>
+
+        {/* User */}
+        <div className="mt-auto pt-4" style={{ borderTop: "1px solid var(--border)" }}>
+          <div style={{ padding: "8px 12px" }}>
+            <p className="text-[13px] font-medium text-text-primary truncate">
+              {user?.full_name || "User"}
+            </p>
+            <p className="text-[11px] text-text-tertiary truncate">{user?.email}</p>
+          </div>
+          <button
+            onClick={logout}
+            className="w-full text-left text-[13px] text-text-secondary hover:text-text-primary hover:bg-surface-rounded transition-all duration-150 ease-out"
+            style={{
+              padding: "8px 12px",
+              borderRadius: "8px",
+              background: "transparent",
+              border: "none",
+            }}
+          >
+            Sign Out
+          </button>
         </div>
       </aside>
 
-      {/* Mobile header */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-surface/80 backdrop-blur-sm border-b border-border">
-        <div className="flex items-center justify-between px-4 py-3">
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 rounded-md hover:bg-surface-raised transition-colors"
-          >
-            {mobileMenuOpen ? (
-              <X className="w-6 h-6 text-text-primary" />
-            ) : (
-              <Menu className="w-6 h-6 text-text-primary" />
-            )}
-          </button>
-          <h1 className="text-h2 text-primary">
-            Fraude-Ary
-          </h1>
-          <div className="w-10" />
-        </div>
-      </div>
-
-      {/* Mobile overlay */}
-      {mobileMenuOpen && (
-        <div
-          className="md:hidden fixed inset-0 bg-overlay z-30 backdrop-blur-sm transition-opacity"
-          onClick={() => setMobileMenuOpen(false)}
-        />
-      )}
-
       {/* Main content */}
-      <div
-        className={cn(
-          "transition-all duration-300 min-h-screen flex flex-col",
-          isSidebarCollapsed ? "md:ml-16" : "md:ml-[260px]",
-          "pt-16 md:pt-0"
-        )}
+      <main
+        className="flex-1 flex flex-col"
+        style={{ padding: "32px", gap: "32px", overflow: "auto" }}
       >
-        <main className="flex-1 px-4 py-6 md:p-8">
-          {children}
-        </main>
-        <Footer />
-      </div>
+        {children}
+      </main>
     </div>
   );
 }

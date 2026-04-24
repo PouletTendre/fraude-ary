@@ -4,29 +4,30 @@ import { useEffect, useMemo, useState } from "react";
 import { usePortfolio } from "@/hooks/usePortfolio";
 import { useAssets } from "@/hooks/useAssets";
 import { useSettings } from "@/hooks/useSettings";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { KPICard } from "@/components/ui/KPICard";
 import { TimeFilterChips } from "@/components/ui/TimeFilterChips";
+import { Badge } from "@/components/ui/Badge";
+import { AssetAvatar } from "@/components/ui/AssetAvatar";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { PageTransition } from "@/components/ui/PageTransition";
-import { Badge } from "@/components/ui/Badge";
-import { Tag } from "@/components/ui/Tag";
-import { AssetAvatar } from "@/components/ui/AssetAvatar";
 import { MarketWeatherWidget } from "@/components/MarketWeatherWidget";
 import { RecentTransactionsWidget } from "@/components/RecentTransactionsWidget";
 import { GoalsWidget } from "@/components/GoalsWidget";
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  DollarSign, 
-  PieChart, 
-  Activity, 
-  ArrowRight, 
-  Clock,
-  BarChart3
-} from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+
+function formatNumber(value: number, currency?: string) {
+  const opts: Intl.NumberFormatOptions = {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  };
+  if (currency) {
+    opts.style = "currency";
+    opts.currency = currency;
+  }
+  return new Intl.NumberFormat("fr-FR", opts).format(value);
+}
 
 export default function DashboardPage() {
   const { portfolio, isLoading: portfolioLoading } = usePortfolio();
@@ -40,19 +41,23 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!isLoading && (portfolio || assets)) {
       const now = new Date();
-      setLastUpdate(now.toLocaleDateString("fr-FR", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      }));
+      setLastUpdate(
+        now.toLocaleDateString("fr-FR", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      );
     }
   }, [isLoading, portfolio, assets]);
 
   const dailyChange = useMemo(() => {
     if (!portfolio?.history || portfolio.history.length < 2) return null;
-    const history = [...portfolio.history].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    const history = [...portfolio.history].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
     const latest = history[history.length - 1];
     const previous = history[history.length - 2];
     const change = latest.value - previous.value;
@@ -60,54 +65,41 @@ export default function DashboardPage() {
     return { change, percent };
   }, [portfolio?.history]);
 
-  const topGainers = useMemo(() => {
+  const enrichedAssets = useMemo(() => {
     if (!assets || assets.length === 0) return [];
     return [...assets]
-      .map(asset => ({
+      .map((asset) => ({
         ...asset,
-        pnl: (asset.current_price - asset.purchase_price) * asset.quantity,
-        pnlPercent: ((asset.current_price - asset.purchase_price) / asset.purchase_price) * 100,
+        pnlPercent:
+          ((asset.current_price - asset.purchase_price) / asset.purchase_price) *
+          100,
         value: asset.current_price * asset.quantity,
+        allocation: portfolio?.total_value
+          ? ((asset.current_price * asset.quantity) / portfolio.total_value) *
+            100
+          : 0,
       }))
-      .sort((a, b) => b.pnlPercent - a.pnlPercent)
-      .slice(0, 5);
-  }, [assets]);
-
-  const topLosers = useMemo(() => {
-    if (!assets || assets.length === 0) return [];
-    return [...assets]
-      .map(asset => ({
-        ...asset,
-        pnl: (asset.current_price - asset.purchase_price) * asset.quantity,
-        pnlPercent: ((asset.current_price - asset.purchase_price) / asset.purchase_price) * 100,
-        value: asset.current_price * asset.quantity,
-      }))
-      .sort((a, b) => a.pnlPercent - b.pnlPercent)
-      .slice(0, 5);
-  }, [assets]);
+      .sort((a, b) => b.value - a.value);
+  }, [assets, portfolio?.total_value]);
 
   if (isLoading) {
     return (
       <PageTransition>
-        <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+        <div className="flex flex-col gap-[32px]">
+          <div className="flex items-start justify-between gap-4">
             <div className="space-y-2">
-              <Skeleton className="h-10 w-48" />
-              <Skeleton className="h-4 w-64" />
+              <Skeleton style={{ height: "36px", width: "200px" }} />
+              <Skeleton style={{ height: "16px", width: "300px" }} />
             </div>
-            <Skeleton className="h-6 w-24" />
+            <Skeleton style={{ height: "36px", width: "120px" }} />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Skeleton className="h-[110px] rounded-lg" />
-            <Skeleton className="h-[110px] rounded-lg" />
-            <Skeleton className="h-[110px] rounded-lg" />
-            <Skeleton className="h-[110px] rounded-lg" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[12px]">
+            <Skeleton style={{ height: "110px", borderRadius: "14px" }} />
+            <Skeleton style={{ height: "110px", borderRadius: "14px" }} />
+            <Skeleton style={{ height: "110px", borderRadius: "14px" }} />
+            <Skeleton style={{ height: "110px", borderRadius: "14px" }} />
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Skeleton className="h-72 rounded-lg" />
-            <Skeleton className="h-72 rounded-lg" />
-            <Skeleton className="h-72 rounded-lg" />
-          </div>
+          <Skeleton style={{ height: "300px", borderRadius: "14px" }} />
         </div>
       </PageTransition>
     );
@@ -115,173 +107,337 @@ export default function DashboardPage() {
 
   return (
     <PageTransition>
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-        <div>
-          <h1 className="text-display text-text-primary">Portfolio Dashboard</h1>
-          <p className="text-body text-text-secondary mt-1">Vue d&apos;ensemble de vos performances</p>
-        </div>
-        {lastUpdate && (
-          <div className="flex items-center gap-2 text-body-sm text-text-tertiary">
-            <Clock className="w-4 h-4" />
-            <span>{lastUpdate}</span>
+      <div className="flex flex-col gap-[32px]">
+        {/* Page header */}
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1
+              style={{
+                fontSize: "1.75rem",
+                fontWeight: 600,
+                letterSpacing: "-0.01em",
+                color: "var(--text-primary)",
+              }}
+            >
+              Dashboard
+            </h1>
+            <p
+              style={{
+                fontSize: "0.875rem",
+                color: "var(--text-secondary)",
+                marginTop: "4px",
+              }}
+            >
+              {lastUpdate
+                ? `Mis à jour le ${lastUpdate} · Bourse ouverte`
+                : "Chargement..."}
+            </p>
           </div>
-        )}
-      </div>
+          <div className="flex items-center gap-[8px]">
+            <button
+              className="inline-flex items-center gap-[6px] text-[14px] font-medium font-sans cursor-pointer transition-all duration-150 ease-out whitespace-nowrap"
+              style={{
+                background: "var(--surface-raised)",
+                color: "var(--text-primary)",
+                border: "1px solid var(--border)",
+                borderRadius: "var(--r-md)",
+                padding: "7px 12px",
+                fontSize: "13px",
+              }}
+            >
+              Exporter CSV
+            </button>
+            <Link
+              href="/assets"
+              className="inline-flex items-center gap-[6px] text-[14px] font-medium font-sans cursor-pointer transition-all duration-150 ease-out whitespace-nowrap no-underline"
+              style={{
+                background: "var(--primary)",
+                color: "var(--text-primary)",
+                borderRadius: "var(--r-md)",
+                padding: "7px 12px",
+                fontSize: "13px",
+              }}
+            >
+              + Ajouter actif
+            </Link>
+          </div>
+        </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KPICard
-          label="VALEUR TOTALE"
-          value={portfolio ? formatCurrency(portfolio.total_value) : formatCurrency(0)}
-          delta={portfolio ? `${portfolio.gain_loss_percentage >= 0 ? "+" : ""}${portfolio.gain_loss_percentage.toFixed(2)}% ce mois` : undefined}
-          isPositive={portfolio ? portfolio.gain_loss_percentage >= 0 : null}
-        />
-        <KPICard
-          label="P&L JOURNALIER"
-          value={dailyChange ? `${dailyChange.change >= 0 ? "+" : ""}${formatCurrency(dailyChange.change)}` : "—"}
-          delta={dailyChange ? `${dailyChange.percent >= 0 ? "+" : ""}${dailyChange.percent.toFixed(2)}%` : undefined}
-          isPositive={dailyChange ? dailyChange.change >= 0 : null}
-        />
-        <KPICard
-          label="BETA"
-          value="0.87"
-          delta="neutre"
-          isPositive={null}
-        />
-        <KPICard
-          label="SHARPE RATIO"
-          value="1.62"
-          delta="bon"
-          isPositive={true}
-        />
-      </div>
+        {/* KPI Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[12px]">
+          <KPICard
+            label="Valeur totale"
+            value={portfolio ? formatCurrency(portfolio.total_value) : "—"}
+            delta={
+              portfolio
+                ? `${portfolio.gain_loss_percentage >= 0 ? "+" : ""}${portfolio.gain_loss_percentage.toFixed(2)}% ce mois`
+                : undefined
+            }
+            isPositive={
+              portfolio ? portfolio.gain_loss_percentage >= 0 : null
+            }
+          />
+          <KPICard
+            label="P&L journalier"
+            value={
+              dailyChange
+                ? `${dailyChange.change >= 0 ? "+" : ""}${formatCurrency(dailyChange.change)}`
+                : "—"
+            }
+            delta={
+              dailyChange
+                ? `${dailyChange.percent >= 0 ? "+" : ""}${dailyChange.percent.toFixed(2)}%`
+                : undefined
+            }
+            isPositive={dailyChange ? dailyChange.change >= 0 : null}
+          />
+          <KPICard
+            label="Beta portefeuille"
+            value="0.87"
+            delta="neutre"
+            isPositive={null}
+          />
+          <KPICard
+            label="Sharpe ratio"
+            value="1.62"
+            delta="bon"
+            isPositive={true}
+          />
+        </div>
 
-      {/* Time filter + widgets */}
-      <div className="flex items-center justify-between">
+        {/* Time filter */}
         <TimeFilterChips value={timeFilter} onChange={setTimeFilter} />
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <MarketWeatherWidget />
-        <RecentTransactionsWidget />
-        <GoalsWidget />
-      </div>
+        {/* Widgets */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-[24px]">
+          <MarketWeatherWidget />
+          <RecentTransactionsWidget />
+          <GoalsWidget />
+        </div>
 
-      {/* Top Gainers & Losers */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="flex items-center gap-2 text-h2">
-              <TrendingUp className="w-5 h-5 text-gain" />
-              Top Gainers
-            </CardTitle>
-            <Link href="/portfolio" className="text-body-sm text-primary hover:text-primary-hover flex items-center gap-1">
-              View all <ArrowRight className="w-4 h-4" />
+        {/* Asset Table */}
+        <div
+          className="overflow-hidden"
+          style={{
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+            borderRadius: "var(--r-lg)",
+          }}
+        >
+          {/* Table header row */}
+          <div
+            className="flex items-center justify-between"
+            style={{
+              padding: "16px 20px 12px",
+              borderBottom: "1px solid var(--border)",
+            }}
+          >
+            <span
+              style={{
+                fontSize: "1rem",
+                fontWeight: 600,
+                color: "var(--text-primary)",
+              }}
+            >
+              Mes positions
+            </span>
+            <Link
+              href="/portfolio"
+              className="flex items-center gap-1 no-underline"
+              style={{
+                fontSize: "0.875rem",
+                color: "var(--primary)",
+              }}
+            >
+              View details <ArrowRight style={{ width: "16px", height: "16px" }} />
             </Link>
-          </CardHeader>
-          <CardContent>
-            {topGainers.length > 0 ? (
-              <div className="space-y-3">
-                {topGainers.map((asset) => (
-                  <div key={asset.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                    <div className="flex items-center gap-3">
-                      <AssetAvatar symbol={asset.symbol} type={asset.type === "crypto" ? "crypto" : "equity"} />
-                      <div>
-                        <p className="font-medium text-text-primary text-[13px]">{asset.symbol.toUpperCase()}</p>
-                        <p className="text-label text-text-tertiary uppercase tracking-wide">{asset.type.replace("_", " ")}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-mono text-[13px] text-text-primary font-tnum">{formatCurrency(asset.value)}</p>
-                      <Badge variant="gain">
-                        ▲ +{asset.pnlPercent.toFixed(2)}%
-                      </Badge>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-text-tertiary text-center py-8">No assets yet</p>
-            )}
-          </CardContent>
-        </Card>
+          </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="flex items-center gap-2 text-h2">
-              <TrendingDown className="w-5 h-5 text-loss" />
-              Top Losers
-            </CardTitle>
-            <Link href="/portfolio" className="text-body-sm text-primary hover:text-primary-hover flex items-center gap-1">
-              View all <ArrowRight className="w-4 h-4" />
-            </Link>
-          </CardHeader>
-          <CardContent>
-            {topLosers.length > 0 ? (
-              <div className="space-y-3">
-                {topLosers.map((asset) => (
-                  <div key={asset.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                    <div className="flex items-center gap-3">
-                      <AssetAvatar symbol={asset.symbol} type={asset.type === "crypto" ? "crypto" : "equity"} />
-                      <div>
-                        <p className="font-medium text-text-primary text-[13px]">{asset.symbol.toUpperCase()}</p>
-                        <p className="text-label text-text-tertiary uppercase tracking-wide">{asset.type.replace("_", " ")}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-mono text-[13px] text-text-primary font-tnum">{formatCurrency(asset.value)}</p>
-                      <Badge variant="loss">
-                        ▼ {asset.pnlPercent.toFixed(2)}%
-                      </Badge>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-text-tertiary text-center py-8">No assets yet</p>
-            )}
-          </CardContent>
-        </Card>
+          <table className="w-full" style={{ borderCollapse: "collapse" }}>
+            <thead>
+              <tr>
+                {["Actif", "Prix", "24h", "Valeur", "Allocation", "Statut"].map(
+                  (h, i) => (
+                    <th
+                      key={h}
+                      style={{
+                        background: "var(--surface-sunken)",
+                        color: "var(--text-tertiary)",
+                        fontSize: "0.75rem",
+                        fontWeight: 500,
+                        letterSpacing: "0.08em",
+                        textTransform: "uppercase",
+                        padding: "10px 16px",
+                        textAlign: i > 0 ? "right" : "left",
+                        borderBottom: "1px solid var(--border)",
+                      }}
+                    >
+                      {h}
+                    </th>
+                  )
+                )}
+              </tr>
+            </thead>
+            <tbody>
+              {enrichedAssets.length > 0 ? (
+                enrichedAssets.slice(0, 6).map((asset) => {
+                  const avatarType =
+                    asset.type === "crypto"
+                      ? "crypto"
+                      : asset.type === "stocks"
+                        ? "equity"
+                        : "other";
+                  const isGain = asset.pnlPercent >= 0;
+                  return (
+                    <tr
+                      key={asset.id}
+                      style={{
+                        borderBottom: "1px solid var(--border)",
+                        transition: "background 150ms ease-out",
+                      }}
+                      className="hover:bg-surface-raised"
+                    >
+                      <td style={{ padding: "14px 16px", verticalAlign: "middle" }}>
+                        <div className="flex items-center gap-[10px]">
+                          <AssetAvatar
+                            symbol={asset.symbol}
+                            type={avatarType}
+                          />
+                          <div>
+                            <div
+                              style={{
+                                fontSize: "13px",
+                                fontWeight: 500,
+                                color: "var(--text-primary)",
+                              }}
+                            >
+                              {asset.symbol.toUpperCase()}
+                            </div>
+                            <div
+                              style={{
+                                fontSize: "11px",
+                                color: "var(--text-tertiary)",
+                                marginTop: "1px",
+                              }}
+                            >
+                              {asset.type.replace("_", " ")}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td
+                        className="font-mono font-tnum"
+                        style={{
+                          padding: "14px 16px",
+                          textAlign: "right",
+                          fontSize: "13px",
+                          color: "var(--text-primary)",
+                        }}
+                      >
+                        {formatCurrency(asset.current_price)}
+                      </td>
+                      <td
+                        className={cn(
+                          "font-mono font-tnum",
+                          isGain ? "text-gain" : "text-loss"
+                        )}
+                        style={{
+                          padding: "14px 16px",
+                          textAlign: "right",
+                          fontSize: "13px",
+                        }}
+                      >
+                        {isGain ? "+" : ""}
+                        {asset.pnlPercent.toFixed(2)}%
+                      </td>
+                      <td
+                        className="font-mono font-tnum"
+                        style={{
+                          padding: "14px 16px",
+                          textAlign: "right",
+                          fontSize: "13px",
+                          color: "var(--text-primary)",
+                        }}
+                      >
+                        {formatCurrency(asset.value)}
+                      </td>
+                      <td style={{ padding: "14px 16px", textAlign: "right" }}>
+                        <div className="flex items-center gap-[8px] justify-end">
+                          <div
+                            style={{
+                              width: "80px",
+                              height: "6px",
+                              background: "var(--border)",
+                              borderRadius: "9999px",
+                              overflow: "hidden",
+                              flexShrink: 0,
+                            }}
+                          >
+                            <div
+                              style={{
+                                height: "100%",
+                                borderRadius: "9999px",
+                                background:
+                                  "linear-gradient(90deg, var(--primary), var(--secondary))",
+                                width: `${Math.min(asset.allocation, 100)}%`,
+                              }}
+                            />
+                          </div>
+                          <span
+                            className="font-mono font-tnum"
+                            style={{
+                              fontSize: "11px",
+                              color: "var(--text-tertiary)",
+                              minWidth: "28px",
+                              textAlign: "right",
+                            }}
+                          >
+                            {asset.allocation.toFixed(1)}%
+                          </span>
+                        </div>
+                      </td>
+                      <td style={{ padding: "14px 16px" }}>
+                        <Badge
+                          variant={
+                            isGain
+                              ? asset.allocation > 20
+                                ? "info"
+                                : "gain"
+                              : asset.pnlPercent < -5
+                                ? "warning"
+                                : "loss"
+                          }
+                        >
+                          {isGain
+                            ? asset.allocation > 20
+                              ? "Long"
+                              : "▲ +" + asset.pnlPercent.toFixed(2) + "%"
+                            : asset.pnlPercent < -5
+                              ? "⚠ Volatil"
+                              : "▼ " + asset.pnlPercent.toFixed(2) + "%"}
+                        </Badge>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td
+                    colSpan={6}
+                    style={{
+                      padding: "32px",
+                      textAlign: "center",
+                      color: "var(--text-tertiary)",
+                    }}
+                  >
+                    Aucun actif. Ajoutez votre premier actif pour commencer.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
-
-      {/* Asset Allocation */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-h2">Répartition par type d&apos;actif</CardTitle>
-          <Link href="/portfolio" className="text-body-sm text-primary hover:text-primary-hover flex items-center gap-1">
-            View details <ArrowRight className="w-4 h-4" />
-          </Link>
-        </CardHeader>
-        <CardContent>
-          {portfolio?.by_type && portfolio.by_type.length > 0 ? (
-            <div className="space-y-4">
-              {portfolio.by_type.map((item) => (
-                <div key={item.type} className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 min-w-[120px]">
-                    <span className="capitalize text-text-secondary text-body-sm">{item.type.replace("_", " ")}</span>
-                  </div>
-                  <div className="flex items-center gap-4 flex-1 mx-4">
-                    <div className="w-[80px] h-[6px] bg-border rounded-full overflow-hidden flex-shrink-0">
-                      <div 
-                        className="h-full rounded-full bg-gradient-to-r from-primary to-secondary"
-                        style={{ width: `${item.percentage}%` }}
-                      />
-                    </div>
-                    <span className="font-mono text-[11px] text-text-tertiary font-tnum w-[50px] text-right">{item.percentage.toFixed(1)}%</span>
-                  </div>
-                  <div className="text-right min-w-[120px]">
-                    <span className="font-mono text-body-sm text-text-primary font-tnum">{formatCurrency(item.value)}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-text-tertiary text-center py-8">No allocation data available</p>
-          )}
-        </CardContent>
-      </Card>
-    </div>
     </PageTransition>
   );
 }

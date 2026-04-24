@@ -8,7 +8,7 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className, label, error, id, icon, ...props }, ref) => {
+  ({ className, label, error, id, icon, style, ...props }, ref) => {
     const inputId = id || label?.toLowerCase().replace(/\s+/g, "-");
 
     return (
@@ -16,25 +16,32 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="block text-label uppercase tracking-wide text-text-secondary mb-1.5"
+            className="block text-[0.875rem] font-medium text-text-secondary mb-1.5"
           >
             {label}
           </label>
         )}
         <div className="relative">
           {icon && (
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" style={{ fontSize: "15px", pointerEvents: "none" }}>
               {icon}
             </div>
           )}
           <input
             id={inputId}
             className={cn(
-              "flex h-10 w-full rounded-md border border-border bg-surface-sunken px-3 py-2 text-body placeholder:text-text-muted focus:outline-none focus:border-border-focus focus:ring-2 focus:ring-primary/20 transition-all duration-150 ease-out disabled:cursor-not-allowed disabled:opacity-40 text-text-primary",
-              error && "border-loss focus:border-loss focus:ring-loss/20",
-              icon && "pl-10",
+              "w-full outline-none transition-all duration-150 ease-out bg-surface-sunken text-text-primary placeholder:text-text-muted",
+              error && "border-loss",
               className
             )}
+            style={{
+              border: error ? "1px solid var(--loss)" : "1px solid var(--border)",
+              borderRadius: "var(--r-md)",
+              padding: icon ? "10px 14px 10px 36px" : "10px 14px",
+              fontSize: "14px",
+              fontFamily: "var(--font-sans)",
+              ...style,
+            }}
             ref={ref}
             {...props}
           />

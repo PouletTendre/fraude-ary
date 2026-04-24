@@ -11,19 +11,19 @@ export function AssetAvatar({ symbol, type = "other", className }: AssetAvatarPr
 
   const styles = {
     equity: {
-      bg: "bg-avatar-equity-bg",
-      border: "border-avatar-equity-border",
-      text: "text-avatar-equity-text",
+      bg: "rgba(99,102,241,0.18)",
+      border: "rgba(99,102,241,0.3)",
+      text: "#818CF8",
     },
     crypto: {
-      bg: "bg-avatar-crypto-bg",
-      border: "border-avatar-crypto-border",
-      text: "text-avatar-crypto-text",
+      bg: "rgba(34,211,238,0.15)",
+      border: "rgba(34,211,238,0.3)",
+      text: "#22D3EE",
     },
     other: {
-      bg: "bg-avatar-other-bg",
-      border: "border-avatar-other-border",
-      text: "text-avatar-other-text",
+      bg: "rgba(16,185,129,0.15)",
+      border: "rgba(16,185,129,0.3)",
+      text: "#10B981",
     },
   };
 
@@ -32,12 +32,19 @@ export function AssetAvatar({ symbol, type = "other", className }: AssetAvatarPr
   return (
     <div
       className={cn(
-        "w-8 h-8 rounded-full flex items-center justify-center border text-[11px] font-semibold",
-        s.bg,
-        s.border,
-        s.text,
+        "flex items-center justify-center flex-shrink-0",
         className
       )}
+      style={{
+        width: "34px",
+        height: "34px",
+        borderRadius: "9999px",
+        fontSize: "11px",
+        fontWeight: 600,
+        background: s.bg,
+        border: `1px solid ${s.border}`,
+        color: s.text,
+      }}
     >
       {initials}
     </div>
