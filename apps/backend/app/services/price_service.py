@@ -2,7 +2,7 @@ import asyncio
 import httpx
 import logging
 import uuid
-from typing import Optional, Dict, List, Any
+from typing import Optional, Dict, List, Any, Tuple
 from datetime import datetime
 from app.services.cache_service import cache_service
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -169,6 +169,106 @@ class PriceService:
         except Exception as e:
             logging.warning(f"Failed to fetch benchmark data for {symbol}: {e}")
             return None
+
+    async def get_stock_history(self, symbol: str, start: datetime, end: datetime) -> List[Tuple[datetime, float]]:
+        symbol_upper = symbol.upper()
+        results: List[Tuple[datetime, float]] = []
+        try:
+            async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
+                url = f"{YAHOO_CHART_API}/{symbol_upper}"
+                params = {
+                    "period1": int(start.timestamp()),
+                    "period2": int(end.timestamp()),
+                    "interval": "1d",
+                }
+                resp = await client.get(url, params=params, headers={
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+                })
+                if resp.status_code == 200:
+                    data = resp.json()
+                    result = data.get("chart", {}).get("result", [None])[0]
+                    if result:
+                        timestamps = result.get("timestamp", [])
+                        quotes = result.get("indicators", {}).get("quote", [{}])[0]
+                        closes = quotes.get("close", [])
+                        for ts, close in zip(timestamps, closes):
+                            if close is not None and ts is not None:
+                                dt = datetime.utcfromtimestamp(ts)
+                                results.append((dt, float(close)))
+        except Exception as e:
+            logging.warning(f"Yahoo chart history API failed for {symbol_upper}: {e}")
+        return results
+
+    async def get_crypto_history(self, symbol: str, start: datetime, end: datetime) -> List[Tuple[datetime, float]]:
+        symbol_upper = symbol.upper()
+        results: List[Tuple[datetime, float]] = []
+        days = (end - start).days + 1
+        if days <= 0:
+            return results
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                url = f"{CRYPTO_COMPARE_API}/v2/histoday"
+                params = {
+                    "fsym": symbol_upper,
+                    "tsym": "USD",
+                    "limit": days,
+                    "toTs": int(end.timestamp()),
+                }
+                resp = await client.get(url, params=params)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    data_array = data.get("Data", {}).get("Data", [])
+                    for item in data_array:
+                        ts = item.get("time")
+                        close = item.get("close")
+                        if ts is not None and close is not None:
+                            dt = datetime.utcfromtimestamp(ts)
+                            results.append((dt, float(close)))
+        except Exception as e:
+            logging.warning(f"CryptoCompare histoday API failed for {symbol_upper}: {e}")
+        return results
+
+    async def backfill_price_history(self, db: AsyncSession, asset_id: str, symbol: str, asset_type: str, start_date: datetime) -> int:
+        from app.models.asset import PriceHistory
+        end_date = datetime.utcnow()
+        if start_date > end_date:
+            return 0
+
+        if asset_type == "crypto":
+            history = await self.get_crypto_history(symbol, start_date, end_date)
+        elif asset_type == "stocks":
+            history = await self.get_stock_history(symbol, start_date, end_date)
+        else:
+            return 0
+
+        if not history:
+            logging.warning(f"No historical data returned for {symbol} ({asset_type})")
+            return 0
+
+        # Query existing timestamps for this asset to avoid duplicates per day
+        result = await db.execute(
+            select(PriceHistory.timestamp).where(
+                PriceHistory.asset_id == asset_id,
+                PriceHistory.timestamp >= start_date,
+                PriceHistory.timestamp <= end_date
+            )
+        )
+        existing_dates = {row.date() for row in result.scalars().all()}
+
+        inserted = 0
+        for ts, price in history:
+            if ts.date() not in existing_dates:
+                entry = PriceHistory(
+                    id=str(uuid.uuid4()),
+                    asset_id=asset_id,
+                    price=price,
+                    timestamp=ts
+                )
+                db.add(entry)
+                inserted += 1
+
+        await db.commit()
+        return inserted
 
     async def auto_refresh_all_prices(self, db: AsyncSession) -> Dict[str, Any]:
         from app.models.asset import Asset

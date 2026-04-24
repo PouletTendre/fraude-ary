@@ -62,14 +62,24 @@ async def _get_portfolio_history(
     price_history_entries = history_result.scalars().all()
 
     from collections import defaultdict
-    daily_values = defaultdict(float)
     asset_map = {a.id: a for a in assets}
 
+    # Track latest price per asset per day to avoid double-counting
+    daily_asset_prices: dict = defaultdict(dict)
     for entry in price_history_entries:
         asset = asset_map.get(entry.asset_id)
         if asset:
             day = entry.timestamp.date()
-            daily_values[day] += asset.quantity * entry.price
+            daily_asset_prices[day][asset.id] = entry.price
+
+    daily_values: dict = {}
+    for day, asset_prices in daily_asset_prices.items():
+        total = 0.0
+        for aid, price in asset_prices.items():
+            asset = asset_map.get(aid)
+            if asset:
+                total += asset.quantity * price
+        daily_values[day] = total
 
     # Add current portfolio value for today if missing
     total_current = 0.0
@@ -134,9 +144,12 @@ async def get_portfolio_summary(
             currency=asset.currency or 'USD',
             created_at=asset.created_at
         ))
-    # Compute history for the last 365 days to support yearly performance
-    year_ago = datetime.utcnow() - timedelta(days=365)
-    history_entries = await _get_portfolio_history(current_user.email, db, year_ago)
+    # Compute history from the oldest purchase date so the chart shows full range
+    oldest_purchase = min(
+        (datetime.strptime(a.purchase_date, "%Y-%m-%d") for a in assets if a.purchase_date),
+        default=datetime.utcnow() - timedelta(days=365)
+    )
+    history_entries = await _get_portfolio_history(current_user.email, db, oldest_purchase)
 
     history_points = [
         HistoryPoint(date=entry.date.isoformat(), value=entry.total_value)

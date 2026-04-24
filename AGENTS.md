@@ -416,6 +416,7 @@ docker compose up -d --build
 8. **Use conventional commits:** `feat:`, `fix:`, `docs:`, `ci:`, `test:`.
 9. **Currency matters.** Never hardcode `$`. Use `formatCurrency(value, asset.currency)`.
 10. **No fake data.** Prices must come from real APIs.
+11. **Orchestrator pattern is mandatory.** The current agent is the orchestrator only. For any non-trivial task (feature, bug fix, refactor spanning >2 files), you MUST spawn specialized sub-agents via the `task` tool. Use `subagent_type: "general"` for implementation work. Parallelize front-end and back-end work whenever possible. Never write significant code yourself — delegate to sub-agents, then review, commit, and run E2E tests.
 
 ## Contact / Ownership
 

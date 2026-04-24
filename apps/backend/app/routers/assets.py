@@ -117,6 +117,15 @@ async def create_asset(
     await db.commit()
     await db.refresh(db_asset)
 
+    # Backfill historical prices from purchase_date
+    if db_asset.purchase_date:
+        try:
+            purchase_dt = datetime.strptime(db_asset.purchase_date, "%Y-%m-%d")
+            asset_type_str = asset.type.value if hasattr(asset.type, 'value') else asset.type
+            await price_service.backfill_price_history(db, db_asset.id, db_asset.symbol, asset_type_str, purchase_dt)
+        except Exception as e:
+            logging.warning(f"Failed to backfill history for {db_asset.symbol}: {e}")
+
     # Create transaction
     from app.models.transaction import Transaction, TransactionType
     tx = Transaction(
@@ -216,6 +225,27 @@ async def update_asset(
         currency=db_asset.currency or 'USD',
         created_at=db_asset.created_at
     )
+
+@router.post("/{asset_id}/backfill-history")
+async def backfill_asset_history(
+    asset_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(
+        select(Asset).where(Asset.id == asset_id, Asset.user_email == current_user.email)
+    )
+    asset = result.scalar_one_or_none()
+    if not asset:
+        raise HTTPException(status_code=404, detail="Asset not found")
+
+    if not asset.purchase_date:
+        raise HTTPException(status_code=400, detail="Asset has no purchase_date")
+
+    purchase_dt = datetime.strptime(asset.purchase_date, "%Y-%m-%d")
+    asset_type_str = asset.type.value if hasattr(asset.type, 'value') else asset.type
+    count = await price_service.backfill_price_history(db, asset.id, asset.symbol, asset_type_str, purchase_dt)
+    return {"backfilled_entries": count}
 
 @router.delete("/{asset_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_asset(
