@@ -15,14 +15,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Wait for any previous deployment
+      - name: Acquire deployment lock
         run: |
-          echo "Waiting for previous workflow to complete..."
-          while gh run list --status in_progress --limit 1 --json status,name 2>/dev/null | grep -q "deploy"; do
-            echo "Another deployment in progress, waiting 30s..."
-            sleep 30
+          LOCK_FILE="/tmp/fraude-ary-deploy.lock"
+          while [ -f "$LOCK_FILE" ]; do
+            echo "Another deployment is holding the lock, waiting 10s..."
+            sleep 10
           done
-          echo "No other deployment running"
+          echo "$$" > "$LOCK_FILE"
+          echo "Lock acquired"
 
       - name: Set environment variables
         run: |
@@ -31,19 +32,29 @@ jobs:
           echo "TAG=${{ github.sha }}" >> $GITHUB_ENV
           echo "REPO_DIR=${{ github.workspace }}" >> $GITHUB_ENV
 
-      - name: Clean up old containers
+      - name: Force clean all old containers and networks
         run: |
-          docker compose -f $REPO_DIR/infra/docker-compose.yml down --remove-orphans || true
-          docker ps -aq --filter "name=infra-" | xargs -r docker rm -f || true
+          cd $REPO_DIR/infra
+          docker compose down --remove-orphans --timeout 10 || true
+          docker stop $(docker ps -aq --filter "name=infra-") 2>/dev/null || true
+          docker rm -f $(docker ps -aq --filter "name=infra-") 2>/dev/null || true
+          docker network prune -f || true
           docker system prune -f || true
 
       - name: Build and start containers
         run: |
-          docker compose -f $REPO_DIR/infra/docker-compose.yml build --no-cache
-          docker compose -f $REPO_DIR/infra/docker-compose.yml up -d
+          cd $REPO_DIR/infra
+          docker compose build --no-cache
+          docker compose up -d
 
       - name: Verify deployment
         run: |
-          sleep 10
+          sleep 15
           curl -s http://localhost:8000/health || exit 1
           echo "Deployment successful"
+
+      - name: Release deployment lock
+        if: always()
+        run: |
+          rm -f /tmp/fraude-ary-deploy.lock
+          echo "Lock released"
