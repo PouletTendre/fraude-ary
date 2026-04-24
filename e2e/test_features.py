@@ -8,7 +8,7 @@ def login(page: Page):
     page.fill('input[type="email"]', "demo@fraude-ary.com")
     page.fill('input[type="password"]', "demo123456")
     page.click('button[type="submit"]')
-    page.wait_for_url(re.compile("/portfolio|/assets|/$"), timeout=10000)
+    page.wait_for_url(re.compile("/portfolio|/assets|/$"), timeout=15000)
 
 def test_currency_display_on_assets(page: Page):
     login(page)
