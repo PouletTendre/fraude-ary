@@ -51,6 +51,19 @@ export function useAssets() {
     },
   });
 
+  const bulkDeleteAssets = useMutation({
+    mutationFn: async (ids: string[]) => {
+      return fetchApi<void>("/api/v1/assets/bulk-delete", {
+        method: "POST",
+        body: JSON.stringify(ids),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["assets"] });
+      queryClient.invalidateQueries({ queryKey: ["portfolio"] });
+    },
+  });
+
   return {
     assets: assets || [],
     isLoading,
@@ -58,8 +71,10 @@ export function useAssets() {
     createAsset: createAsset.mutate,
     updateAsset: updateAsset.mutate,
     deleteAsset: deleteAsset.mutate,
+    bulkDeleteAssets: bulkDeleteAssets.mutate,
     isCreating: createAsset.isPending,
     isUpdating: updateAsset.isPending,
     isDeleting: deleteAsset.isPending,
+    isBulkDeleting: bulkDeleteAssets.isPending,
   };
 }

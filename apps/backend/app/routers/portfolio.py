@@ -130,6 +130,7 @@ async def get_portfolio_summary(
             purchase_price=asset.purchase_price,
             current_price=current_price,
             total_value=total_asset_value,
+            currency=getattr(asset, 'currency', 'USD'),
             created_at=asset.created_at
         ))
     # Compute history for the last 365 days to support yearly performance

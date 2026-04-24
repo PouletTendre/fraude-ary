@@ -21,6 +21,7 @@ import {
   Menu,
   X,
   Settings,
+  BookOpen,
 } from "lucide-react";
 import { Footer } from "@/components/Footer";
 
@@ -28,6 +29,7 @@ const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/portfolio", label: "Portfolio", icon: Wallet },
   { href: "/assets", label: "Assets", icon: Wallet },
+  { href: "/journal", label: "Journal", icon: BookOpen },
   { href: "/alerts", label: "Alerts", icon: AlertTriangle },
   { href: "/notifications", label: "Notifications", icon: Bell },
   { href: "/settings", label: "Settings", icon: Settings },

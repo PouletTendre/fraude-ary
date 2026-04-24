@@ -14,7 +14,24 @@ export interface Asset {
   current_price: number;
   purchase_date: string;
   user_id: string;
+  currency: string;
   last_updated?: string;
+}
+
+export interface Transaction {
+  id: string;
+  user_email: string;
+  asset_id?: string;
+  type: "buy" | "sell";
+  symbol: string;
+  quantity: number;
+  unit_price: number;
+  currency: string;
+  exchange_rate: number;
+  fees: number;
+  total_invested: number;
+  date: string;
+  created_at?: string;
 }
 
 export interface PortfolioSummary {

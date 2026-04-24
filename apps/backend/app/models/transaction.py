@@ -1,0 +1,24 @@
+from sqlalchemy import Column, String, Float, DateTime, Enum as SQLEnum
+from sqlalchemy.sql import func
+from app.database import Base
+import enum
+
+class TransactionType(str, enum.Enum):
+    BUY = "buy"
+    SELL = "sell"
+
+class Transaction(Base):
+    __tablename__ = "transactions"
+    id = Column(String, primary_key=True)
+    user_email = Column(String, nullable=False, index=True)
+    asset_id = Column(String, nullable=True, index=True)
+    type = Column(SQLEnum(TransactionType), nullable=False)
+    symbol = Column(String, nullable=False)
+    quantity = Column(Float, nullable=False)
+    unit_price = Column(Float, nullable=False)
+    currency = Column(String, default="USD")
+    exchange_rate = Column(Float, default=1.0)
+    fees = Column(Float, default=0.0)
+    total_invested = Column(Float, nullable=False)
+    date = Column(String, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())

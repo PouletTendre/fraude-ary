@@ -23,14 +23,28 @@ const TYPE_OPTIONS = [
   { value: "real_estate", label: "Real Estate" },
 ];
 
+const CURRENCY_OPTIONS = [
+  { value: "USD", label: "USD" },
+  { value: "EUR", label: "EUR" },
+  { value: "GBP", label: "GBP" },
+  { value: "JPY", label: "JPY" },
+  { value: "CHF", label: "CHF" },
+];
+
 type SortField = "symbol" | "value" | "performance";
 type SortDirection = "asc" | "desc";
 
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value);
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  USD: "$",
+  EUR: "€",
+  GBP: "£",
+  JPY: "¥",
+  CHF: "CHF",
+};
+
+const formatCurrency = (value: number, currency: string = "USD") => {
+  const symbol = CURRENCY_SYMBOLS[currency] || "$";
+  return `${symbol}${new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value)}`;
 };
 
 const generateMockHistory = (basePrice: number, days: number = 30) => {
@@ -50,7 +64,7 @@ const generateMockHistory = (basePrice: number, days: number = 30) => {
 
 export default function AssetsPage() {
   const router = useRouter();
-  const { assets, isLoading, createAsset, deleteAsset, isCreating, isDeleting } = useAssets();
+  const { assets, isLoading, createAsset, deleteAsset, bulkDeleteAssets, isCreating, isDeleting, isBulkDeleting } = useAssets();
   const { addToast } = useToast();
   const [showForm, setShowForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -58,12 +72,14 @@ export default function AssetsPage() {
   const [sortField, setSortField] = useState<SortField>("symbol");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
+  const [selectedAssets, setSelectedAssets] = useState<Set<string>>(new Set());
   const [formData, setFormData] = useState({
     type: "crypto" as "crypto" | "stocks" | "real_estate",
     symbol: "",
     quantity: "",
     purchase_price: "",
     purchase_date: "",
+    currency: "USD",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -102,6 +118,7 @@ export default function AssetsPage() {
         quantity: parseFloat(formData.quantity),
         purchase_price: parseFloat(formData.purchase_price),
         purchase_date: formData.purchase_date,
+        currency: formData.currency,
       };
       
       console.log("[handleSubmit] Creating asset:", assetData);
@@ -111,7 +128,7 @@ export default function AssetsPage() {
         onSuccess: (data) => {
           console.log("[handleSubmit] Asset created:", data);
           addToast("Asset created successfully!", "success");
-          setFormData({ type: "crypto", symbol: "", quantity: "", purchase_price: "", purchase_date: "" });
+          setFormData({ type: "crypto", symbol: "", quantity: "", purchase_price: "", purchase_date: "", currency: "USD" });
           setShowForm(false);
         },
         onError: (error: any) => {
@@ -131,6 +148,20 @@ export default function AssetsPage() {
         },
         onError: () => {
           addToast("Failed to delete asset", "error");
+        },
+      });
+    }
+  };
+
+  const handleBulkDelete = () => {
+    if (confirm(`Are you sure you want to delete ${selectedAssets.size} assets?`)) {
+      bulkDeleteAssets(Array.from(selectedAssets), {
+        onSuccess: () => {
+          addToast("Assets deleted successfully!", "success");
+          setSelectedAssets(new Set());
+        },
+        onError: () => {
+          addToast("Failed to delete assets", "error");
         },
       });
     }
@@ -208,7 +239,7 @@ export default function AssetsPage() {
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">Current Price</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">
-                    ${formatCurrency(selectedAsset.current_price)}
+                    {formatCurrency(selectedAsset.current_price, selectedAsset.currency)}
                   </p>
                 </div>
                 {performance >= 0 ? (
@@ -228,7 +259,7 @@ export default function AssetsPage() {
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Total Value</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">
-                  ${formatCurrency(currentValue)}
+                  {formatCurrency(currentValue, selectedAsset.currency)}
                 </p>
                 <p className="text-sm text-gray-500 mt-1">{selectedAsset.quantity} units</p>
               </div>
@@ -242,7 +273,7 @@ export default function AssetsPage() {
                   {performance >= 0 ? "+" : ""}{performance.toFixed(2)}%
                 </p>
                 <p className={cn("text-sm mt-1", gainLoss >= 0 ? "text-green-600" : "text-red-600")}>
-                  {gainLoss >= 0 ? "+" : ""}${formatCurrency(gainLoss)}
+                  {gainLoss >= 0 ? "+" : ""}{formatCurrency(gainLoss, selectedAsset.currency)}
                 </p>
               </div>
             </CardContent>
@@ -264,8 +295,8 @@ export default function AssetsPage() {
                     </linearGradient>
                   </defs>
                   <XAxis dataKey="date" stroke="#9CA3AF" fontSize={12} />
-                  <YAxis stroke="#9CA3AF" fontSize={12} tickFormatter={(v) => `$${formatCurrency(v)}`} />
-                  <Tooltip formatter={(value: number) => `$${formatCurrency(value)}`} />
+                  <YAxis stroke="#9CA3AF" fontSize={12} tickFormatter={(v) => formatCurrency(v, selectedAsset.currency)} />
+                  <Tooltip formatter={(value: number) => formatCurrency(value, selectedAsset.currency)} />
                   <Area
                     type="monotone"
                     dataKey="price"
@@ -296,7 +327,7 @@ export default function AssetsPage() {
               </div>
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Purchase Price</p>
-                <p className="text-gray-900 dark:text-gray-100">${formatCurrency(selectedAsset.purchase_price)}</p>
+                <p className="text-gray-900 dark:text-gray-100">{formatCurrency(selectedAsset.purchase_price, selectedAsset.currency)}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Quantity</p>
@@ -392,6 +423,20 @@ export default function AssetsPage() {
                   onChange={(e) => setFormData({ ...formData, purchase_date: e.target.value })}
                   error={errors.purchase_date}
                 />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Currency
+                  </label>
+                  <select
+                    value={formData.currency}
+                    onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
+                    className="flex h-10 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:bg-gray-800 dark:border-gray-600"
+                  >
+                    {CURRENCY_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
               <Button type="submit" disabled={isCreating}>
                 {isCreating ? "Creating..." : "Add Asset"}
@@ -449,10 +494,38 @@ export default function AssetsPage() {
       ) : (
         <Card>
           <CardContent className="p-0">
+            {selectedAssets.size > 0 && (
+              <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  {selectedAssets.size} selected
+                </span>
+                <button
+                  onClick={handleBulkDelete}
+                  disabled={isBulkDeleting}
+                  className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm disabled:opacity-50"
+                >
+                  {isBulkDeleting ? "Deleting..." : `Delete ${selectedAssets.size} selected`}
+                </button>
+              </div>
+            )}
             <div className="overflow-x-auto">
               <table className="w-full min-w-[800px]">
                 <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                   <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      <input
+                        type="checkbox"
+                        checked={filteredAndSortedAssets.length > 0 && filteredAndSortedAssets.every((a) => selectedAssets.has(a.id))}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedAssets(new Set(filteredAndSortedAssets.map((a) => a.id)));
+                          } else {
+                            setSelectedAssets(new Set());
+                          }
+                        }}
+                        className="rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+                      />
+                    </th>
                     <th
                       className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
                       onClick={() => handleSort("symbol")}
@@ -500,6 +573,22 @@ export default function AssetsPage() {
                         className="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
                         onClick={() => setSelectedAsset(asset)}
                       >
+                        <td className="px-4 py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            checked={selectedAssets.has(asset.id)}
+                            onChange={(e) => {
+                              const newSet = new Set(selectedAssets);
+                              if (e.target.checked) {
+                                newSet.add(asset.id);
+                              } else {
+                                newSet.delete(asset.id);
+                              }
+                              setSelectedAssets(newSet);
+                            }}
+                            className="rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+                          />
+                        </td>
                         <td className="px-4 py-4 whitespace-nowrap">
                           <div className="font-medium text-gray-900 dark:text-gray-100">{asset.symbol.toUpperCase()}</div>
                         </td>
@@ -512,9 +601,9 @@ export default function AssetsPage() {
                           </Badge>
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-right text-gray-900 dark:text-gray-100">{asset.quantity}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-right text-gray-900 dark:text-gray-100">${formatCurrency(asset.purchase_price)}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-right text-gray-900 dark:text-gray-100">{formatCurrency(asset.purchase_price, asset.currency)}</td>
                         <td className="px-4 py-4 whitespace-nowrap text-right text-gray-900 dark:text-gray-100">
-                          ${formatCurrency(asset.current_price)}
+                          {formatCurrency(asset.current_price, asset.currency)}
                           {lastUpdated && <div className="text-xs text-gray-400">{lastUpdated}</div>}
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-right">
@@ -524,9 +613,9 @@ export default function AssetsPage() {
                             <span className="text-red-600 dark:text-red-400 font-medium">↓ {Math.abs(gainLossPercent).toFixed(2)}%</span>
                           )}
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-right font-medium text-gray-900 dark:text-gray-100">${formatCurrency(value)}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-right font-medium text-gray-900 dark:text-gray-100">{formatCurrency(value, asset.currency)}</td>
                         <td className={`px-4 py-4 whitespace-nowrap text-right font-medium ${gainLoss >= 0 ? "text-green-600" : "text-red-600"}`}>
-                          {gainLoss >= 0 ? "+" : ""}${formatCurrency(gainLoss)} ({gainLossPercent.toFixed(2)}%)
+                          {gainLoss >= 0 ? "+" : ""}{formatCurrency(gainLoss, asset.currency)} ({gainLossPercent.toFixed(2)}%)
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-center" onClick={(e) => e.stopPropagation()}>
                           <button

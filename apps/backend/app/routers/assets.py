@@ -18,6 +18,20 @@ from app.services.price_service import price_service
 
 router = APIRouter()
 
+@router.post("/bulk-delete", status_code=status.HTTP_204_NO_CONTENT)
+async def bulk_delete_assets(
+    asset_ids: List[str],
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(
+        select(Asset).where(Asset.id.in_(asset_ids), Asset.user_email == current_user.email)
+    )
+    assets = result.scalars().all()
+    for asset in assets:
+        await db.delete(asset)
+    await db.commit()
+
 @router.get("/{asset_type}", response_model=List[AssetResponse])
 async def get_assets(
     asset_type: str,
@@ -45,6 +59,7 @@ async def get_assets(
             current_price=a.current_price,
             total_value=a.quantity * a.current_price if a.current_price else 0,
             purchase_date=a.purchase_date,
+            currency=getattr(a, 'currency', 'USD'),
             created_at=a.created_at
         )
         for a in assets
@@ -69,11 +84,32 @@ async def create_asset(
         quantity=asset.quantity,
         purchase_price=asset.purchase_price,
         current_price=current_price,
-        purchase_date=asset.purchase_date
+        purchase_date=asset.purchase_date,
+        currency=getattr(asset, 'currency', 'USD')
     )
     db.add(db_asset)
     await db.commit()
     await db.refresh(db_asset)
+
+    # Create transaction
+    from app.models.transaction import Transaction, TransactionType
+    tx = Transaction(
+        id=str(uuid.uuid4()),
+        user_email=current_user.email,
+        asset_id=db_asset.id,
+        type=TransactionType.BUY,
+        symbol=db_asset.symbol,
+        quantity=db_asset.quantity,
+        unit_price=db_asset.purchase_price,
+        currency=getattr(asset, 'currency', 'USD'),
+        exchange_rate=1.0,
+        fees=0.0,
+        total_invested=db_asset.quantity * db_asset.purchase_price,
+        date=db_asset.purchase_date or datetime.utcnow().strftime("%Y-%m-%d")
+    )
+    db.add(tx)
+    await db.commit()
+
     return AssetResponse(
         id=db_asset.id,
         user_email=db_asset.user_email,
@@ -84,6 +120,7 @@ async def create_asset(
         current_price=db_asset.current_price,
         total_value=db_asset.quantity * db_asset.current_price,
         purchase_date=db_asset.purchase_date,
+        currency=db_asset.currency,
         created_at=db_asset.created_at
     )
 
@@ -107,6 +144,7 @@ async def list_all_assets(
             current_price=a.current_price,
             total_value=a.quantity * a.current_price if a.current_price else 0,
             purchase_date=a.purchase_date,
+            currency=getattr(a, 'currency', 'USD'),
             created_at=a.created_at
         )
         for a in assets
@@ -175,6 +213,7 @@ async def update_asset(
         current_price=db_asset.current_price,
         total_value=db_asset.quantity * db_asset.current_price if db_asset.current_price else 0,
         purchase_date=db_asset.purchase_date,
+        currency=getattr(db_asset, 'currency', 'USD'),
         created_at=db_asset.created_at
     )
 
@@ -336,7 +375,8 @@ async def import_assets(
                 quantity=quantity,
                 purchase_price=purchase_price,
                 current_price=current_price,
-                purchase_date=purchase_date
+                purchase_date=purchase_date,
+                currency="USD"
             )
             db.add(db_asset)
             imported_count += 1
