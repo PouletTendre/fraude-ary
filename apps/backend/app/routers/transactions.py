@@ -7,7 +7,7 @@ import uuid
 from app.database import get_db
 from app.models.user import User
 from app.models.transaction import Transaction
-from app.schemas.transactions import TransactionCreate, TransactionResponse
+from app.schemas.transactions import TransactionCreate, TransactionUpdate, TransactionResponse
 from app.routers.auth import get_current_user
 
 router = APIRouter()
@@ -80,3 +80,78 @@ async def create_transaction(
         date=tx.date,
         created_at=tx.created_at
     )
+
+@router.put("/{tx_id}", response_model=TransactionResponse)
+async def update_transaction(
+    tx_id: str,
+    update: TransactionUpdate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(
+        select(Transaction).where(
+            Transaction.id == tx_id,
+            Transaction.user_email == current_user.email
+        )
+    )
+    tx = result.scalar_one_or_none()
+    if not tx:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    
+    if update.asset_id is not None:
+        tx.asset_id = update.asset_id
+    if update.type is not None:
+        from app.models.transaction import TransactionType
+        tx.type = TransactionType(update.type)
+    if update.symbol is not None:
+        tx.symbol = update.symbol.upper()
+    if update.quantity is not None:
+        tx.quantity = update.quantity
+    if update.unit_price is not None:
+        tx.unit_price = update.unit_price
+    if update.currency is not None:
+        tx.currency = update.currency
+    if update.exchange_rate is not None:
+        tx.exchange_rate = update.exchange_rate
+    if update.fees is not None:
+        tx.fees = update.fees
+    if update.total_invested is not None:
+        tx.total_invested = update.total_invested
+    if update.date is not None:
+        tx.date = update.date
+    
+    await db.commit()
+    await db.refresh(tx)
+    return TransactionResponse(
+        id=tx.id,
+        user_email=tx.user_email,
+        asset_id=tx.asset_id,
+        type=tx.type.value if hasattr(tx.type, 'value') else tx.type,
+        symbol=tx.symbol,
+        quantity=tx.quantity,
+        unit_price=tx.unit_price,
+        currency=tx.currency,
+        exchange_rate=tx.exchange_rate,
+        fees=tx.fees,
+        total_invested=tx.total_invested,
+        date=tx.date,
+        created_at=tx.created_at
+    )
+
+@router.delete("/{tx_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_transaction(
+    tx_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(
+        select(Transaction).where(
+            Transaction.id == tx_id,
+            Transaction.user_email == current_user.email
+        )
+    )
+    tx = result.scalar_one_or_none()
+    if not tx:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    await db.delete(tx)
+    await db.commit()

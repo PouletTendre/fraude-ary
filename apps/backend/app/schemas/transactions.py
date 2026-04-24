@@ -14,6 +14,18 @@ class TransactionCreate(BaseModel):
     total_invested: float
     date: str
 
+class TransactionUpdate(BaseModel):
+    asset_id: Optional[str] = None
+    type: Optional[str] = None
+    symbol: Optional[str] = None
+    quantity: Optional[float] = None
+    unit_price: Optional[float] = None
+    currency: Optional[str] = None
+    exchange_rate: Optional[float] = None
+    fees: Optional[float] = None
+    total_invested: Optional[float] = None
+    date: Optional[str] = None
+
 class TransactionResponse(BaseModel):
     id: str
     user_email: str

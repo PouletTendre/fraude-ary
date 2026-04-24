@@ -107,20 +107,16 @@ export default function DashboardLayout({
         {/* Logo */}
         <div
           style={{
+            fontSize: "1.125rem",
+            fontWeight: 700,
+            color: "var(--text-primary)",
+            letterSpacing: "-0.01em",
             padding: "8px 12px 20px",
             borderBottom: "1px solid var(--border)",
             marginBottom: "8px",
           }}
         >
-          <img
-            src="/logo.png"
-            alt="Fraude-Ary"
-            style={{
-              height: "32px",
-              width: "auto",
-              display: "block",
-            }}
-          />
+          Fraude<span style={{ color: "var(--primary-hover)" }}>·Ary</span>
         </div>
 
         {navSections.map((section) => (
