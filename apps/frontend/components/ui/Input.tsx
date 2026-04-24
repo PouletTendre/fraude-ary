@@ -16,7 +16,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="block text-body-sm font-medium text-text-secondary mb-1.5"
+            className="block text-label uppercase tracking-wide text-text-secondary mb-1.5"
           >
             {label}
           </label>
@@ -30,8 +30,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           <input
             id={inputId}
             className={cn(
-              "flex h-10 w-full rounded-md border border-border bg-surface-sunken px-3 py-2 text-body placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-40 text-text-primary",
-              error && "border-danger focus:border-danger focus:ring-danger/20",
+              "flex h-10 w-full rounded-md border border-border bg-surface-sunken px-3 py-2 text-body placeholder:text-text-muted focus:outline-none focus:border-border-focus focus:ring-2 focus:ring-primary/20 transition-all duration-150 ease-out disabled:cursor-not-allowed disabled:opacity-40 text-text-primary",
+              error && "border-loss focus:border-loss focus:ring-loss/20",
               icon && "pl-10",
               className
             )}
@@ -40,7 +40,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           />
         </div>
         {error && (
-          <p className="mt-1.5 text-label text-danger">{error}</p>
+          <p className="mt-1.5 text-label text-loss">{error}</p>
         )}
       </div>
     );

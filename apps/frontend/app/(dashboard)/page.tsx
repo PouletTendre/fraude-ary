@@ -106,11 +106,11 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Dashboard</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">Overview of your portfolio performance</p>
+          <h1 className="text-3xl font-bold text-text-primary">Dashboard</h1>
+          <p className="text-text-tertiary mt-1">Overview of your portfolio performance</p>
         </div>
         {lastUpdate && (
-          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+          <div className="flex items-center gap-2 text-sm text-text-tertiary">
             <Clock className="w-4 h-4" />
             <span>{lastUpdate}</span>
           </div>
@@ -147,7 +147,7 @@ export default function DashboardPage() {
             </div>
             
             {/* Performance du jour */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 min-w-[200px]">
+            <div className="bg-surface/10 backdrop-blur-sm rounded-xl p-4 min-w-[200px]">
               <div className="flex items-center gap-2 mb-2">
                 <Activity className="w-4 h-4 text-blue-200" />
                 <p className="text-blue-100 text-sm font-medium">Performance du jour</p>
@@ -183,14 +183,14 @@ export default function DashboardPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Total Assets</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">
+                <p className="text-sm text-text-tertiary">Total Assets</p>
+                <p className="text-2xl font-bold text-text-primary mt-1">
                   {assets?.length || 0}
                 </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">actifs détenus</p>
+                <p className="text-sm text-text-tertiary mt-1">actifs détenus</p>
               </div>
-              <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-full">
-                <PieChart className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              <div className="p-3 bg-primary-subtle rounded-full">
+                <PieChart className="w-6 h-6 text-primary" />
               </div>
             </div>
           </CardContent>
@@ -200,23 +200,23 @@ export default function DashboardPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Gain/Loss Total</p>
+                <p className="text-sm text-text-tertiary">Gain/Loss Total</p>
                 <p className={cn(
                   "text-2xl font-bold mt-1",
-                  portfolio && portfolio.total_gain_loss >= 0 ? "text-green-600" : "text-red-600"
+                  portfolio && portfolio.total_gain_loss >= 0 ? "text-gain" : "text-loss"
                 )}>
                   {portfolio ? `${portfolio.total_gain_loss >= 0 ? "+" : ""}${formatCurrency(portfolio.total_gain_loss)}` : formatCurrency(0)}
                 </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">all time</p>
+                <p className="text-sm text-text-tertiary mt-1">all time</p>
               </div>
               <div className={cn(
                 "p-3 rounded-full",
-                portfolio && portfolio.total_gain_loss >= 0 ? "bg-green-100 dark:bg-green-900" : "bg-red-100 dark:bg-red-900"
+                portfolio && portfolio.total_gain_loss >= 0 ? "bg-gain-muted" : "bg-loss-muted"
               )}>
                 {portfolio && portfolio.total_gain_loss >= 0 ? (
-                  <TrendingUp className="w-6 h-6 text-green-600 dark:text-green-400" />
+                  <TrendingUp className="w-6 h-6 text-gain" />
                 ) : (
-                  <TrendingDown className="w-6 h-6 text-red-600 dark:text-red-400" />
+                  <TrendingDown className="w-6 h-6 text-loss" />
                 )}
               </div>
             </div>
@@ -227,25 +227,25 @@ export default function DashboardPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Performance</p>
+                <p className="text-sm text-text-tertiary">Performance</p>
                 <p className={cn(
                   "text-2xl font-bold mt-1",
-                  portfolio && portfolio.gain_loss_percentage >= 0 ? "text-green-600" : "text-red-600"
+                  portfolio && portfolio.gain_loss_percentage >= 0 ? "text-gain" : "text-loss"
                 )}>
                   {portfolio ? `${portfolio.gain_loss_percentage >= 0 ? "+" : ""}${portfolio.gain_loss_percentage.toFixed(2)}%` : "0.00%"}
                 </p>
                 <p className={cn(
                   "text-sm mt-1",
-                  portfolio && portfolio.gain_loss_percentage >= 0 ? "text-green-600" : "text-red-600"
+                  portfolio && portfolio.gain_loss_percentage >= 0 ? "text-gain" : "text-loss"
                 )}>
                   {portfolio && portfolio.gain_loss_percentage >= 0 ? "↑ En hausse" : "↓ En baisse"}
                 </p>
               </div>
               <div className={cn(
                 "p-3 rounded-full",
-                portfolio && portfolio.gain_loss_percentage >= 0 ? "bg-green-100 dark:bg-green-900" : "bg-red-100 dark:bg-red-900"
+                portfolio && portfolio.gain_loss_percentage >= 0 ? "bg-gain-muted" : "bg-loss-muted"
               )}>
-                <BarChart3 className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                <BarChart3 className="w-6 h-6 text-primary" />
               </div>
             </div>
           </CardContent>
@@ -264,10 +264,10 @@ export default function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-green-600" />
+              <TrendingUp className="w-5 h-5 text-gain" />
               Top Gainers
             </CardTitle>
-            <Link href="/portfolio" className="text-sm text-blue-600 hover:underline dark:text-blue-400 flex items-center gap-1">
+            <Link href="/portfolio" className="text-sm text-primary hover:underline dark:text-primary-hover flex items-center gap-1">
               View all <ArrowRight className="w-4 h-4" />
             </Link>
           </CardHeader>
@@ -275,7 +275,7 @@ export default function DashboardPage() {
             {topGainers.length > 0 ? (
               <div className="space-y-3">
                 {topGainers.map((asset) => (
-                  <div key={asset.id} className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700 last:border-0">
+                  <div key={asset.id} className="flex items-center justify-between py-2 border-b border-border border-border last:border-0">
                     <div className="flex items-center gap-3">
                       <div className={cn(
                         "w-2 h-8 rounded-full",
@@ -284,13 +284,13 @@ export default function DashboardPage() {
                         asset.type === "real_estate" && "bg-indigo-500"
                       )} />
                       <div>
-                        <p className="font-medium text-gray-900 dark:text-gray-100">{asset.symbol.toUpperCase()}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{asset.type.replace("_", " ")}</p>
+                        <p className="font-medium text-text-primary">{asset.symbol.toUpperCase()}</p>
+                        <p className="text-xs text-text-tertiary capitalize">{asset.type.replace("_", " ")}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-medium text-gray-900 dark:text-gray-100">{formatCurrency(asset.value)}</p>
-                      <p className="text-sm text-green-600 font-medium">
+                      <p className="font-medium text-text-primary">{formatCurrency(asset.value)}</p>
+                      <p className="text-sm text-gain font-medium">
                         +{asset.pnlPercent.toFixed(2)}%
                       </p>
                     </div>
@@ -298,7 +298,7 @@ export default function DashboardPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500 dark:text-gray-400 text-center py-8">No assets yet</p>
+              <p className="text-text-tertiary text-center py-8">No assets yet</p>
             )}
           </CardContent>
         </Card>
@@ -306,10 +306,10 @@ export default function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <TrendingDown className="w-5 h-5 text-red-600" />
+              <TrendingDown className="w-5 h-5 text-loss" />
               Top Losers
             </CardTitle>
-            <Link href="/portfolio" className="text-sm text-blue-600 hover:underline dark:text-blue-400 flex items-center gap-1">
+            <Link href="/portfolio" className="text-sm text-primary hover:underline dark:text-primary-hover flex items-center gap-1">
               View all <ArrowRight className="w-4 h-4" />
             </Link>
           </CardHeader>
@@ -317,7 +317,7 @@ export default function DashboardPage() {
             {topLosers.length > 0 ? (
               <div className="space-y-3">
                 {topLosers.map((asset) => (
-                  <div key={asset.id} className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700 last:border-0">
+                  <div key={asset.id} className="flex items-center justify-between py-2 border-b border-border border-border last:border-0">
                     <div className="flex items-center gap-3">
                       <div className={cn(
                         "w-2 h-8 rounded-full",
@@ -326,13 +326,13 @@ export default function DashboardPage() {
                         asset.type === "real_estate" && "bg-indigo-500"
                       )} />
                       <div>
-                        <p className="font-medium text-gray-900 dark:text-gray-100">{asset.symbol.toUpperCase()}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{asset.type.replace("_", " ")}</p>
+                        <p className="font-medium text-text-primary">{asset.symbol.toUpperCase()}</p>
+                        <p className="text-xs text-text-tertiary capitalize">{asset.type.replace("_", " ")}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-medium text-gray-900 dark:text-gray-100">{formatCurrency(asset.value)}</p>
-                      <p className="text-sm text-red-600 font-medium">
+                      <p className="font-medium text-text-primary">{formatCurrency(asset.value)}</p>
+                      <p className="text-sm text-loss font-medium">
                         {asset.pnlPercent.toFixed(2)}%
                       </p>
                     </div>
@@ -340,7 +340,7 @@ export default function DashboardPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500 dark:text-gray-400 text-center py-8">No assets yet</p>
+              <p className="text-text-tertiary text-center py-8">No assets yet</p>
             )}
           </CardContent>
         </Card>
@@ -350,7 +350,7 @@ export default function DashboardPage() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Répartition par type d&apos;actif</CardTitle>
-          <Link href="/portfolio" className="text-sm text-blue-600 hover:underline dark:text-blue-400 flex items-center gap-1">
+          <Link href="/portfolio" className="text-sm text-primary hover:underline dark:text-primary-hover flex items-center gap-1">
             View details <ArrowRight className="w-4 h-4" />
           </Link>
         </CardHeader>
@@ -366,10 +366,10 @@ export default function DashboardPage() {
                       item.type === "stocks" && "bg-emerald-500",
                       item.type === "real_estate" && "bg-indigo-500"
                     )} />
-                    <span className="capitalize text-gray-700 dark:text-gray-300">{item.type.replace("_", " ")}</span>
+                    <span className="capitalize text-text-secondary">{item.type.replace("_", " ")}</span>
                   </div>
                   <div className="flex items-center gap-4 flex-1 mx-4">
-                    <div className="flex-1 h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div className="flex-1 h-2 bg-surface-raised rounded-full overflow-hidden">
                       <div 
                         className={cn(
                           "h-full rounded-full",
@@ -382,14 +382,14 @@ export default function DashboardPage() {
                     </div>
                   </div>
                   <div className="text-right min-w-[120px]">
-                    <span className="font-medium text-gray-900 dark:text-gray-100">{formatCurrency(item.value)}</span>
-                    <span className="text-gray-500 dark:text-gray-400 ml-2">({item.percentage.toFixed(1)}%)</span>
+                    <span className="font-medium text-text-primary">{formatCurrency(item.value)}</span>
+                    <span className="text-text-tertiary ml-2">({item.percentage.toFixed(1)}%)</span>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-gray-500 dark:text-gray-400 text-center py-8">No allocation data available</p>
+            <p className="text-text-tertiary text-center py-8">No allocation data available</p>
           )}
         </CardContent>
       </Card>

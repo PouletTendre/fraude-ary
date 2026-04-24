@@ -37,11 +37,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl text-center">Welcome Back</CardTitle>
-          <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-2">
+          <p className="text-center text-sm text-text-tertiary mt-2">
             Sign in to your Fraude-Ary account
           </p>
         </CardHeader>
@@ -71,9 +71,9 @@ export default function LoginPage() {
             <Button type="submit" className="w-full" disabled={isLoggingIn}>
               {isLoggingIn ? "Signing in..." : "Sign In"}
             </Button>
-            <p className="text-center text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-center text-sm text-text-tertiary">
               Don&apos;t have an account?{" "}
-              <Link href="/register" className="text-blue-600 hover:underline dark:text-blue-400">
+              <Link href="/register" className="text-primary hover:underline dark:text-primary-hover">
                 Create one
               </Link>
             </p>

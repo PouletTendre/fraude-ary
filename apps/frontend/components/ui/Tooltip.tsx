@@ -56,7 +56,7 @@ export function Tooltip({ children, content, position = "right", className }: To
       {isVisible && (
         <div
           className={cn(
-            "absolute z-50 px-2.5 py-1.5 text-xs font-medium text-white bg-gray-900 rounded-lg shadow-lg whitespace-nowrap pointer-events-none animate-in fade-in zoom-in-95 duration-150",
+            "absolute z-50 px-2.5 py-1.5 text-xs font-medium text-text-primary bg-surface-raised rounded-lg shadow-lg whitespace-nowrap pointer-events-none animate-in fade-in zoom-in-95 duration-150",
             positionClasses[position]
           )}
         >

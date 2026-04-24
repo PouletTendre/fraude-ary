@@ -18,7 +18,7 @@ const getNotificationIcon = (type: string) => {
     case "alert":
       return <AlertTriangle className="w-5 h-5 text-red-500" />;
     case "success":
-      return <CheckCircle className="w-5 h-5 text-green-500" />;
+      return <CheckCircle className="w-5 h-5 text-gain" />;
     case "warning":
       return <AlertTriangle className="w-5 h-5 text-amber-500" />;
     case "info":
@@ -33,8 +33,8 @@ function NotificationItem({ notification, onMarkAsRead }: { notification: Notifi
       className={cn(
         "flex items-start gap-4 p-4 rounded-lg border transition-colors",
         notification.read
-          ? "bg-gray-50/50 border-gray-100 dark:bg-gray-800/30 dark:border-gray-700/50"
-          : "bg-white border-blue-100 dark:bg-gray-800 dark:border-blue-900/30 shadow-sm"
+          ? "bg-surface-sunken/50 border-border"
+          : "bg-surface border-blue-100 bg-surface-sunken border-primary/20 shadow-sm"
       )}
     >
       <div className="flex-shrink-0 mt-0.5">
@@ -43,10 +43,10 @@ function NotificationItem({ notification, onMarkAsRead }: { notification: Notifi
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <p className={cn("font-medium text-sm", !notification.read && "text-gray-900 dark:text-gray-100")}>
+            <p className={cn("font-medium text-sm", !notification.read && "text-text-primary")}>
               {notification.title}
             </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+            <p className="text-sm text-text-tertiary mt-0.5">
               {notification.message}
             </p>
           </div>
@@ -57,14 +57,14 @@ function NotificationItem({ notification, onMarkAsRead }: { notification: Notifi
           )}
         </div>
         <div className="flex items-center gap-3 mt-2">
-          <div className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
+          <div className="flex items-center gap-1 text-xs text-text-muted dark:text-text-tertiary">
             <Clock className="w-3 h-3" />
             <span>{new Date(notification.created_at).toLocaleString("fr-FR")}</span>
           </div>
           {!notification.read && (
             <button
               onClick={() => onMarkAsRead(notification.id)}
-              className="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
+              className="text-xs text-primary hover:text-primary-hover dark:text-primary-hover hover:text-primary-hover font-medium"
             >
               Mark as read
             </button>
@@ -125,14 +125,14 @@ export default function NotificationsPage() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
-              <Bell className="w-8 h-8 text-blue-600" />
+            <h1 className="text-3xl font-bold text-text-primary flex items-center gap-3">
+              <Bell className="w-8 h-8 text-primary" />
               Notifications
             </h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-1">
+            <p className="text-text-tertiary mt-1">
               {unreadCount > 0 ? (
                 <span>
-                  You have <span className="font-medium text-blue-600 dark:text-blue-400">{unreadCount}</span> unread notification{unreadCount > 1 ? "s" : ""}
+                  You have <span className="font-medium text-primary">{unreadCount}</span> unread notification{unreadCount > 1 ? "s" : ""}
                 </span>
               ) : (
                 "All caught up! No unread notifications."
@@ -160,7 +160,7 @@ export default function NotificationsPage() {
               "px-3 py-1.5 text-sm rounded-lg transition-colors font-medium",
               filter === "all"
                 ? "bg-blue-600 text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                : "text-text-secondary hover:bg-surface-raised bg-surface-sunken text-text-secondary hover:bg-surface-raised"
             )}
           >
             All ({notifications.length})
@@ -171,7 +171,7 @@ export default function NotificationsPage() {
               "px-3 py-1.5 text-sm rounded-lg transition-colors font-medium",
               filter === "unread"
                 ? "bg-blue-600 text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                : "text-text-secondary hover:bg-surface-raised bg-surface-sunken text-text-secondary hover:bg-surface-raised"
             )}
           >
             Unread ({unreadCount})
@@ -191,11 +191,11 @@ export default function NotificationsPage() {
         ) : (
           <Card>
             <CardContent className="py-16 text-center">
-              <Bell className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-              <p className="text-gray-500 dark:text-gray-400 text-lg font-medium">
+              <Bell className="w-12 h-12 text-text-muted dark:text-text-secondary mx-auto mb-4" />
+              <p className="text-text-tertiary text-lg font-medium">
                 {filter === "unread" ? "No unread notifications" : "No notifications yet"}
               </p>
-              <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+              <p className="text-sm text-text-muted dark:text-text-tertiary mt-1">
                 {filter === "unread"
                   ? "You have read all your notifications."
                   : "Notifications about your portfolio will appear here."}

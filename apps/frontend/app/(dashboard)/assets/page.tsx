@@ -223,12 +223,12 @@ export default function AssetsPage() {
         <div className="flex items-center gap-4">
           <button
             onClick={() => setSelectedAsset(null)}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
+            className="p-2 rounded-lg hover:bg-surface-raised text-text-secondary text-text-muted"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{selectedAsset.symbol.toUpperCase()}</h1>
+            <h1 className="text-3xl font-bold text-text-primary">{selectedAsset.symbol.toUpperCase()}</h1>
           </div>
         </div>
 
@@ -237,18 +237,18 @@ export default function AssetsPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Current Price</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">
+                  <p className="text-sm text-text-tertiary">Current Price</p>
+                  <p className="text-2xl font-bold text-text-primary mt-1">
                     {formatCurrency(selectedAsset.current_price, selectedAsset.currency)}
                   </p>
                 </div>
                 {performance >= 0 ? (
-                  <div className="p-3 bg-green-100 dark:bg-green-900 rounded-full">
-                    <TrendingUp className="w-6 h-6 text-green-600 dark:text-green-400" />
+                  <div className="p-3 bg-gain-muted rounded-full">
+                    <TrendingUp className="w-6 h-6 text-gain" />
                   </div>
                 ) : (
-                  <div className="p-3 bg-red-100 dark:bg-red-900 rounded-full">
-                    <TrendingDown className="w-6 h-6 text-red-600 dark:text-red-400" />
+                  <div className="p-3 bg-loss-muted rounded-full">
+                    <TrendingDown className="w-6 h-6 text-loss" />
                   </div>
                 )}
               </div>
@@ -257,22 +257,22 @@ export default function AssetsPage() {
           <Card>
             <CardContent className="pt-6">
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Total Value</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">
+                <p className="text-sm text-text-tertiary">Total Value</p>
+                <p className="text-2xl font-bold text-text-primary mt-1">
                   {formatCurrency(currentValue, selectedAsset.currency)}
                 </p>
-                <p className="text-sm text-gray-500 mt-1">{selectedAsset.quantity} units</p>
+                <p className="text-sm text-text-tertiary mt-1">{selectedAsset.quantity} units</p>
               </div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6">
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Performance</p>
-                <p className={cn("text-2xl font-bold mt-1", performance >= 0 ? "text-green-600" : "text-red-600")}>
+                <p className="text-sm text-text-tertiary">Performance</p>
+                <p className={cn("text-2xl font-bold mt-1", performance >= 0 ? "text-gain" : "text-loss")}>
                   {performance >= 0 ? "+" : ""}{performance.toFixed(2)}%
                 </p>
-                <p className={cn("text-sm mt-1", gainLoss >= 0 ? "text-green-600" : "text-red-600")}>
+                <p className={cn("text-sm mt-1", gainLoss >= 0 ? "text-gain" : "text-loss")}>
                   {gainLoss >= 0 ? "+" : ""}{formatCurrency(gainLoss, selectedAsset.currency)}
                 </p>
               </div>
@@ -317,7 +317,7 @@ export default function AssetsPage() {
           <CardContent>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Type</p>
+                <p className="text-sm text-text-tertiary">Type</p>
                 <Badge variant={
                   selectedAsset.type === "crypto" ? "warning" :
                   selectedAsset.type === "stocks" ? "success" : "info"
@@ -326,16 +326,16 @@ export default function AssetsPage() {
                 </Badge>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Purchase Price</p>
-                <p className="text-gray-900 dark:text-gray-100">{formatCurrency(selectedAsset.purchase_price, selectedAsset.currency)}</p>
+                <p className="text-sm text-text-tertiary">Purchase Price</p>
+                <p className="text-text-primary">{formatCurrency(selectedAsset.purchase_price, selectedAsset.currency)}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Quantity</p>
-                <p className="text-gray-900 dark:text-gray-100">{selectedAsset.quantity}</p>
+                <p className="text-sm text-text-tertiary">Quantity</p>
+                <p className="text-text-primary">{selectedAsset.quantity}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Purchase Date</p>
-                <p className="text-gray-900 dark:text-gray-100">{new Date(selectedAsset.purchase_date).toLocaleDateString()}</p>
+                <p className="text-sm text-text-tertiary">Purchase Date</p>
+                <p className="text-text-primary">{new Date(selectedAsset.purchase_date).toLocaleDateString()}</p>
               </div>
             </div>
           </CardContent>
@@ -366,7 +366,7 @@ export default function AssetsPage() {
     <PageTransition>
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Assets</h1>
+        <h1 className="text-3xl font-bold text-text-primary">Assets</h1>
         <Button onClick={() => setShowForm(!showForm)} disabled={isCreating}>
           {showForm ? "Cancel" : "+ Add Asset"}
         </Button>
@@ -387,13 +387,13 @@ export default function AssetsPage() {
                   assetType={formData.type}
                 />
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-text-secondary mb-1">
                     Type
                   </label>
                   <select
                     value={formData.type}
                     onChange={(e) => setFormData({ ...formData, type: e.target.value as "crypto" | "stocks" | "real_estate" })}
-                    className="flex h-10 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:bg-gray-800 dark:border-gray-600"
+                    className="flex h-10 w-full rounded-lg border border-border bg-surface-sunken px-3 py-2 text-sm"
                   >
                     {TYPE_OPTIONS.map((opt) => (
                       <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -424,13 +424,13 @@ export default function AssetsPage() {
                   error={errors.purchase_date}
                 />
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-text-secondary mb-1">
                     Currency
                   </label>
                   <select
                     value={formData.currency}
                     onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
-                    className="flex h-10 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:bg-gray-800 dark:border-gray-600"
+                    className="flex h-10 w-full rounded-lg border border-border bg-surface-sunken px-3 py-2 text-sm"
                   >
                     {CURRENCY_OPTIONS.map((opt) => (
                       <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -448,21 +448,21 @@ export default function AssetsPage() {
 
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
           <input
             type="text"
             placeholder="Search by symbol..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-10 pl-10 pr-4 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm placeholder:text-gray-400"
+            className="w-full h-10 pl-10 pr-4 rounded-lg border border-border bg-surface text-text-primary text-sm placeholder:text-text-muted"
           />
         </div>
         <div className="flex items-center gap-2">
-          <Filter className="w-4 h-4 text-gray-400" />
+          <Filter className="w-4 h-4 text-text-muted" />
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            className="h-10 px-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm"
+            className="h-10 px-3 rounded-lg border border-border bg-surface text-text-primary text-sm"
           >
             {TYPE_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -480,11 +480,11 @@ export default function AssetsPage() {
         <Card>
           <CardContent className="py-12 text-center">
             {assets.length === 0 ? (
-              <p className="text-gray-500 dark:text-gray-400">No assets yet. Add your first asset to get started.</p>
+              <p className="text-text-tertiary">No assets yet. Add your first asset to get started.</p>
             ) : (
               <>
-                <p className="text-gray-500 dark:text-gray-400">No assets match your filters.</p>
-                <button onClick={clearFilters} className="text-blue-600 hover:underline dark:text-blue-400 mt-2">
+                <p className="text-text-tertiary">No assets match your filters.</p>
+                <button onClick={clearFilters} className="text-primary hover:underline dark:text-primary-hover mt-2">
                   Clear filters
                 </button>
               </>
@@ -495,14 +495,14 @@ export default function AssetsPage() {
         <Card>
           <CardContent className="p-0">
             {selectedAssets.size > 0 && (
-              <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                <span className="text-sm text-gray-600 dark:text-gray-400">
+              <div className="px-4 py-3 border-b border-border flex justify-between items-center">
+                <span className="text-sm text-text-secondary text-text-muted">
                   {selectedAssets.size} selected
                 </span>
                 <button
                   onClick={handleBulkDelete}
                   disabled={isBulkDeleting}
-                  className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm disabled:opacity-50"
+                  className="text-loss hover:text-red-800 dark:text-loss dark:hover:text-red-300 text-sm disabled:opacity-50"
                 >
                   {isBulkDeleting ? "Deleting..." : `Delete ${selectedAssets.size} selected`}
                 </button>
@@ -510,9 +510,9 @@ export default function AssetsPage() {
             )}
             <div className="overflow-x-auto">
               <table className="w-full min-w-[800px]">
-                <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+                <thead className="bg-surface-sunken border-b border-border">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-text-tertiary uppercase tracking-wider">
                       <input
                         type="checkbox"
                         checked={filteredAndSortedAssets.length > 0 && filteredAndSortedAssets.every((a) => selectedAssets.has(a.id))}
@@ -523,11 +523,11 @@ export default function AssetsPage() {
                             setSelectedAssets(new Set());
                           }
                         }}
-                        className="rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+                        className="rounded border-border bg-surface-raised"
                       />
                     </th>
                     <th
-                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                      className="px-4 py-3 text-left text-xs font-medium text-text-tertiary uppercase tracking-wider cursor-pointer hover:bg-surface-raised"
                       onClick={() => handleSort("symbol")}
                     >
                       <div className="flex items-center gap-1">
@@ -535,12 +535,12 @@ export default function AssetsPage() {
                         <ArrowUpDown className="w-3 h-3" />
                       </div>
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Quantity</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Purchase Price</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Current Price</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-text-tertiary uppercase tracking-wider">Type</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-text-tertiary uppercase tracking-wider">Quantity</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-text-tertiary uppercase tracking-wider">Purchase Price</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-text-tertiary uppercase tracking-wider">Current Price</th>
                     <th
-                      className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                      className="px-4 py-3 text-right text-xs font-medium text-text-tertiary uppercase tracking-wider cursor-pointer hover:bg-surface-raised"
                       onClick={() => handleSort("performance")}
                     >
                       <div className="flex items-center justify-end gap-1">
@@ -549,7 +549,7 @@ export default function AssetsPage() {
                       </div>
                     </th>
                     <th
-                      className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                      className="px-4 py-3 text-right text-xs font-medium text-text-tertiary uppercase tracking-wider cursor-pointer hover:bg-surface-raised"
                       onClick={() => handleSort("value")}
                     >
                       <div className="flex items-center justify-end gap-1">
@@ -557,8 +557,8 @@ export default function AssetsPage() {
                         <ArrowUpDown className="w-3 h-3" />
                       </div>
                     </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Gain/Loss</th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-text-tertiary uppercase tracking-wider">Gain/Loss</th>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-text-tertiary uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -570,7 +570,7 @@ export default function AssetsPage() {
                     return (
                       <tr
                         key={asset.id}
-                        className="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
+                        className="hover:bg-surface-raised cursor-pointer"
                         onClick={() => setSelectedAsset(asset)}
                       >
                         <td className="px-4 py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
@@ -586,11 +586,11 @@ export default function AssetsPage() {
                               }
                               setSelectedAssets(newSet);
                             }}
-                            className="rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+                            className="rounded border-border bg-surface-raised"
                           />
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap">
-                          <div className="font-medium text-gray-900 dark:text-gray-100">{asset.symbol.toUpperCase()}</div>
+                          <div className="font-medium text-text-primary">{asset.symbol.toUpperCase()}</div>
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap">
                           <Badge variant={
@@ -600,28 +600,28 @@ export default function AssetsPage() {
                             {asset.type.replace("_", " ")}
                           </Badge>
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-right text-gray-900 dark:text-gray-100">{asset.quantity}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-right text-gray-900 dark:text-gray-100">{formatCurrency(asset.purchase_price, asset.currency)}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-right text-gray-900 dark:text-gray-100">
+                        <td className="px-4 py-4 whitespace-nowrap text-right text-text-primary">{asset.quantity}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-right text-text-primary">{formatCurrency(asset.purchase_price, asset.currency)}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-right text-text-primary">
                           {formatCurrency(asset.current_price, asset.currency)}
-                          {lastUpdated && <div className="text-xs text-gray-400">{lastUpdated}</div>}
+                          {lastUpdated && <div className="text-xs text-text-muted">{lastUpdated}</div>}
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-right">
                           {gainLossPercent >= 0 ? (
-                            <span className="text-green-600 dark:text-green-400 font-medium">↑ {gainLossPercent.toFixed(2)}%</span>
+                            <span className="text-gain font-medium">↑ {gainLossPercent.toFixed(2)}%</span>
                           ) : (
-                            <span className="text-red-600 dark:text-red-400 font-medium">↓ {Math.abs(gainLossPercent).toFixed(2)}%</span>
+                            <span className="text-loss font-medium">↓ {Math.abs(gainLossPercent).toFixed(2)}%</span>
                           )}
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-right font-medium text-gray-900 dark:text-gray-100">{formatCurrency(value, asset.currency)}</td>
-                        <td className={`px-4 py-4 whitespace-nowrap text-right font-medium ${gainLoss >= 0 ? "text-green-600" : "text-red-600"}`}>
+                        <td className="px-4 py-4 whitespace-nowrap text-right font-medium text-text-primary">{formatCurrency(value, asset.currency)}</td>
+                        <td className={`px-4 py-4 whitespace-nowrap text-right font-medium ${gainLoss >= 0 ? "text-gain" : "text-loss"}`}>
                           {gainLoss >= 0 ? "+" : ""}{formatCurrency(gainLoss, asset.currency)} ({gainLossPercent.toFixed(2)}%)
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-center" onClick={(e) => e.stopPropagation()}>
                           <button
                             onClick={() => handleDelete(asset.id)}
                             disabled={isDeleting}
-                            className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm disabled:opacity-50"
+                            className="text-loss hover:text-red-800 dark:text-loss dark:hover:text-red-300 text-sm disabled:opacity-50"
                           >
                             {isDeleting ? "Deleting..." : "Delete"}
                           </button>

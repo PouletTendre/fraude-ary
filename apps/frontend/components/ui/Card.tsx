@@ -10,6 +10,7 @@ const cardVariants = cva(
         default: "border-border",
         elevated: "border-border bg-surface-raised shadow-md",
         outline: "border-border bg-transparent",
+        sunken: "border-border bg-surface-sunken",
       },
     },
     defaultVariants: {

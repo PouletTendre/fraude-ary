@@ -36,7 +36,7 @@ export default function JournalPage() {
   return (
     <PageTransition>
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Journal</h1>
+        <h1 className="text-3xl font-bold text-text-primary">Journal</h1>
         <Card>
           <CardHeader>
             <CardTitle>Transaction History</CardTitle>
@@ -44,24 +44,24 @@ export default function JournalPage() {
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full min-w-[800px]">
-                <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+                <thead className="bg-surface-sunken border-b border-border">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Ticker</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Quantité</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Prix Unitaire</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Devise</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Taux de change</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Frais</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total Investi</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-text-tertiary uppercase tracking-wider">Date</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-text-tertiary uppercase tracking-wider">Type</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-text-tertiary uppercase tracking-wider">Ticker</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-text-tertiary uppercase tracking-wider">Quantité</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-text-tertiary uppercase tracking-wider">Prix Unitaire</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-text-tertiary uppercase tracking-wider">Devise</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-text-tertiary uppercase tracking-wider">Taux de change</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-text-tertiary uppercase tracking-wider">Frais</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-text-tertiary uppercase tracking-wider">Total Investi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                   {transactions && transactions.length > 0 ? (
                     transactions.map((tx) => (
-                      <tr key={tx.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                      <tr key={tx.id} className="hover:bg-surface-raised">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-text-primary">
                           {new Date(tx.date).toLocaleDateString()}
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap">
@@ -69,32 +69,32 @@ export default function JournalPage() {
                             {tx.type.toUpperCase()}
                           </Badge>
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-text-primary">
                           {tx.symbol.toUpperCase()}
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-right text-sm text-gray-900 dark:text-gray-100">
+                        <td className="px-4 py-4 whitespace-nowrap text-right text-sm text-text-primary">
                           {tx.quantity}
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-right text-sm text-gray-900 dark:text-gray-100">
+                        <td className="px-4 py-4 whitespace-nowrap text-right text-sm text-text-primary">
                           {formatCurrency(tx.unit_price, tx.currency)}
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-text-primary">
                           {tx.currency}
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-right text-sm text-gray-900 dark:text-gray-100">
+                        <td className="px-4 py-4 whitespace-nowrap text-right text-sm text-text-primary">
                           {tx.exchange_rate.toFixed(4)}
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-right text-sm text-gray-900 dark:text-gray-100">
+                        <td className="px-4 py-4 whitespace-nowrap text-right text-sm text-text-primary">
                           {formatCurrency(tx.fees, tx.currency)}
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900 dark:text-gray-100">
+                        <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium text-text-primary">
                           {formatCurrency(tx.total_invested, tx.currency)}
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={9} className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">
+                      <td colSpan={9} className="px-4 py-12 text-center text-text-tertiary">
                         No transactions found.
                       </td>
                     </tr>

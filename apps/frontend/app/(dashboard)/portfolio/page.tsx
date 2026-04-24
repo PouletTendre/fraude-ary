@@ -128,10 +128,10 @@ export default function PortfolioPage() {
   };
 
   const SortIcon = ({ column }: { column: SortKey }) => {
-    if (sortKey !== column) return <ArrowUpDown className="w-3.5 h-3.5 text-gray-400" />;
+    if (sortKey !== column) return <ArrowUpDown className="w-3.5 h-3.5 text-text-muted" />;
     return sortDirection === "asc" 
-      ? <ArrowUp className="w-3.5 h-3.5 text-blue-600" /> 
-      : <ArrowDown className="w-3.5 h-3.5 text-blue-600" />;
+      ? <ArrowUp className="w-3.5 h-3.5 text-primary" /> 
+      : <ArrowDown className="w-3.5 h-3.5 text-primary" />;
   };
 
   if (isLoading) {
@@ -159,10 +159,10 @@ export default function PortfolioPage() {
     return (
       <PageTransition>
         <div className="space-y-6">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Portfolio</h1>
+          <h1 className="text-3xl font-bold text-text-primary">Portfolio</h1>
           <Card>
             <CardContent className="py-12 text-center">
-              <p className="text-gray-500 dark:text-gray-400">Failed to load portfolio data. Please try again later.</p>
+              <p className="text-text-tertiary">Failed to load portfolio data. Please try again later.</p>
             </CardContent>
           </Card>
         </div>
@@ -173,7 +173,7 @@ export default function PortfolioPage() {
   return (
     <PageTransition>
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Portfolio</h1>
+      <h1 className="text-3xl font-bold text-text-primary">Portfolio</h1>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -181,13 +181,13 @@ export default function PortfolioPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Total Value</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">
+                <p className="text-sm text-text-tertiary">Total Value</p>
+                <p className="text-2xl font-bold text-text-primary mt-1">
                   ${formatCurrency(portfolio.total_value)}
                 </p>
               </div>
-              <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-full">
-                <DollarSign className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              <div className="p-3 bg-primary-subtle rounded-full">
+                <DollarSign className="w-6 h-6 text-primary" />
               </div>
             </div>
           </CardContent>
@@ -196,22 +196,22 @@ export default function PortfolioPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Total Gain/Loss</p>
-                <p className={`text-2xl font-bold mt-1 ${portfolio.total_gain_loss >= 0 ? "text-green-600" : "text-red-600"}`}>
+                <p className="text-sm text-text-tertiary">Total Gain/Loss</p>
+                <p className={`text-2xl font-bold mt-1 ${portfolio.total_gain_loss >= 0 ? "text-gain" : "text-loss"}`}>
                   {portfolio.total_gain_loss >= 0 ? "+" : ""}${formatCurrency(portfolio.total_gain_loss)}
                 </p>
                 {portfolio.total_gain_loss >= 0 ? (
-                  <TrendingUp className="w-4 h-4 text-green-600 inline mr-1" />
+                  <TrendingUp className="w-4 h-4 text-gain inline mr-1" />
                 ) : (
-                  <TrendingDown className="w-4 h-4 text-red-600 inline mr-1" />
+                  <TrendingDown className="w-4 h-4 text-loss inline mr-1" />
                 )}
-                <span className="text-sm text-gray-500">all time</span>
+                <span className="text-sm text-text-tertiary">all time</span>
               </div>
-              <div className={`p-3 rounded-full ${portfolio.total_gain_loss >= 0 ? "bg-green-100 dark:bg-green-900" : "bg-red-100 dark:bg-red-900"}`}>
+              <div className={`p-3 rounded-full ${portfolio.total_gain_loss >= 0 ? "bg-gain-muted" : "bg-loss-muted"}`}>
                 {portfolio.total_gain_loss >= 0 ? (
-                  <TrendingUp className="w-6 h-6 text-green-600 dark:text-green-400" />
+                  <TrendingUp className="w-6 h-6 text-gain" />
                 ) : (
-                  <TrendingDown className="w-6 h-6 text-red-600 dark:text-red-400" />
+                  <TrendingDown className="w-6 h-6 text-loss" />
                 )}
               </div>
             </div>
@@ -221,19 +221,19 @@ export default function PortfolioPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Performance</p>
-                <p className={`text-3xl font-bold mt-1 ${portfolio.gain_loss_percentage >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+                <p className="text-sm text-text-tertiary">Performance</p>
+                <p className={`text-3xl font-bold mt-1 ${portfolio.gain_loss_percentage >= 0 ? "text-gain" : "text-loss"}`}>
                   {portfolio.gain_loss_percentage >= 0 ? "+" : ""}{portfolio.gain_loss_percentage.toFixed(2)}%
                 </p>
-                <p className={`text-sm mt-1 ${portfolio.gain_loss_percentage >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+                <p className={`text-sm mt-1 ${portfolio.gain_loss_percentage >= 0 ? "text-gain" : "text-loss"}`}>
                   {portfolio.gain_loss_percentage >= 0 ? "↑ En hausse" : "↓ En baisse"}
                 </p>
               </div>
-              <div className={`p-3 rounded-full ${portfolio.gain_loss_percentage >= 0 ? "bg-green-100 dark:bg-green-900" : "bg-red-100 dark:bg-red-900"}`}>
+              <div className={`p-3 rounded-full ${portfolio.gain_loss_percentage >= 0 ? "bg-gain-muted" : "bg-loss-muted"}`}>
                 {portfolio.gain_loss_percentage >= 0 ? (
-                  <TrendingUp className="w-6 h-6 text-green-600 dark:text-green-400" />
+                  <TrendingUp className="w-6 h-6 text-gain" />
                 ) : (
-                  <TrendingDown className="w-6 h-6 text-red-600 dark:text-red-400" />
+                  <TrendingDown className="w-6 h-6 text-loss" />
                 )}
               </div>
             </div>
@@ -277,8 +277,8 @@ export default function PortfolioPage() {
               </ResponsiveContainer>
               {/* Center text */}
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <p className="text-xs text-gray-500 dark:text-gray-400">Total</p>
-                <p className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                <p className="text-xs text-text-tertiary">Total</p>
+                <p className="text-lg font-bold text-text-primary">
                   ${formatCurrency(portfolio.total_value)}
                 </p>
               </div>
@@ -287,8 +287,8 @@ export default function PortfolioPage() {
               {portfolio.by_type.map((item) => (
                 <div key={item.type} className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full" style={{ backgroundColor: TYPE_COLORS[item.type] }} />
-                  <span className="text-sm text-gray-600 dark:text-gray-400 capitalize">{item.type.replace("_", " ")}</span>
-                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{item.percentage.toFixed(1)}%</span>
+                  <span className="text-sm text-text-secondary text-text-muted capitalize">{item.type.replace("_", " ")}</span>
+                  <span className="text-sm font-medium text-text-primary">{item.percentage.toFixed(1)}%</span>
                 </div>
               ))}
             </div>
@@ -333,8 +333,8 @@ export default function PortfolioPage() {
             <CardTitle>Évolution du portfolio</CardTitle>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <Activity className={cn("w-4 h-4", isLive ? "text-green-500" : "text-gray-400")} />
-                <span className={cn("text-xs font-medium", isLive ? "text-green-600 dark:text-green-400" : "text-gray-500")}>
+                <Activity className={cn("w-4 h-4", isLive ? "text-gain" : "text-text-muted")} />
+                <span className={cn("text-xs font-medium", isLive ? "text-gain" : "text-text-tertiary")}>
                   {isLive ? "LIVE" : "DELAYED"}
                 </span>
               </div>
@@ -347,7 +347,7 @@ export default function PortfolioPage() {
                       "px-3 py-1 text-sm rounded-lg transition-colors",
                       selectedPeriod === period.value
                         ? "bg-blue-600 text-white"
-                        : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        : "text-text-secondary text-text-muted hover:bg-surface-raised"
                     )}
                   >
                     {period.label}
@@ -413,9 +413,9 @@ export default function PortfolioPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+                <tr className="border-b border-border bg-surface-sunken/50">
                   <th 
-                    className="text-left px-6 py-3 font-medium text-gray-500 dark:text-gray-400 cursor-pointer hover:text-gray-700 dark:hover:text-gray-200 select-none"
+                    className="text-left px-6 py-3 font-medium text-text-tertiary cursor-pointer hover:text-text-secondary hover:text-text-primary select-none"
                     onClick={() => handleSort("symbol")}
                   >
                     <div className="flex items-center gap-1">
@@ -424,7 +424,7 @@ export default function PortfolioPage() {
                     </div>
                   </th>
                   <th 
-                    className="text-left px-6 py-3 font-medium text-gray-500 dark:text-gray-400 cursor-pointer hover:text-gray-700 dark:hover:text-gray-200 select-none"
+                    className="text-left px-6 py-3 font-medium text-text-tertiary cursor-pointer hover:text-text-secondary hover:text-text-primary select-none"
                     onClick={() => handleSort("type")}
                   >
                     <div className="flex items-center gap-1">
@@ -433,7 +433,7 @@ export default function PortfolioPage() {
                     </div>
                   </th>
                   <th 
-                    className="text-right px-6 py-3 font-medium text-gray-500 dark:text-gray-400 cursor-pointer hover:text-gray-700 dark:hover:text-gray-200 select-none"
+                    className="text-right px-6 py-3 font-medium text-text-tertiary cursor-pointer hover:text-text-secondary hover:text-text-primary select-none"
                     onClick={() => handleSort("quantity")}
                   >
                     <div className="flex items-center justify-end gap-1">
@@ -442,7 +442,7 @@ export default function PortfolioPage() {
                     </div>
                   </th>
                   <th 
-                    className="text-right px-6 py-3 font-medium text-gray-500 dark:text-gray-400 cursor-pointer hover:text-gray-700 dark:hover:text-gray-200 select-none"
+                    className="text-right px-6 py-3 font-medium text-text-tertiary cursor-pointer hover:text-text-secondary hover:text-text-primary select-none"
                     onClick={() => handleSort("purchase_price")}
                   >
                     <div className="flex items-center justify-end gap-1">
@@ -451,7 +451,7 @@ export default function PortfolioPage() {
                     </div>
                   </th>
                   <th 
-                    className="text-right px-6 py-3 font-medium text-gray-500 dark:text-gray-400 cursor-pointer hover:text-gray-700 dark:hover:text-gray-200 select-none"
+                    className="text-right px-6 py-3 font-medium text-text-tertiary cursor-pointer hover:text-text-secondary hover:text-text-primary select-none"
                     onClick={() => handleSort("current_price")}
                   >
                     <div className="flex items-center justify-end gap-1">
@@ -460,7 +460,7 @@ export default function PortfolioPage() {
                     </div>
                   </th>
                   <th 
-                    className="text-right px-6 py-3 font-medium text-gray-500 dark:text-gray-400 cursor-pointer hover:text-gray-700 dark:hover:text-gray-200 select-none"
+                    className="text-right px-6 py-3 font-medium text-text-tertiary cursor-pointer hover:text-text-secondary hover:text-text-primary select-none"
                     onClick={() => handleSort("value")}
                   >
                     <div className="flex items-center justify-end gap-1">
@@ -469,7 +469,7 @@ export default function PortfolioPage() {
                     </div>
                   </th>
                   <th 
-                    className="text-right px-6 py-3 font-medium text-gray-500 dark:text-gray-400 cursor-pointer hover:text-gray-700 dark:hover:text-gray-200 select-none"
+                    className="text-right px-6 py-3 font-medium text-text-tertiary cursor-pointer hover:text-text-secondary hover:text-text-primary select-none"
                     onClick={() => handleSort("pnl")}
                   >
                     <div className="flex items-center justify-end gap-1">
@@ -478,7 +478,7 @@ export default function PortfolioPage() {
                     </div>
                   </th>
                   <th 
-                    className="text-right px-6 py-3 font-medium text-gray-500 dark:text-gray-400 cursor-pointer hover:text-gray-700 dark:hover:text-gray-200 select-none"
+                    className="text-right px-6 py-3 font-medium text-text-tertiary cursor-pointer hover:text-text-secondary hover:text-text-primary select-none"
                     onClick={() => handleSort("pnlPercent")}
                   >
                     <div className="flex items-center justify-end gap-1">
@@ -493,7 +493,7 @@ export default function PortfolioPage() {
                   sortedRows.map((row) => (
                     <tr 
                       key={row.id} 
-                      className="border-b border-gray-100 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                      className="border-b border-border hover:bg-surface-raised/50 transition-colors"
                     >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
@@ -503,32 +503,32 @@ export default function PortfolioPage() {
                             row.type === "stocks" && "bg-emerald-500",
                             row.type === "real_estate" && "bg-indigo-500"
                           )} />
-                          <span className="font-semibold text-gray-900 dark:text-gray-100 uppercase">
+                          <span className="font-semibold text-text-primary uppercase">
                             {row.symbol}
                           </span>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200 capitalize">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-text-secondary bg-surface-raised text-text-secondary capitalize">
                           {row.type.replace("_", " ")}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-right text-gray-900 dark:text-gray-100">
+                      <td className="px-6 py-4 text-right text-text-primary">
                         {row.quantity}
                       </td>
-                      <td className="px-6 py-4 text-right text-gray-600 dark:text-gray-400">
+                      <td className="px-6 py-4 text-right text-text-secondary text-text-muted">
                         ${formatCurrency(row.purchase_price)}
                       </td>
-                      <td className="px-6 py-4 text-right text-gray-900 dark:text-gray-100 font-medium">
+                      <td className="px-6 py-4 text-right text-text-primary font-medium">
                         ${formatCurrency(row.current_price)}
                       </td>
-                      <td className="px-6 py-4 text-right text-gray-900 dark:text-gray-100 font-medium">
+                      <td className="px-6 py-4 text-right text-text-primary font-medium">
                         ${formatCurrency(row.value)}
                       </td>
                       <td className="px-6 py-4 text-right">
                         <span className={cn(
                           "font-medium",
-                          row.pnl >= 0 ? "text-green-600" : "text-red-600"
+                          row.pnl >= 0 ? "text-gain" : "text-loss"
                         )}>
                           {row.pnl >= 0 ? "+" : ""}${formatCurrency(row.pnl)}
                         </span>
@@ -536,7 +536,7 @@ export default function PortfolioPage() {
                       <td className="px-6 py-4 text-right">
                         <span className={cn(
                           "inline-flex items-center gap-1 font-medium",
-                          row.pnlPercent >= 0 ? "text-green-600" : "text-red-600"
+                          row.pnlPercent >= 0 ? "text-gain" : "text-loss"
                         )}>
                           {row.pnlPercent >= 0 ? (
                             <TrendingUp className="w-3.5 h-3.5" />
@@ -550,7 +550,7 @@ export default function PortfolioPage() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={8} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                    <td colSpan={8} className="px-6 py-12 text-center text-text-tertiary">
                       Aucun actif dans le portfolio
                     </td>
                   </tr>

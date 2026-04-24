@@ -7,40 +7,54 @@
     "primary": {
       "DEFAULT": "#6366F1",
       "hover": "#818CF8",
-      "muted": "#312E81"
+      "muted": "#312E81",
+      "subtle": "rgba(99,102,241,0.08)"
     },
     "secondary": {
       "DEFAULT": "#22D3EE",
-      "hover": "#67E8F9"
+      "hover": "#67E8F9",
+      "muted": "rgba(34,211,238,0.08)"
     },
-    "accent": {
+    "violet": {
+      "DEFAULT": "#A78BFA",
+      "muted": "rgba(167,139,250,0.1)"
+    },
+    "gain": {
       "DEFAULT": "#10B981",
-      "hover": "#34D399"
+      "hover": "#34D399",
+      "muted": "rgba(16,185,129,0.12)"
     },
-    "danger": {
+    "loss": {
       "DEFAULT": "#EF4444",
-      "hover": "#F87171"
+      "hover": "#F87171",
+      "muted": "rgba(239,68,68,0.12)"
     },
     "warning": {
       "DEFAULT": "#F59E0B",
-      "hover": "#FBBF24"
+      "hover": "#FBBF24",
+      "muted": "rgba(245,158,11,0.12)"
     },
     "text": {
       "primary": "#F8FAFC",
       "secondary": "#94A3B8",
       "tertiary": "#64748B",
-      "muted": "#475569"
+      "muted": "#475569",
+      "disabled": "#334155"
     },
     "border": {
       "DEFAULT": "#1E293B",
-      "hover": "#334155"
+      "hover": "#334155",
+      "focus": "#6366F1"
     },
     "chart": {
       "positive": "#10B981",
       "negative": "#EF4444",
-      "neutral": "#64748B"
+      "neutral": "#64748B",
+      "secondary": "#22D3EE",
+      "tertiary": "#A78BFA"
     },
-    "overlay": "rgba(0,0,0,0.6)"
+    "overlay": "rgba(0,0,0,0.6)",
+    "skeleton": "#1A1E24"
   },
   "fontFamily": {
     "sans": ["Inter", "system-ui", "sans-serif"],
@@ -53,7 +67,8 @@
     "h3": ["1.125rem", { "lineHeight": "1.4", "fontWeight": "600" }],
     "body": ["0.9375rem", { "lineHeight": "1.6", "fontWeight": "400" }],
     "body-sm": ["0.875rem", { "lineHeight": "1.5", "fontWeight": "400" }],
-    "label": ["0.75rem", { "lineHeight": "1.4", "letterSpacing": "0.02em", "fontWeight": "500" }]
+    "label": ["0.75rem", { "lineHeight": "1.4", "letterSpacing": "0.02em", "fontWeight": "500" }],
+    "mono-lg": ["1.25rem", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600" }]
   },
   "borderRadius": {
     "none": "0px",

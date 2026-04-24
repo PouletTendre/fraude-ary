@@ -39,12 +39,12 @@ export function RecentTransactionsWidget() {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="flex items-center gap-2 text-base">
-          <Clock className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+          <Clock className="w-5 h-5 text-primary" />
           Latest Transactions
         </CardTitle>
         <Link
           href="/assets"
-          className="text-sm text-blue-600 hover:underline dark:text-blue-400 flex items-center gap-1"
+          className="text-sm text-primary hover:underline dark:text-primary-hover flex items-center gap-1"
         >
           View all <ArrowRight className="w-4 h-4" />
         </Link>
@@ -61,36 +61,36 @@ export function RecentTransactionsWidget() {
               return (
                 <div
                   key={asset.id}
-                  className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-surface-raised/50 hover:bg-surface-raised transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     <div
                       className={cn(
                         "w-8 h-8 rounded-full flex items-center justify-center",
                         isProfit
-                          ? "bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400"
-                          : "bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-400"
+                          ? "bg-gain-muted text-gain dark:bg-green-900 dark:text-gain"
+                          : "bg-loss-muted text-loss dark:bg-red-900 dark:text-loss"
                       )}
                     >
                       {isProfit ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
                     </div>
                     <div>
-                      <p className="font-medium text-sm text-gray-900 dark:text-gray-100">
+                      <p className="font-medium text-sm text-text-primary">
                         {asset.symbol.toUpperCase()}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                      <p className="text-xs text-text-tertiary">
                         {asset.type.replace("_", " ")} • {formatDate(displayDate)}
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-medium text-sm text-gray-900 dark:text-gray-100">
+                    <p className="font-medium text-sm text-text-primary">
                       {formatCurrency(asset.current_price * asset.quantity)}
                     </p>
                     <p
                       className={cn(
                         "text-xs font-medium",
-                        isProfit ? "text-green-600" : "text-red-600"
+                        isProfit ? "text-gain" : "text-loss"
                       )}
                     >
                       {isProfit ? "+" : ""}
@@ -102,7 +102,7 @@ export function RecentTransactionsWidget() {
             })}
           </div>
         ) : (
-          <p className="text-gray-500 dark:text-gray-400 text-center py-8 text-sm">
+          <p className="text-text-tertiary text-center py-8 text-sm">
             No transactions yet
           </p>
         )}

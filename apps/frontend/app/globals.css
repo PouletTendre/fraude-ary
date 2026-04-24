@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
   --background: #0B0D10;
@@ -12,18 +12,26 @@
   --surface-sunken: #07080A;
   --border: #1E293B;
   --border-hover: #334155;
+  --border-focus: #6366F1;
   --primary: #6366F1;
   --primary-hover: #818CF8;
-  --accent: #10B981;
-  --danger: #EF4444;
+  --primary-subtle: rgba(99,102,241,0.08);
+  --secondary: #22D3EE;
+  --gain: #10B981;
+  --gain-hover: #34D399;
+  --loss: #EF4444;
+  --loss-hover: #F87171;
   --warning: #F59E0B;
   --text-primary: #F8FAFC;
   --text-secondary: #94A3B8;
   --text-tertiary: #64748B;
+  --text-muted: #475569;
+  --text-disabled: #334155;
+  --skeleton: #1A1E24;
 }
 
-.dark,
-html {
+html,
+.dark {
   --background: #0B0D10;
   --foreground: #F8FAFC;
 }
@@ -55,6 +63,11 @@ body {
   @keyframes zoom-in-95 {
     from { transform: scale(0.95); opacity: 0; }
     to { transform: scale(1); opacity: 1; }
+  }
+
+  @keyframes skeleton-pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
   }
 
   .animate-in {
@@ -91,5 +104,13 @@ body {
 
   .ease-out {
     animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+
+  .animate-skeleton {
+    animation: skeleton-pulse 1.4s ease-in-out infinite;
+  }
+
+  .font-tnum {
+    font-feature-settings: "tnum";
   }
 }

@@ -28,22 +28,22 @@ function AlertCard({ alert, onToggle, onDelete, isToggling, isDeleting }: {
   isDeleting: boolean;
 }) {
   return (
-    <div className="flex items-start gap-4 p-4 rounded-lg border bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 transition-colors hover:border-gray-300 dark:hover:border-gray-600">
+    <div className="flex items-start gap-4 p-4 rounded-lg border bg-surface border-border transition-colors hover:border-border-hover">
       <div className={cn(
         "flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center",
-        alert.condition === "above" ? "bg-green-100 dark:bg-green-900/30" : "bg-red-100 dark:bg-red-900/30"
+        alert.condition === "above" ? "bg-gain-muted/30" : "bg-loss-muted/30"
       )}>
         {alert.condition === "above" ? (
-          <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
+          <TrendingUp className="w-5 h-5 text-gain" />
         ) : (
-          <TrendingDown className="w-5 h-5 text-red-600 dark:text-red-400" />
+          <TrendingDown className="w-5 h-5 text-loss" />
         )}
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
           <div>
             <div className="flex items-center gap-2">
-              <p className="font-semibold text-gray-900 dark:text-gray-100 uppercase">
+              <p className="font-semibold text-text-primary uppercase">
                 {alert.symbol}
               </p>
               <Badge variant={alert.is_active ? "success" : "default"}>
@@ -53,11 +53,11 @@ function AlertCard({ alert, onToggle, onDelete, isToggling, isDeleting }: {
                 <Badge variant="warning">Triggered</Badge>
               )}
             </div>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            <p className="text-sm text-text-tertiary mt-1">
               Alert when price goes{" "}
               <span className={cn(
                 "font-medium",
-                alert.condition === "above" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
+                alert.condition === "above" ? "text-gain" : "text-loss"
               )}>
                 {alert.condition}
               </span>{" "}
@@ -66,7 +66,7 @@ function AlertCard({ alert, onToggle, onDelete, isToggling, isDeleting }: {
           </div>
         </div>
         <div className="flex items-center gap-3 mt-3">
-          <p className="text-xs text-gray-400 dark:text-gray-500">
+          <p className="text-xs text-text-muted dark:text-text-tertiary">
             Created {new Date(alert.created_at).toLocaleDateString("fr-FR")}
           </p>
         </div>
@@ -76,13 +76,13 @@ function AlertCard({ alert, onToggle, onDelete, isToggling, isDeleting }: {
           onClick={() => onToggle(alert.id, !alert.is_active)}
           disabled={isToggling}
           className={cn(
-            "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50",
-            alert.is_active ? "bg-blue-600" : "bg-gray-200 dark:bg-gray-700"
+            "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50",
+            alert.is_active ? "bg-blue-600" : "bg-surface-raised"
           )}
         >
           <span
             className={cn(
-              "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+              "inline-block h-4 w-4 transform rounded-full bg-surface transition-transform",
               alert.is_active ? "translate-x-6" : "translate-x-1"
             )}
           />
@@ -90,7 +90,7 @@ function AlertCard({ alert, onToggle, onDelete, isToggling, isDeleting }: {
         <button
           onClick={() => onDelete(alert.id)}
           disabled={isDeleting}
-          className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50"
+          className="p-2 rounded-lg text-text-muted hover:text-loss hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50"
         >
           <Trash2 className="w-4 h-4" />
         </button>
@@ -188,14 +188,14 @@ export default function AlertsPage() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
-              <Bell className="w-8 h-8 text-blue-600" />
+            <h1 className="text-3xl font-bold text-text-primary flex items-center gap-3">
+              <Bell className="w-8 h-8 text-primary" />
               Price Alerts
             </h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-1">
+            <p className="text-text-tertiary mt-1">
               {alerts.length > 0 ? (
                 <span>
-                  You have <span className="font-medium text-blue-600 dark:text-blue-400">{alerts.filter(a => a.is_active).length}</span> active alert{alerts.filter(a => a.is_active).length !== 1 ? "s" : ""}
+                  You have <span className="font-medium text-primary">{alerts.filter(a => a.is_active).length}</span> active alert{alerts.filter(a => a.is_active).length !== 1 ? "s" : ""}
                 </span>
               ) : (
                 "Create alerts to get notified when prices hit your targets."
@@ -219,7 +219,7 @@ export default function AlertsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <AlertCircle className="w-5 h-5 text-blue-600" />
+                <AlertCircle className="w-5 h-5 text-primary" />
                 Create New Alert
               </CardTitle>
             </CardHeader>
@@ -243,7 +243,7 @@ export default function AlertsPage() {
                     error={errors.target_price}
                   />
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-text-secondary mb-1">
                       Condition
                     </label>
                     <div className="flex gap-2">
@@ -253,8 +253,8 @@ export default function AlertsPage() {
                         className={cn(
                           "flex-1 flex items-center justify-center gap-2 h-10 px-3 rounded-lg border text-sm font-medium transition-colors",
                           formData.condition === "above"
-                            ? "border-green-500 bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400"
-                            : "border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                            ? "border-green-500 bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-gain"
+                            : "border-border text-text-secondary hover:bg-surface-raised"
                         )}
                       >
                         <TrendingUp className="w-4 h-4" />
@@ -266,8 +266,8 @@ export default function AlertsPage() {
                         className={cn(
                           "flex-1 flex items-center justify-center gap-2 h-10 px-3 rounded-lg border text-sm font-medium transition-colors",
                           formData.condition === "below"
-                            ? "border-red-500 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400"
-                            : "border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                            ? "border-red-500 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-loss"
+                            : "border-border text-text-secondary hover:bg-surface-raised"
                         )}
                       >
                         <TrendingDown className="w-4 h-4" />
@@ -302,9 +302,9 @@ export default function AlertsPage() {
         ) : (
           <Card>
             <CardContent className="py-16 text-center">
-              <Bell className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-              <p className="text-gray-500 dark:text-gray-400 text-lg font-medium">No alerts yet</p>
-              <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+              <Bell className="w-12 h-12 text-text-muted dark:text-text-secondary mx-auto mb-4" />
+              <p className="text-text-tertiary text-lg font-medium">No alerts yet</p>
+              <p className="text-sm text-text-muted dark:text-text-tertiary mt-1">
                 Create your first price alert to get notified when an asset hits your target price.
               </p>
               <Button onClick={() => setShowForm(true)} className="mt-4">

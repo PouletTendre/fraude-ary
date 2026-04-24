@@ -35,8 +35,8 @@ export default function SettingsPage() {
     <PageTransition>
       <div className="space-y-6 max-w-3xl mx-auto">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Settings</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">
+          <h1 className="text-3xl font-bold text-text-primary">Settings</h1>
+          <p className="text-text-tertiary mt-1">
             Customize your experience and preferences
           </p>
         </div>
@@ -44,12 +44,12 @@ export default function SettingsPage() {
         {/* Appearance */}
         <Card>
           <CardHeader className="flex flex-row items-center gap-2 pb-2">
-            <Settings2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            <Settings2 className="w-5 h-5 text-primary" />
             <CardTitle className="text-base">Appearance</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 block">
+              <label className="text-sm font-medium text-text-secondary mb-3 block">
                 Theme
               </label>
               <div className="grid grid-cols-3 gap-3">
@@ -59,11 +59,11 @@ export default function SettingsPage() {
                     "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all",
                     theme === "light"
                       ? "border-blue-600 bg-blue-50 dark:bg-blue-900/30"
-                      : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                      : "border-border hover:border-border-hover"
                   )}
                 >
                   <Sun className="w-6 h-6 text-amber-500" />
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Light</span>
+                  <span className="text-sm font-medium text-text-secondary">Light</span>
                   {theme === "light" && (
                     <div className="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center">
                       <Check className="w-3 h-3 text-white" />
@@ -76,11 +76,11 @@ export default function SettingsPage() {
                     "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all",
                     theme === "dark"
                       ? "border-blue-600 bg-blue-50 dark:bg-blue-900/30"
-                      : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                      : "border-border hover:border-border-hover"
                   )}
                 >
                   <Moon className="w-6 h-6 text-indigo-500" />
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Dark</span>
+                  <span className="text-sm font-medium text-text-secondary">Dark</span>
                   {theme === "dark" && (
                     <div className="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center">
                       <Check className="w-3 h-3 text-white" />
@@ -93,11 +93,11 @@ export default function SettingsPage() {
                     "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all",
                     theme === "system"
                       ? "border-blue-600 bg-blue-50 dark:bg-blue-900/30"
-                      : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                      : "border-border hover:border-border-hover"
                   )}
                 >
-                  <Monitor className="w-6 h-6 text-gray-500" />
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">System</span>
+                  <Monitor className="w-6 h-6 text-text-tertiary" />
+                  <span className="text-sm font-medium text-text-secondary">System</span>
                   {theme === "system" && (
                     <div className="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center">
                       <Check className="w-3 h-3 text-white" />
@@ -112,11 +112,11 @@ export default function SettingsPage() {
         {/* Currency */}
         <Card>
           <CardHeader className="flex flex-row items-center gap-2 pb-2">
-            <DollarSign className="w-5 h-5 text-green-600 dark:text-green-400" />
+            <DollarSign className="w-5 h-5 text-gain" />
             <CardTitle className="text-base">Currency</CardTitle>
           </CardHeader>
           <CardContent>
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 block">
+            <label className="text-sm font-medium text-text-secondary mb-3 block">
               Display Currency
             </label>
             <div className="grid grid-cols-2 gap-3">
@@ -128,15 +128,15 @@ export default function SettingsPage() {
                     "flex items-center gap-3 p-4 rounded-xl border-2 transition-all",
                     settings.currency === c.value
                       ? "border-blue-600 bg-blue-50 dark:bg-blue-900/30"
-                      : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                      : "border-border hover:border-border-hover"
                   )}
                 >
-                  <div className="p-2 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600">
+                  <div className="p-2 rounded-lg bg-surface-raised border border-border">
                     {c.icon}
                   </div>
                   <div className="text-left">
-                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{c.label}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{c.value}</p>
+                    <p className="text-sm font-medium text-text-primary">{c.label}</p>
+                    <p className="text-xs text-text-tertiary">{c.value}</p>
                   </div>
                   {settings.currency === c.value && (
                     <div className="ml-auto w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center">
@@ -156,7 +156,7 @@ export default function SettingsPage() {
             <CardTitle className="text-base">Date Format</CardTitle>
           </CardHeader>
           <CardContent>
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 block">
+            <label className="text-sm font-medium text-text-secondary mb-3 block">
               Preferred Format
             </label>
             <div className="space-y-2">
@@ -168,12 +168,12 @@ export default function SettingsPage() {
                     "flex items-center justify-between w-full p-4 rounded-xl border-2 transition-all",
                     settings.dateFormat === df.value
                       ? "border-blue-600 bg-blue-50 dark:bg-blue-900/30"
-                      : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                      : "border-border hover:border-border-hover"
                   )}
                 >
                   <div className="text-left">
-                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{df.label}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{df.example}</p>
+                    <p className="text-sm font-medium text-text-primary">{df.label}</p>
+                    <p className="text-xs text-text-tertiary mt-0.5">{df.example}</p>
                   </div>
                   {settings.dateFormat === df.value && (
                     <div className="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center">

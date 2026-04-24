@@ -34,7 +34,7 @@ export function GoalsWidget() {
         current: totalValue,
         target: Math.max(totalValue * 1.5, 10000),
         color: "bg-blue-600",
-        bgColor: "bg-blue-100 dark:bg-blue-900",
+        bgColor: "bg-primary-subtle",
       },
       {
         id: "profit-target",
@@ -43,7 +43,7 @@ export function GoalsWidget() {
         current: Math.max(0, gainLoss),
         target: Math.max(Math.abs(gainLoss) * 2, 5000),
         color: "bg-green-600",
-        bgColor: "bg-green-100 dark:bg-green-900",
+        bgColor: "bg-gain-muted",
       },
       {
         id: "diversification",
@@ -92,33 +92,33 @@ export function GoalsWidget() {
                   <div className="flex items-center gap-2">
                     <div
                       className={cn(
-                        "w-7 h-7 rounded-lg flex items-center justify-center text-gray-700 dark:text-gray-300",
+                        "w-7 h-7 rounded-lg flex items-center justify-center text-text-secondary",
                         goal.bgColor
                       )}
                     >
                       {goal.icon}
                     </div>
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <span className="text-sm font-medium text-text-secondary">
                       {goal.title}
                     </span>
                   </div>
                   <div className="text-right">
-                    <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    <span className="text-sm font-semibold text-text-primary">
                       {isCurrency ? formatCurrency(goal.current) : goal.current}
                     </span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">
+                    <span className="text-xs text-text-tertiary ml-1">
                       / {isCurrency ? formatCurrency(goal.target) : goal.target}
                     </span>
                   </div>
                 </div>
                 <div className="relative">
-                  <div className="h-2.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                  <div className="h-2.5 bg-surface-raised rounded-full overflow-hidden">
                     <div
                       className={cn("h-full rounded-full transition-all duration-700 ease-out", goal.color)}
                       style={{ width: `${percentage}%` }}
                     />
                   </div>
-                  <span className="absolute right-0 -top-5 text-xs font-medium text-gray-500 dark:text-gray-400">
+                  <span className="absolute right-0 -top-5 text-xs font-medium text-text-tertiary">
                     {percentage}%
                   </span>
                 </div>

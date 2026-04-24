@@ -41,11 +41,11 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl text-center">Create Account</CardTitle>
-          <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-2">
+          <p className="text-center text-sm text-text-tertiary mt-2">
             Join Fraude-Ary to track your portfolio
           </p>
         </CardHeader>
@@ -83,9 +83,9 @@ export default function RegisterPage() {
             <Button type="submit" className="w-full" disabled={isRegistering}>
               {isRegistering ? "Creating account..." : "Create Account"}
             </Button>
-            <p className="text-center text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-center text-sm text-text-tertiary">
               Already have an account?{" "}
-              <Link href="/login" className="text-blue-600 hover:underline dark:text-blue-400">
+              <Link href="/login" className="text-primary hover:underline dark:text-primary-hover">
                 Sign in
               </Link>
             </p>

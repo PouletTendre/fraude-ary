@@ -83,11 +83,11 @@ export function SymbolSearch({ value, onChange, error, assetType }: SymbolSearch
 
   return (
     <div ref={containerRef} className="w-full relative">
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+      <label className="block text-sm font-medium text-text-secondary mb-1">
         Symbol
       </label>
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
         <input
           type="text"
           value={query}
@@ -95,36 +95,36 @@ export function SymbolSearch({ value, onChange, error, assetType }: SymbolSearch
           onFocus={() => { setIsOpen(true); if (query.length >= 1) searchSymbols(query); }}
           placeholder="Search any stock or crypto (e.g. AAPL, BTC)"
           className={cn(
-            "flex h-10 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100 pl-10",
+            "flex h-10 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-border-focus disabled:cursor-not-allowed disabled:opacity-50 bg-surface-sunken border-border text-text-primary pl-10",
             error && "border-red-500 focus:ring-red-500"
           )}
         />
-        {loading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 animate-spin" />}
+        {loading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted animate-spin" />}
       </div>
       {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
       {isOpen && (
-        <ul className="absolute z-10 mt-1 w-full max-h-60 overflow-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-600 dark:bg-gray-800">
+        <ul className="absolute z-10 mt-1 w-full max-h-60 overflow-auto rounded-lg border border-border bg-surface-sunken py-1 shadow-lg">
           {results.length > 0 ? (
             results.map((item) => (
               <li
                 key={item.symbol}
                 onClick={() => handleSelect(item.symbol)}
-                className="cursor-pointer px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="cursor-pointer px-4 py-2 hover:bg-surface-raised"
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-medium text-gray-900 dark:text-gray-100">{item.symbol}</span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 capitalize">{item.type}</span>
+                  <span className="font-medium text-text-primary">{item.symbol}</span>
+                  <span className="text-xs text-text-tertiary capitalize">{item.type}</span>
                 </div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{item.name} {item.exchange ? `(${item.exchange})` : ""}</p>
+                <p className="text-sm text-text-tertiary">{item.name} {item.exchange ? `(${item.exchange})` : ""}</p>
               </li>
             ))
           ) : query.length >= 1 && !loading ? (
             <li
               onClick={handleUseCustom}
-              className="cursor-pointer px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+              className="cursor-pointer px-4 py-3 hover:bg-surface-raised flex items-center gap-2"
             >
               <Plus className="w-4 h-4 text-blue-500" />
-              <span className="text-sm text-blue-600 dark:text-blue-400">
+              <span className="text-sm text-primary">
                 Use custom symbol "{query.toUpperCase().trim()}"
               </span>
             </li>

@@ -62,11 +62,11 @@ function getStatusIcon(status: MarketIndicator["status"]) {
 function getStatusColor(status: MarketIndicator["status"]) {
   switch (status) {
     case "bullish":
-      return "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-400 border-green-200 dark:border-green-800";
+      return "bg-gain-muted text-green-700 dark:bg-green-900 dark:text-gain border-green-200 dark:border-green-800";
     case "bearish":
-      return "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-400 border-red-200 dark:border-red-800";
+      return "bg-loss-muted text-red-700 dark:bg-red-900 dark:text-loss border-red-200 dark:border-red-800";
     default:
-      return "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400 border-gray-200 dark:border-gray-600";
+      return "text-text-secondary bg-surface-raised text-text-muted border-border";
   }
 }
 
@@ -82,15 +82,15 @@ export function MarketWeatherWidget() {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="flex items-center gap-2 text-base">
-          <Globe className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+          <Globe className="w-5 h-5 text-primary" />
           Market Weather
         </CardTitle>
         <span
           className={cn(
             "text-xs font-medium px-2.5 py-1 rounded-full border",
-            overallStatus === "bullish" && "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-400 border-green-200 dark:border-green-800",
-            overallStatus === "bearish" && "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-400 border-red-200 dark:border-red-800",
-            overallStatus === "neutral" && "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400 border-gray-200 dark:border-gray-600"
+            overallStatus === "bullish" && "bg-gain-muted text-green-700 dark:bg-green-900 dark:text-gain border-green-200 dark:border-green-800",
+            overallStatus === "bearish" && "bg-loss-muted text-red-700 dark:bg-red-900 dark:text-loss border-red-200 dark:border-red-800",
+            overallStatus === "neutral" && "text-text-secondary bg-surface-raised text-text-muted border-border"
           )}
         >
           {overallStatus === "bullish" ? "Sunny" : overallStatus === "bearish" ? "Stormy" : "Cloudy"}
@@ -107,7 +107,7 @@ export function MarketWeatherWidget() {
               )}
             >
               <div className="flex items-center gap-2.5">
-                <div className="p-1.5 rounded-md bg-white/50 dark:bg-black/20">
+                <div className="p-1.5 rounded-md bg-surface/50 dark:bg-black/20">
                   {indicator.name === "Global Market" && <BarChart3 className="w-3.5 h-3.5" />}
                   {indicator.name === "Crypto Market" && <Activity className="w-3.5 h-3.5" />}
                   {indicator.name === "Tech Stocks" && <TrendingUp className="w-3.5 h-3.5" />}
