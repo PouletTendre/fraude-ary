@@ -90,3 +90,23 @@ export interface PriceAlert {
   created_at: string;
   triggered_at?: string | null;
 }
+
+export interface Dividend {
+  id: string;
+  user_email: string;
+  symbol: string;
+  amount_per_share: number;
+  quantity: number;
+  total_amount: number;
+  currency: string;
+  date: string;
+  created_at?: string;
+}
+
+export interface DividendSummary {
+  total_dividends: number;
+  total_by_symbol: Record<string, number>;
+  monthly_history: { month: string; amount: number }[];
+  yield_on_cost: number;
+  count: number;
+}

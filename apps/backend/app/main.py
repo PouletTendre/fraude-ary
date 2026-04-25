@@ -10,7 +10,7 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-from app.routers import auth, assets, portfolio, prices, demo, alerts, notifications, exchange_rates, cache, monitoring, transactions
+from app.routers import auth, assets, portfolio, prices, demo, alerts, notifications, exchange_rates, cache, monitoring, transactions, dividends
 from app.services.cache_service import cache_service
 from app.services.price_service import price_service
 from app.database import async_session
@@ -89,6 +89,7 @@ app.include_router(exchange_rates.router, prefix="/api/v1/exchange-rates", tags=
 app.include_router(cache.router, prefix="/api/v1/cache", tags=["cache"])
 app.include_router(monitoring.router, prefix="/api/v1/health", tags=["health"])
 app.include_router(transactions.router, prefix="/api/v1/transactions", tags=["transactions"])
+app.include_router(dividends.router, prefix="/api/v1/dividends", tags=["dividends"])
 
 @app.get("/health")
 async def health():

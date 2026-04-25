@@ -3,6 +3,7 @@ from app.models.asset import Asset, PriceHistory, AssetType
 from app.models.alert import PriceAlert, PortfolioSnapshot, Notification, AlertCondition
 from app.models.exchange_rate import ExchangeRate
 from app.models.transaction import Transaction, TransactionType
+from app.models.dividend import Dividend
 
 __all__ = [
     "User",
@@ -16,4 +17,5 @@ __all__ = [
     "ExchangeRate",
     "Transaction",
     "TransactionType",
+    "Dividend",
 ]

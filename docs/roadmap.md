@@ -16,7 +16,7 @@
 | 5 | Import CSV | ✅ | ✅ | — | DONE |
 | 6 | Multi-devises | ✅ | ✅ | — | DONE |
 | 7 | Mode sombre | ✅ | ✅ | — | DONE |
-| 8 | **Tracker de dividendes** | ✅ | ❌ | 🔴 P1 | TODO |
+| 8 | **Tracker de dividendes** | ✅ | ✅ | 🔴 P1 | DONE |
 | 9 | **Analyse de diversification** | ✅ | ❌ | 🔴 P1 | TODO |
 | 10 | **Simulateur de patrimoine** | ✅ | ❌ | 🔴 P1 | TODO |
 | 11 | **Gestion du budget** | ✅ | ❌ | 🟠 P2 | TODO |
@@ -99,4 +99,5 @@ Pour chaque module:
 | Date | Module | Status |
 |------|--------|--------|
 | 2026-04-25 | Sécurité (34 vulnérabilités) | ✅ DONE |
-| — | 8. Tracker de dividendes | ⏳ NEXT |
+| 2026-04-25 | 8. Tracker de dividendes | ✅ DONE |
+| — | 9. Analyse de diversification | ⏳ NEXT |
