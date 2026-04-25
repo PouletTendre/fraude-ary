@@ -26,6 +26,7 @@ import {
   Menu,
   X,
   PieChart,
+  Calculator,
 } from "lucide-react";
 
 const navSections = [
@@ -37,6 +38,7 @@ const navSections = [
       { href: "/assets", label: "Marchés", icon: TrendingUp },
       { href: "/journal", label: "Analyse", icon: BarChart3 },
       { href: "/diversification", label: "Diversification", icon: PieChart },
+      { href: "/simulator", label: "Simulateur", icon: Calculator },
     ],
   },
   {

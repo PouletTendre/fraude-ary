@@ -123,3 +123,31 @@ export interface DiversificationData {
   by_sector: DiversificationEntry[];
   by_country: DiversificationEntry[];
 }
+
+export interface SimulatorRequest {
+  initial_capital: number;
+  monthly_contribution: number;
+  annual_return_rate: number;
+  inflation_rate: number;
+  years: number;
+  dividend_yield: number;
+}
+
+export interface YearProjection {
+  year: number;
+  portfolio_value: number;
+  portfolio_value_real: number;
+  total_contributions: number;
+  total_dividends: number;
+  gains: number;
+}
+
+export interface SimulatorResponse {
+  projections: YearProjection[];
+  final_value: number;
+  final_value_real: number;
+  total_contributions: number;
+  total_dividends: number;
+  total_gains: number;
+  years: number;
+}
