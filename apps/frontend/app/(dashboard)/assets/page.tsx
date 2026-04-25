@@ -717,8 +717,8 @@ export default function AssetsPage() {
                         <td className="px-4 py-4 whitespace-nowrap text-right text-text-primary">{formatNumber(asset.quantity)}</td>
                         <td className="px-4 py-4 whitespace-nowrap text-right text-text-primary">
                           {formatCurrency(asset.purchase_price, asset.currency)}
-                          {asset.purchase_price_eur !== undefined && asset.purchase_price_eur !== asset.purchase_price && (
-                            <div className="text-text-tertiary text-[11px]">
+                          {asset.purchase_price_eur !== undefined && asset.currency !== "EUR" && (
+                            <div className="text-[11px] text-text-tertiary mt-0.5">
                               ≈ {formatCurrency(asset.purchase_price_eur, "EUR")}
                             </div>
                           )}

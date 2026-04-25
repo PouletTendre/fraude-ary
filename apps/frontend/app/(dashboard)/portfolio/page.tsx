@@ -591,8 +591,8 @@ export default function PortfolioPage() {
                       </td>
                       <td className="px-6 py-4 text-right text-text-secondary text-text-muted">
                         {formatCurrency(row.purchase_price, row.currency)}
-                        {row.purchase_price_eur !== undefined && row.purchase_price_eur !== row.purchase_price && (
-                          <div className="text-text-tertiary text-[11px]">
+                        {row.purchase_price_eur !== undefined && row.currency !== "EUR" && (
+                          <div className="text-[11px] text-text-tertiary mt-0.5">
                             ≈ {formatCurrency(row.purchase_price_eur, "EUR")}
                           </div>
                         )}

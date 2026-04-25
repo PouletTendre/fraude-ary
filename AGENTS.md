@@ -422,13 +422,15 @@ docker compose up -d --build
     - **Commits Agent** — owns `git add`, `git commit`, `git push`
     - **Testing Agent** — owns `e2e/` Playwright validation
     **If you have 2 tasks, that means 8 sub-agents total.** Parallelize Front-End and Back-End work for each task simultaneously. After both are done, the Commits Agent commits everything, then the Testing Agent runs E2E tests. If tests fail, loop back to Front-End or Back-End agent, fix, re-commit, re-test. Use `subagent_type: "general"` for all implementation work.
-12. **Branch-based workflow is mandatory.** Never push directly to `main`. For every feature or bug fix:
-    - Create a branch from `main`: `git checkout -b feat/short-description`
-    - All sub-agents work on this branch
-    - Commits Agent commits and pushes the branch: `git push -u origin feat/short-description`
-    - The orchestrator creates a Pull Request via `gh pr create`
-    - The orchestrator merges the PR via `gh pr merge` (squash or merge) after tests pass
-    - This allows multiple features to be developed in parallel without conflicts.
+12. **Branch-based workflow is mandatory — STRICT.** Never push directly to `main`.
+    - **Step 1 — Orchestrator creates branch:** `git checkout main && git pull && git checkout -b feat/short-description`
+    - **Step 2 — Orchestrator MUST stay on the feature branch.** Do NOT `git checkout main` until the feature is fully committed, pushed, and ready to merge. Verify with `git branch --show-current`.
+    - **Step 3 — Orchestrator verifies branch before spawning sub-agents.** Run `git branch --show-current` and confirm it says `feat/short-description` BEFORE calling ANY `task` tool. If on `main`, STOP and checkout the feature branch first.
+    - **Step 4 — Sub-agents MUST NOT run git commands.** The sub-agent prompt MUST include: "You are working on branch `feat/short-description`. Do NOT run `git checkout`, `git merge`, or any git command. Only read and modify files. Do NOT switch branches."
+    - **Step 5 — Sub-agents verify branch at start.** The sub-agent MUST run `git branch --show-current` at the beginning of its work and report it in its summary.
+    - **Step 6 — Commit on the feature branch only.** After sub-agents finish, the orchestrator runs `git add -A && git commit && git push -u origin feat/short-description` WHILE STILL ON THE FEATURE BRANCH.
+    - **Step 7 — Merge via PR or local merge.** The orchestrator creates a PR with `gh pr create` and merges with `gh pr merge` after CI passes. If `gh` CLI is unavailable, merge locally with `git checkout main && git merge feat/short-description --no-edit && git push origin main`.
+    - **CRITICAL:** Never merge to main before the feature branch is pushed. Never let sub-agents write to main. Never `git checkout main` between creating the branch and committing/pushing the feature.
 
 ## Contact / Ownership
 
