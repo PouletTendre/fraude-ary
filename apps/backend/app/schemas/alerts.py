@@ -6,6 +6,7 @@ class PriceAlertCreate(BaseModel):
     symbol: str
     target_price: float
     condition: Literal["above", "below"]
+    currency: Optional[str] = "EUR"
 
 class PriceAlertUpdate(BaseModel):
     target_price: Optional[float] = None
@@ -19,7 +20,12 @@ class PriceAlertResponse(BaseModel):
     target_price: float
     condition: str
     is_active: bool
+    currency: str
     created_at: Optional[datetime] = None
+
+class AlertCountResponse(BaseModel):
+    total: int
+    active: int
 
 class PortfolioHistoryEntry(BaseModel):
     date: datetime

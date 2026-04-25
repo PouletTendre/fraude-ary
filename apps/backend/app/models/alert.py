@@ -15,6 +15,7 @@ class PriceAlert(Base):
     symbol = Column(String, nullable=False, index=True)
     target_price = Column(Float, nullable=False)
     condition = Column(SQLEnum(AlertCondition), nullable=False)
+    currency = Column(String, nullable=False, default="EUR")
     is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 

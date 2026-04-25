@@ -14,7 +14,7 @@ import { SymbolSearch } from "@/components/SymbolSearch";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { Search, Filter, X, ArrowUpDown, TrendingUp, TrendingDown, ArrowLeft } from "lucide-react";
 import { fetchApi } from "@/lib/api";
-import { cn } from "@/lib/utils";
+import { cn, formatNumber } from "@/lib/utils";
 import type { Asset } from "@/types";
 
 const TYPE_OPTIONS = [
@@ -317,7 +317,7 @@ export default function AssetsPage() {
                 <p className="text-2xl font-bold text-text-primary mt-1">
                   {formatCurrency(currentValue, selectedAsset.currency)}
                 </p>
-                <p className="text-sm text-text-tertiary mt-1">{selectedAsset.quantity} units</p>
+                <p className="text-sm text-text-tertiary mt-1">{formatNumber(selectedAsset.quantity)} units</p>
               </div>
             </CardContent>
           </Card>
@@ -393,7 +393,7 @@ export default function AssetsPage() {
               </div>
               <div>
                 <p className="text-sm text-text-tertiary">Quantity</p>
-                <p className="text-text-primary">{selectedAsset.quantity}</p>
+                <p className="text-text-primary">{formatNumber(selectedAsset.quantity)}</p>
               </div>
               <div>
                 <p className="text-sm text-text-tertiary">Purchase Date</p>
@@ -714,7 +714,7 @@ export default function AssetsPage() {
                             {asset.type.replace("_", " ")}
                           </Badge>
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-right text-text-primary">{asset.quantity}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-right text-text-primary">{formatNumber(asset.quantity)}</td>
                         <td className="px-4 py-4 whitespace-nowrap text-right text-text-primary">
                           {formatCurrency(asset.purchase_price, asset.currency)}
                           {asset.purchase_price_eur !== undefined && asset.purchase_price_eur !== asset.purchase_price && (
@@ -743,8 +743,8 @@ export default function AssetsPage() {
                             onClick={() => {
                               setEditingAsset(asset);
                               setEditFormData({
-                                quantity: String(asset.quantity),
-                                purchase_price: String(asset.purchase_price),
+                                quantity: formatNumber(asset.quantity),
+                                purchase_price: formatNumber(asset.purchase_price),
                                 currency: asset.currency,
                               });
                             }}

@@ -254,9 +254,9 @@ async def get_portfolio_summary(
     ]
 
     return PortfolioSummary(
-        total_value=total_value,
-        total_gain_loss=total_gain_loss,
-        gain_loss_percentage=gain_loss_percentage,
+        total_value=round(total_value, 2),
+        total_gain_loss=round(total_gain_loss, 2),
+        gain_loss_percentage=round(gain_loss_percentage, 2),
         assets=asset_responses,
         performance=PerformanceData(daily=daily_perf, monthly=monthly_perf, yearly=yearly_perf),
         allocation=allocation,

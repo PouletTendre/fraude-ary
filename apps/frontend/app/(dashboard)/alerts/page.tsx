@@ -9,16 +9,10 @@ import { Badge } from "@/components/ui/Badge";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { useAlerts, type CreateAlertData } from "@/hooks/useAlerts";
 import { useToast } from "@/components/ui/Toast";
+import { useSettings } from "@/hooks/useSettings";
 import { Bell, Plus, Trash2, TrendingUp, TrendingDown, AlertCircle, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { PriceAlert } from "@/types";
-
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value);
-};
 
 function AlertCard({ alert, onToggle, onDelete, isToggling, isDeleting }: {
   alert: PriceAlert;
@@ -27,6 +21,7 @@ function AlertCard({ alert, onToggle, onDelete, isToggling, isDeleting }: {
   isToggling: boolean;
   isDeleting: boolean;
 }) {
+  const { formatCurrency } = useSettings();
   return (
     <div className="flex items-start gap-4 p-4 rounded-lg border bg-surface border-border transition-colors hover:border-border-hover">
       <div className={cn(
@@ -61,7 +56,7 @@ function AlertCard({ alert, onToggle, onDelete, isToggling, isDeleting }: {
               )}>
                 {alert.condition}
               </span>{" "}
-              ${formatCurrency(alert.target_price)}
+              {formatCurrency(alert.target_price, alert.currency || "EUR")}
             </p>
           </div>
         </div>

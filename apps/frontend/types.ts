@@ -86,6 +86,7 @@ export interface PriceAlert {
   target_price: number;
   condition: "above" | "below";
   is_active: boolean;
+  currency?: string;
   created_at: string;
   triggered_at?: string | null;
 }

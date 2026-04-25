@@ -5,7 +5,7 @@ import {
   PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid,
   BarChart, Bar
 } from "recharts";
-import { cn } from "@/lib/utils";
+import { cn, formatNumber } from "@/lib/utils";
 import { usePortfolio } from "@/hooks/usePortfolio";
 import { useAssets } from "@/hooks/useAssets";
 import { useSettings } from "@/hooks/useSettings";
@@ -587,7 +587,7 @@ export default function PortfolioPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right text-text-primary">
-                        {row.quantity}
+                        {formatNumber(row.quantity)}
                       </td>
                       <td className="px-6 py-4 text-right text-text-secondary text-text-muted">
                         {formatCurrency(row.purchase_price, row.currency)}

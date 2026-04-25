@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update
+from sqlalchemy import select, update, func
 from typing import List
 import uuid
 
 from app.database import get_db
 from app.models.user import User
 from app.models.alert import PriceAlert, AlertCondition
-from app.schemas.alerts import PriceAlertCreate, PriceAlertResponse, PriceAlertUpdate
+from app.schemas.alerts import PriceAlertCreate, PriceAlertResponse, PriceAlertUpdate, AlertCountResponse
 from app.routers.auth import get_current_user
 
 router = APIRouter()
@@ -25,6 +25,7 @@ async def create_alert(
         symbol=alert.symbol.upper(),
         target_price=alert.target_price,
         condition=AlertCondition(alert.condition),
+        currency=alert.currency or "EUR",
         is_active=True,
     )
     db.add(db_alert)
@@ -37,6 +38,7 @@ async def create_alert(
         target_price=db_alert.target_price,
         condition=db_alert.condition.value if hasattr(db_alert.condition, 'value') else db_alert.condition,
         is_active=db_alert.is_active,
+        currency=db_alert.currency or "EUR",
         created_at=db_alert.created_at,
     )
 
@@ -57,10 +59,31 @@ async def list_alerts(
             target_price=a.target_price,
             condition=a.condition.value if hasattr(a.condition, 'value') else a.condition,
             is_active=a.is_active,
+            currency=a.currency or "EUR",
             created_at=a.created_at,
         )
         for a in alerts
     ]
+
+@router.get("/count", response_model=AlertCountResponse)
+async def get_alert_count(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    total_result = await db.execute(
+        select(func.count()).select_from(PriceAlert).where(PriceAlert.user_email == current_user.email)
+    )
+    total = total_result.scalar() or 0
+
+    active_result = await db.execute(
+        select(func.count()).select_from(PriceAlert).where(
+            PriceAlert.user_email == current_user.email,
+            PriceAlert.is_active == True
+        )
+    )
+    active = active_result.scalar() or 0
+
+    return AlertCountResponse(total=total, active=active)
 
 @router.put("/{alert_id}", response_model=PriceAlertResponse)
 async def update_alert(
@@ -96,6 +119,7 @@ async def update_alert(
         target_price=alert.target_price,
         condition=alert.condition.value if hasattr(alert.condition, 'value') else alert.condition,
         is_active=alert.is_active,
+        currency=alert.currency or "EUR",
         created_at=alert.created_at,
     )
 

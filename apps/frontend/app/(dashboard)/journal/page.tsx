@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
 import { Pencil, Trash2, X, Check, Plus } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, formatNumber } from "@/lib/utils";
 import type { Transaction } from "@/types";
 
 const CURRENCY_SYMBOLS: Record<string, string> = {
@@ -327,7 +327,7 @@ export default function JournalPage() {
                                 <input
                                   type="number"
                                   step="any"
-                                  value={editForm.quantity || ""}
+                                  value={editForm.quantity !== undefined ? formatNumber(editForm.quantity) : ""}
                                   onChange={(e) => setEditForm({ ...editForm, quantity: parseFloat(e.target.value) })}
                                   className="h-8 w-full rounded-md border border-border bg-surface-sunken px-2 text-sm text-text-primary text-right"
                                 />
@@ -336,7 +336,7 @@ export default function JournalPage() {
                                 <input
                                   type="number"
                                   step="any"
-                                  value={editForm.unit_price || ""}
+                                  value={editForm.unit_price !== undefined ? formatNumber(editForm.unit_price) : ""}
                                   onChange={(e) => setEditForm({ ...editForm, unit_price: parseFloat(e.target.value) })}
                                   className="h-8 w-full rounded-md border border-border bg-surface-sunken px-2 text-sm text-text-primary text-right"
                                 />
@@ -353,7 +353,7 @@ export default function JournalPage() {
                                 <input
                                   type="number"
                                   step="any"
-                                  value={editForm.fees || ""}
+                                  value={editForm.fees !== undefined ? formatNumber(editForm.fees) : ""}
                                   onChange={(e) => setEditForm({ ...editForm, fees: parseFloat(e.target.value) })}
                                   className="h-8 w-full rounded-md border border-border bg-surface-sunken px-2 text-sm text-text-primary text-right"
                                 />
@@ -362,7 +362,7 @@ export default function JournalPage() {
                                 <input
                                   type="number"
                                   step="any"
-                                  value={editForm.total_invested || ""}
+                                  value={editForm.total_invested !== undefined ? formatNumber(editForm.total_invested) : ""}
                                   onChange={(e) => setEditForm({ ...editForm, total_invested: parseFloat(e.target.value) })}
                                   className="h-8 w-full rounded-md border border-border bg-surface-sunken px-2 text-sm text-text-primary text-right"
                                 />
@@ -406,7 +406,7 @@ export default function JournalPage() {
                                 </div>
                               </td>
                               <td className="px-4 py-4 whitespace-nowrap text-right text-sm text-text-primary">
-                                {tx.quantity}
+                                {formatNumber(tx.quantity)}
                               </td>
                               <td className="px-4 py-4 whitespace-nowrap text-right text-sm text-text-primary">
                                 {formatCurrency(tx.unit_price, tx.currency)}

@@ -7,6 +7,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useNotifications } from "@/hooks/useNotifications";
+import { useAlerts } from "@/hooks/useAlerts";
 import { fetchApi } from "@/lib/api";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Badge } from "@/components/ui/Badge";
@@ -21,6 +22,8 @@ import {
   Settings,
   RefreshCw,
   BookOpen,
+  Menu,
+  X,
 } from "lucide-react";
 
 const navSections = [
@@ -36,7 +39,7 @@ const navSections = [
   {
     label: "Gestion",
     items: [
-      { href: "/alerts", label: "Alertes", icon: Bell, badge: 3 },
+      { href: "/alerts", label: "Alertes", icon: Bell },
       { href: "/notifications", label: "Notifications", icon: Bell },
       { href: "/journal", label: "Transactions", icon: ArrowLeftRight },
       { href: "/settings", label: "Paramètres", icon: Settings },
@@ -54,8 +57,11 @@ export default function DashboardLayout({
   const queryClient = useQueryClient();
   const { user, logout } = useAuth();
   const { unreadCount } = useNotifications();
+  const { alerts } = useAlerts();
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const activeAlertCount = alerts.filter((a) => a.is_active).length;
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -93,9 +99,20 @@ export default function DashboardLayout({
 
   return (
     <div className="flex" style={{ minHeight: "100vh", background: "var(--bg)" }}>
+      {/* Overlay for mobile sidebar */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
       <aside
-        className="flex flex-col flex-shrink-0 sticky top-0"
+        className={cn(
+          "fixed md:sticky md:top-0 z-50 flex flex-col flex-shrink-0 transition-transform duration-300 ease-in-out",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        )}
         style={{
           width: "260px",
           background: "var(--surface-sunken)",
@@ -105,6 +122,14 @@ export default function DashboardLayout({
           height: "100vh",
         }}
       >
+        {/* Close button for mobile */}
+        <button
+          onClick={() => setSidebarOpen(false)}
+          className="md:hidden absolute top-4 right-4 p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-raised transition-colors"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
         {/* Logo */}
         <div
           style={{
@@ -140,6 +165,7 @@ export default function DashboardLayout({
                 <Link
                   key={item.href}
                   href={item.href}
+                  onClick={() => setSidebarOpen(false)}
                   className={cn(
                     "flex items-center gap-[10px] cursor-pointer transition-all duration-150 ease-out no-underline",
                     isActive
@@ -165,6 +191,13 @@ export default function DashboardLayout({
                     <span className="ml-auto">
                       <Badge variant="loss" style={{ fontSize: "9px", padding: "2px 6px" }}>
                         {item.badge}
+                      </Badge>
+                    </span>
+                  )}
+                  {item.href === "/alerts" && activeAlertCount > 0 && (
+                    <span className="ml-auto">
+                      <Badge variant="loss" style={{ fontSize: "9px", padding: "2px 6px" }}>
+                        {activeAlertCount > 9 ? "9+" : activeAlertCount}
                       </Badge>
                     </span>
                   )}
@@ -233,6 +266,14 @@ export default function DashboardLayout({
         className="flex-1 flex flex-col"
         style={{ padding: "32px", gap: "32px", overflow: "auto" }}
       >
+        <div className="md:hidden flex items-center">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="p-2 rounded-lg bg-surface border border-border text-text-primary hover:bg-surface-raised transition-colors"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+        </div>
         {children}
       </main>
     </div>
