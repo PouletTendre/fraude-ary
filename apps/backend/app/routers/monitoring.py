@@ -1,6 +1,9 @@
 import os
 from datetime import datetime, timezone
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Depends
+
+from app.routers.auth import get_current_user
+from app.models.user import User
 
 router = APIRouter()
 
@@ -16,7 +19,7 @@ def _get_memory_mb():
 
 
 @router.get("/detailed")
-async def health_detailed(request: Request):
+async def health_detailed(request: Request, current_user: User = Depends(get_current_user)):
     metrics = getattr(request.app.state, "metrics", {})
     start_time = getattr(request.app.state, "start_time", datetime.now(timezone.utc))
     uptime_seconds = (datetime.now(timezone.utc) - start_time).total_seconds()

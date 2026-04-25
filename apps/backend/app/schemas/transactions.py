@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import datetime
 
@@ -6,13 +6,13 @@ class TransactionCreate(BaseModel):
     asset_id: Optional[str] = None
     asset_type: Optional[str] = None
     type: str  # buy or sell
-    symbol: str
+    symbol: str = Field(..., pattern=r"^[A-Z0-9.\-]{1,20}$")
     quantity: float
     unit_price: float
     currency: str = "EUR"
     exchange_rate: float = 1.0
     fees: float = 0.0
-    total_invested: float
+    total_invested: Optional[float] = None
     date: str
 
 class TransactionUpdate(BaseModel):

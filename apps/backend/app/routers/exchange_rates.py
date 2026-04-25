@@ -5,9 +5,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.database import get_db
+from app.models.user import User
 from app.models.exchange_rate import ExchangeRate
 from app.schemas.exchange_rates import ExchangeRateResponse, ExchangeRatesListResponse
 from app.services.cache_service import cache_service
+from app.routers.auth import get_current_user
 
 router = APIRouter()
 
@@ -84,7 +86,7 @@ async def fetch_and_update_rates() -> dict:
 
 
 @router.get("", response_model=ExchangeRatesListResponse)
-async def get_exchange_rates(db: AsyncSession = Depends(get_db)):
+async def get_exchange_rates(db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
     rates = await fetch_and_update_rates()
 
     result = await db.execute(select(ExchangeRate))

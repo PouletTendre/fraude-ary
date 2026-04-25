@@ -1,9 +1,11 @@
+import logging
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from passlib.context import CryptContext
-from jose import JWTError, jwt
+import jwt as pyjwt
+from jwt.exceptions import PyJWTError as JWTError, DecodeError, ExpiredSignatureError
 from datetime import datetime, timedelta, timezone
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -15,6 +17,7 @@ from app.schemas.auth import Token, UserCreate, UserResponse
 router = APIRouter()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+limiter = Limiter(key_func=get_remote_address)
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
@@ -27,7 +30,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None) -> s
     else:
         expire = datetime.now(timezone.utc) + timedelta(hours=24)
     to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
+    return pyjwt.encode(to_encode, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
 
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
@@ -40,7 +43,7 @@ async def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
+        payload = pyjwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM], options={"require": ["exp", "sub"]})
         email: str = payload.get("sub")
         if email is None:
             raise credentials_exception
@@ -53,7 +56,8 @@ async def get_current_user(
     return user
 
 @router.post("/register", response_model=Token)
-async def register(user: UserCreate, db: AsyncSession = Depends(get_db)):
+@limiter.limit("3/minute")
+async def register(request: Request, user: UserCreate, db: AsyncSession = Depends(get_db)):
     existing = await db.get(User, user.email)
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -62,6 +66,7 @@ async def register(user: UserCreate, db: AsyncSession = Depends(get_db)):
     db.add(db_user)
     await db.commit()
     await db.refresh(db_user)
+    logging.info(f"[AUTH] New registration: {user.email}")
     access_token = create_access_token(data={"sub": db_user.email})
     return {
         "access_token": access_token,
@@ -70,11 +75,14 @@ async def register(user: UserCreate, db: AsyncSession = Depends(get_db)):
     }
 
 @router.post("/login", response_model=Token)
-async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
+@limiter.limit("5/minute")
+async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(User).where(User.email == form_data.username))
     user = result.scalar_one_or_none()
     if not user or not verify_password(form_data.password, user.hashed_password):
+        logging.warning(f"[AUTH] Failed login attempt: {form_data.username}")
         raise HTTPException(status_code=401, detail="Incorrect credentials")
+    logging.info(f"[AUTH] Successful login: {user.email}")
     access_token = create_access_token(data={"sub": user.email})
     return {"access_token": access_token, "token_type": "bearer", "user": {"email": user.email, "full_name": user.full_name}}
 

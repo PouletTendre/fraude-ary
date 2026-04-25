@@ -31,7 +31,6 @@ npm-debug.log*
 Thumbs.db
 
 # Environment
-.env
 .env.local
 
 # Docker
@@ -42,3 +41,8 @@ Thumbs.db
 htmlcov/
 .pytest_cache/
 .opencode/
+
+# Security
+cookies.txt
+*.db
+*.sqlite3

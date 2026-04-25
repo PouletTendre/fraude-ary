@@ -1,11 +1,11 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from typing import Optional, List, Dict, Literal
 from datetime import datetime
 from decimal import Decimal
 
 class AssetCreate(BaseModel):
     type: Literal["crypto", "stocks", "real_estate"]
-    symbol: str
+    symbol: str = Field(..., pattern=r"^[A-Z0-9.\-]{1,20}$")
     quantity: float
     purchase_price: float
     name: Optional[str] = None

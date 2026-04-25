@@ -450,6 +450,8 @@ async def import_assets(
         raise HTTPException(status_code=400, detail="File must be a CSV")
 
     contents = await file.read()
+    if len(contents) > 5_000_000:  # 5MB
+        raise HTTPException(status_code=413, detail="File too large (max 5MB)")
     text = contents.decode("utf-8")
     reader = csv.DictReader(io.StringIO(text))
 
