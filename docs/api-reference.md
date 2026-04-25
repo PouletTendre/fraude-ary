@@ -2,7 +2,7 @@
 
 Base URL: `http://localhost` (via Nginx proxy)
 
-All protected endpoints require the header:
+All protected endpoints require:
 ```
 Authorization: Bearer <token>
 ```
@@ -38,31 +38,13 @@ Register a new user.
 ```bash
 curl -X POST http://localhost/auth/register \
   -H "Content-Type: application/json" \
-  -d '{
-    "email": "user@example.com",
-    "password": "securepass123",
-    "full_name": "John Doe"
-  }'
+  -d '{"email": "user@example.com", "password": "securepass123", "full_name": "John Doe"}'
 ```
 
-**Response:**
-```json
-{
-  "email": "user@example.com",
-  "full_name": "John Doe"
-}
-```
+**Response:** Same as login.
 
 ### GET /auth/me
 Get current authenticated user.
-
-**Response:**
-```json
-{
-  "email": "user@example.com",
-  "full_name": "John Doe"
-}
-```
 
 ## Assets
 
@@ -73,15 +55,17 @@ List all assets for the authenticated user.
 ```json
 [
   {
-    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "id": "550e8400-...",
     "user_email": "user@example.com",
     "type": "stocks",
     "symbol": "AAPL",
     "quantity": 10.0,
     "purchase_price": 150.0,
+    "purchase_price_eur": 138.0,
     "current_price": 273.43,
     "total_value": 2734.30,
     "purchase_date": "2024-01-15",
+    "currency": "EUR",
     "created_at": "2024-01-15T10:00:00Z"
   }
 ]
@@ -91,7 +75,7 @@ List all assets for the authenticated user.
 List assets filtered by type (`crypto`, `stocks`, `real_estate`).
 
 ### POST /api/v1/assets
-Create a new asset.
+Create or merge an asset. If symbol+type already exists, quantities merge with weighted average price.
 
 **Request:**
 ```json
@@ -100,87 +84,43 @@ Create a new asset.
   "symbol": "AIR.PA",
   "quantity": 5,
   "purchase_price": 125.50,
-  "purchase_date": "2024-03-01"
+  "purchase_date": "2024-03-01",
+  "currency": "EUR"
 }
 ```
 
-**Response:**
-```json
-{
-  "id": "550e8400-e29b-41d4-a716-446655440000",
-  "user_email": "user@example.com",
-  "type": "stocks",
-  "symbol": "AIR.PA",
-  "quantity": 5.0,
-  "purchase_price": 125.50,
-  "current_price": 142.30,
-  "total_value": 711.50,
-  "purchase_date": "2024-03-01",
-  "created_at": "2024-06-01T12:00:00Z"
-}
-```
+**Response:** Returns the created/updated `AssetResponse` with `purchase_price_eur` auto-calculated via historical exchange rate.
 
 ### PUT /api/v1/assets/{id}
-Update an existing asset.
-
-**Request:**
-```json
-{
-  "quantity": 15,
-  "purchase_price": 140.0
-}
-```
+Update an existing asset (quantity, purchase_price, purchase_price_eur). Syncs associated BUY transaction.
 
 ### DELETE /api/v1/assets/{id}
-Delete an asset. Returns `204 No Content` on success.
+Delete an asset and its associated transactions. Returns `204 No Content`.
 
-### GET /api/v1/assets/search/symbols
-Search for stock/crypto symbols via Yahoo Finance.
-
-**Query Parameters:**
-- `q` (required, min 1 char): Search query
+### POST /api/v1/assets/bulk-delete
+Delete multiple assets by ID.
 
 **Request:**
-```bash
-curl "http://localhost/api/v1/assets/search/symbols?q=airbus"
-```
-
-**Response:**
 ```json
-[
-  {
-    "symbol": "AIR.PA",
-    "name": "AIRBUS SE",
-    "type": "stocks",
-    "exchange": "PAR"
-  }
-]
+["id1", "id2", "id3"]
 ```
 
-### GET /api/v1/assets/{id}/history
-Get enriched price history for an asset.
+**Response:** `204 No Content`
+
+### POST /api/v1/assets/dedup
+Merge duplicate assets (same symbol+type) by weighted average PRU. Transfers linked transactions to the master asset, deletes duplicates.
 
 **Response:**
 ```json
 {
-  "asset_id": "550e8400...",
-  "symbol": "AAPL",
-  "current_price": 273.43,
-  "ohlc": {
-    "open": 271.50,
-    "high": 274.20,
-    "low": 270.80,
-    "close": 273.43,
-    "timestamp": "2024-06-01T16:00:00Z"
-  },
-  "history": [
-    {"price": 270.50, "timestamp": "2024-05-31T16:00:00Z"}
-  ]
+  "merged_groups": 2,
+  "total_assets_before": 8,
+  "total_assets_after": 6
 }
 ```
 
 ### POST /api/v1/assets/import
-Import assets from a CSV file.
+Import assets from CSV file.
 
 **Required CSV columns:** `type`, `symbol`, `quantity`, `purchase_price`, `purchase_date`
 
@@ -191,8 +131,56 @@ curl -X POST http://localhost/api/v1/assets/import \
   -F "file=@assets.csv"
 ```
 
+**Response:**
+```json
+{
+  "status": "success",
+  "imported_count": 5,
+  "errors": []
+}
+```
+
+### POST /api/v1/assets/{id}/backfill-history
+Backfill historical prices from purchase date to now.
+
+**Response:**
+```json
+{
+  "backfilled_entries": 42
+}
+```
+
+### GET /api/v1/assets/search/symbols
+Search stock/crypto symbols via Yahoo Finance.
+
+**Query Parameters:**
+- `q` (required, min 1 char): Search query
+
+**Response:**
+```json
+[
+  {"symbol": "AIR.PA", "name": "AIRBUS SE", "type": "stocks", "exchange": "PAR"}
+]
+```
+
+### GET /api/v1/assets/{id}/history
+Get enriched price history for an asset.
+
+**Response:**
+```json
+{
+  "asset_id": "550e8400-...",
+  "symbol": "AAPL",
+  "current_price": 273.43,
+  "ohlc": null,
+  "history": [
+    {"price": 270.50, "timestamp": "2024-05-31T16:00:00Z"}
+  ]
+}
+```
+
 ### POST /api/v1/assets/refresh-prices
-Manually refresh all asset prices. Returns updated count and any errors.
+Refresh all asset prices from external APIs.
 
 **Response:**
 ```json
@@ -207,79 +195,79 @@ Manually refresh all asset prices. Returns updated count and any errors.
 ## Portfolio
 
 ### GET /api/v1/portfolio/summary
-Get portfolio summary with allocation and history.
+Portfolio summary with total value, P&L, allocation, and performance history. All values converted to EUR using exchange rates.
 
-**Response:**
-```json
-{
-  "total_value": 15420.50,
-  "total_gain_loss": 2420.50,
-  "gain_loss_percentage": 18.62,
-  "by_type": [
-    {"type": "stocks", "value": 10000, "percentage": 64.85},
-    {"type": "crypto", "value": 5420.50, "percentage": 35.15}
-  ],
-  "history": [
-    {"date": "2024-05-01", "value": 14000},
-    {"date": "2024-06-01", "value": 15420.50}
-  ]
-}
-```
+### GET /api/v1/portfolio/history?period={1w|1m|3m|1y}
+Portfolio value history for a time period.
 
 ### GET /api/v1/portfolio/statistics
-Get advanced statistics: volatility, Sharpe ratio, best/worst performers.
+Advanced stats: best/worst performer, volatility, Sharpe ratio, market benchmark comparison.
 
 ### GET /api/v1/portfolio/export?format={json|csv}
-Export portfolio data.
+Export portfolio as CSV or JSON download.
 
-## Prices
+### GET /api/v1/portfolio/benchmark?symbol=SPY&period=1y
+Compare portfolio performance against a benchmark (default: SPY).
 
-### POST /api/v1/prices/refresh
-Alias for `/api/v1/assets/refresh-prices`. Refresh all prices.
+## Transactions
 
-### GET /api/v1/prices/current/{symbol}
-Get current price for a symbol.
+### GET /api/v1/transactions
+List all transactions for the authenticated user.
+
+### POST /api/v1/transactions
+Create a buy/sell transaction.
+
+### PUT /api/v1/transactions/{id}
+Update a transaction.
+
+### DELETE /api/v1/transactions/{id}
+Delete a transaction.
 
 ## Alerts
 
 ### GET /api/v1/alerts
 List all price alerts.
 
-### POST /api/v1/alerts
-Create a price alert.
+### GET /api/v1/alerts/count
+Get total and active alert counts.
 
-**Request:**
-```json
-{
-  "symbol": "AAPL",
-  "target_price": 300.0,
-  "condition": "above"
-}
-```
+### POST /api/v1/alerts
+Create a price alert (symbol, target_price, condition: above/below, currency).
+
+### PUT /api/v1/alerts/{id}
+Update an alert (target_price, condition, is_active).
 
 ### DELETE /api/v1/alerts/{id}
-Delete a price alert.
+Delete an alert.
 
 ## Notifications
 
 ### GET /api/v1/notifications
-List notifications for the current user.
+List unread notifications.
 
-### PATCH /api/v1/notifications/{id}/read
-Mark a notification as read.
+### POST /api/v1/notifications/read-all
+Mark all notifications as read.
 
-### DELETE /api/v1/notifications/{id}
-Delete a notification.
+### PUT /api/v1/notifications/{id}/read
+Mark single notification as read.
 
 ## Exchange Rates
 
 ### GET /api/v1/exchange-rates
-Get current exchange rates (USD, EUR, GBP, JPY, CHF).
+Current exchange rates (USD, EUR, GBP, JPY, CHF). Cached 1h in Redis.
+
+## Prices
+
+### POST /api/v1/prices/refresh
+Alias for `/api/v1/assets/refresh-prices`.
+
+### GET /api/v1/prices/current/{symbol}
+Get current price for a symbol (auto-detects crypto vs stock).
 
 ## Cache
 
 ### GET /api/v1/cache/stats
-Get Redis cache statistics.
+Redis cache statistics.
 
 ### POST /api/v1/cache/clear
 Clear all cached data.
@@ -287,12 +275,10 @@ Clear all cached data.
 ## Health & Monitoring
 
 ### GET /health
-Simple health check.
-
-**Response:** `{"status": "ok"}`
+Simple health check. Returns `{"status": "ok"}`.
 
 ### GET /api/v1/health/detailed
-Detailed health check with DB and Redis connectivity.
+Detailed health with DB and Redis connectivity.
 
 ### GET /api/v1/health/metrics
 Request metrics and performance data.

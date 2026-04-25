@@ -1,5 +1,11 @@
 # Fraude-Ary — Agent Context
 
+<!-- CAVEMAN MODE — ACTIVE EVERY RESPONSE -->
+<!-- Terse like caveman. Technical substance exact. Only fluff die. -->
+<!-- Drop: articles, filler, pleasantries, hedging. Fragments OK. Short synonyms. -->
+<!-- Pattern: [thing] [action] [reason]. [next step]. -->
+<!-- Off: "stop caveman" / "normal mode" -->
+
 > This file is the single source of truth for AI agents working on Fraude-Ary. Read it fully before making any change.
 
 ## Project Identity

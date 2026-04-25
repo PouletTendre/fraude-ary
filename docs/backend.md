@@ -5,161 +5,165 @@
 ```
 apps/backend/
 ├── app/
-│   ├── main.py              # FastAPI app entry point
-│   ├── config.py            # Settings and configuration
-│   ├── database.py          # Database engine and session
+│   ├── main.py              # FastAPI app entry point, scheduler, middleware
+│   ├── config.py            # Settings (env vars, validation)
+│   ├── database.py          # Async engine, session factory, pool config
 │   ├── models/              # SQLAlchemy models
 │   │   ├── user.py
-│   │   ├── asset.py
+│   │   ├── asset.py         # Asset, PriceHistory (with type_value property)
+│   │   ├── transaction.py   # Transaction (with type_value property)
+│   │   ├── alert.py         # PriceAlert, PortfolioSnapshot, Notification
+│   │   ├── exchange_rate.py # ExchangeRate
 │   │   └── __init__.py
 │   ├── schemas/             # Pydantic schemas
 │   │   ├── auth.py
 │   │   ├── assets.py
-│   │   ├── portfolio.py
+│   │   ├── alerts.py
+│   │   ├── notifications.py
+│   │   ├── transactions.py
+│   │   ├── exchange_rates.py
 │   │   └── __init__.py
 │   ├── routers/             # API route handlers
 │   │   ├── auth.py
-│   │   ├── assets.py
-│   │   ├── portfolio.py
+│   │   ├── assets.py        # CRUD + bulk-delete, dedup, import, backfill
+│   │   ├── portfolio.py     # Summary, history, statistics, export, benchmark
 │   │   ├── prices.py
 │   │   ├── alerts.py
 │   │   ├── notifications.py
+│   │   ├── transactions.py
 │   │   ├── exchange_rates.py
 │   │   ├── cache.py
 │   │   ├── monitoring.py
 │   │   └── demo.py
 │   └── services/            # Business logic
-│       ├── price_service.py
-│       ├── cache_service.py
+│       ├── price_service.py  # Price fetching, history, exchange rates
+│       ├── cache_service.py  # Redis caching
 │       └── __init__.py
-├── alembic/                 # Database migrations
+├── alembic/                  # Database migrations
 │   ├── versions/
 │   └── env.py
 ├── Dockerfile
 └── requirements.txt
 ```
 
+## Configuration
+
+Settings loaded from `app/config.py` via Pydantic `BaseSettings`. **All secrets must be set via env vars or `.env` file** — the app raises `RuntimeError` on startup if `DATABASE_URL` or `JWT_SECRET` are missing or use known-insecure defaults.
+
+| Setting | Env Var | Required | Description |
+|---------|---------|----------|-------------|
+| DATABASE_URL | DATABASE_URL | Yes | PostgreSQL async connection string |
+| REDIS_URL | REDIS_URL | No | Redis connection (default: `redis://localhost:6379/0`) |
+| JWT_SECRET | JWT_SECRET | Yes | Must differ from default placeholders |
+| JWT_ALGORITHM | JWT_ALGORITHM | No | Default: `HS256` |
+| ACCESS_TOKEN_EXPIRE_MINUTES | ACCESS_TOKEN_EXPIRE_MINUTES | No | Default: `1440` (24h) |
+| ALLOWED_ORIGINS | ALLOWED_ORIGINS | No | CORS origins (default: `http://localhost:3000`) |
+| PYTHON_ENV | PYTHON_ENV | No | `development` or `production` |
+
+### Database Connection
+
+```python
+# Production: pool_size=20, max_overflow=10, echo=False
+# Development: echo=True automatically
+engine = create_async_engine(
+    settings.DATABASE_URL,
+    echo=(settings.PYTHON_ENV == "development"),
+    pool_size=20,
+    max_overflow=10,
+)
+```
+
+## Models & DRY Conventions
+
+### `type_value` Property
+
+All enum-backed models expose a `type_value` property for consistent serialization:
+
+```python
+class Asset(Base):
+    # ...
+    @property
+    def type_value(self) -> str:
+        return self.type.value if hasattr(self.type, 'value') else str(self.type)
+```
+
+Use `asset.type_value` instead of `asset.type.value if hasattr(...)` everywhere.
+
+### Enum Column Storage
+
+SQLAlchemy `Enum` columns **must** use `values_callable`:
+
+```python
+type = Column(Enum(AssetType, values_callable=lambda x: [e.value for e in x]))
+```
+
+This stores `"crypto"` in DB instead of `"CRYPTO"`.
+
+### Response Helpers
+
+Each router with repeated ORM→schema mapping extracts a helper:
+
+```python
+# assets.py
+def _asset_to_response(asset: Asset) -> AssetResponse: ...
+
+# alerts.py
+def _alert_to_response(alert: PriceAlert) -> PriceAlertResponse: ...
+
+# notifications.py
+def _notification_to_response(n: Notification) -> NotificationResponse: ...
+
+# transactions.py
+def _tx_to_response(tx: Transaction) -> TransactionResponse: ...
+```
+
 ## Services
 
 ### PriceService (`services/price_service.py`)
 
-Fetches real-time prices from external APIs.
+- **Stocks**: Yahoo Finance Chart API → yfinance fallback. No simulated prices.
+- **Crypto**: CryptoCompare API. TTL: 60s cache, 1s API timeout.
+- **Real estate**: Fixed EUR/m² per city.
+- **Exchange rates**: Frankfurter API with Redis cache (1h TTL) + hardcoded fallback.
 
-**Crypto Prices:**
-- Source: CryptoCompare API
-- Endpoint: `GET /data/price?fsym={symbol}&tsyms=USD`
-- Cache TTL: 60 seconds
-
-**Stock Prices:**
-- Primary: Yahoo Finance Chart API (`query1.finance.yahoo.com/v8/finance/chart`)
-- Fallback: yfinance library
-- Cache TTL: 300 seconds
-
-**Real Estate Prices:**
-- Fixed prices per city (EUR/m2)
-- No external API (static data)
-
-**Key Methods:**
+Key methods:
 ```python
-await price_service.get_price("stocks", "AAPL")  # -> 273.43
-await price_service.get_price("crypto", "BTC")    # -> 77863.56
-await price_service.auto_refresh_all_prices(db)   # Refresh all assets
+await price_service.get_price("stocks", "AAPL")
+await price_service.get_price("crypto", "BTC")
+await price_service.auto_refresh_all_prices(db)
+await price_service.backfill_price_history(db, asset_id, symbol, asset_type, start_date)
+await price_service.get_historical_exchange_rate(date, from_currency, to_currency)
 ```
 
 ### CacheService (`services/cache_service.py`)
 
-Redis wrapper for price caching.
-
-**Key Methods:**
-```python
-await cache_service.get_crypto_price("BTC")
-await cache_service.set_stock_price("AAPL", 273.43)
-await cache_service.clear()
-```
+Redis async wrapper. TTLs: crypto 60s, stocks 300s, exchange rates 3600s.
 
 ## Authentication
 
-### JWT Token Flow
-
-1. User submits credentials via `/auth/login`
-2. `OAuth2PasswordRequestForm` validates email/password
-3. `bcrypt` verifies password hash
-4. JWT token generated with 24-hour expiry
-5. Token returned to client
-
-### Token Validation
-
-```python
-async def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
-    payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-    email = payload.get("sub")
-    # Fetch user from DB
-    return user
-```
+- JWT with 24h expiry (configurable via `ACCESS_TOKEN_EXPIRE_MINUTES`)
+- `OAuth2PasswordRequestForm` for login (form-data, not JSON)
+- `get_current_user` dependency validates token and fetches user from DB
+- Uses `datetime.now(timezone.utc)` (not deprecated `datetime.utcnow()`)
 
 ## Background Tasks
 
-### Auto Price Refresh
-
-An APScheduler job runs every 5 minutes to refresh all asset prices:
-
-```python
-scheduler.add_job(
-    refresh_prices_task,
-    "interval",
-    minutes=5,
-    id="price_refresh",
-    replace_existing=True
-)
-```
-
-### Refresh Logic
-
-1. Query all assets from the database
-2. For each asset, call `price_service.get_price()`
-3. Update `current_price` field
-4. Save price history entry
-5. Commit transaction
+APScheduler refreshes all asset prices every 5 minutes. Uses `logging` (not `print()`).
 
 ## Rate Limiting
 
-- Global limit: 100 requests/minute per IP
-- Using slowapi with Redis-backed storage
-- Exceeded requests return `429 Too Many Requests`
+100 req/min per IP via slowapi. `429 Too Many Requests` on exceed.
 
 ## Request Logging
 
-All requests are logged with:
-- HTTP method and path
-- Response status code
-- Response duration (ms)
-- Aggregated metrics per endpoint
-
-Access logs: `[GET] /api/v1/assets - 200 - 0.003s`
+All requests logged via `logging.info` with method, path, status, duration. Metrics aggregated in `app.state.metrics`.
 
 ## Database Migrations
 
-Migrations are managed with Alembic.
-
-**Auto-run on startup:**
-```dockerfile
-CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
-```
-
-**Manual migration:**
 ```bash
+# Inside container
 docker exec infra-backend-1 alembic revision --autogenerate -m "description"
 docker exec infra-backend-1 alembic upgrade head
 ```
 
-## Environment Configuration
-
-Settings are loaded from `app/config.py` using Pydantic `BaseSettings`:
-
-| Setting | Env Var | Default |
-|---------|---------|---------|
-| DATABASE_URL | DATABASE_URL | postgresql+asyncpg://... |
-| REDIS_URL | REDIS_URL | redis://redis:6379 |
-| JWT_SECRET | JWT_SECRET | prodsecretchange123 |
-| JWT_ALGORITHM | JWT_ALGORITHM | HS256 |
-| ALLOWED_ORIGINS | ALLOWED_ORIGINS | * |
+Migrations numbered sequentially (`001`, `002`, ...). `down_revision` must reference the previous revision exactly.
