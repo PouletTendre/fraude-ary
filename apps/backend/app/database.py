@@ -5,7 +5,12 @@ from app.config import settings
 class Base(DeclarativeBase):
     pass
 
-engine = create_async_engine(settings.DATABASE_URL, echo=True)
+engine = create_async_engine(
+    settings.DATABASE_URL,
+    echo=(settings.PYTHON_ENV == "development"),
+    pool_size=20,
+    max_overflow=10,
+)
 async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 async def get_db():

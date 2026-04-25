@@ -1,12 +1,14 @@
 from contextlib import asynccontextmanager
+import logging
+import time
+from datetime import datetime, timezone
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-import time
-from datetime import datetime
 
 from app.routers import auth, assets, portfolio, prices, demo, alerts, notifications, exchange_rates, cache, monitoring, transactions
 from app.services.cache_service import cache_service
@@ -20,9 +22,9 @@ async def refresh_prices_task():
     async with async_session() as db:
         try:
             result = await price_service.auto_refresh_all_prices(db)
-            print(f"[Auto-Refresh] Updated {result['updated']} prices. Errors: {result['errors']}")
+            logging.info(f"[Auto-Refresh] Updated {result['updated']} prices. Errors: {result['errors']}")
         except Exception as e:
-            print(f"[Auto-Refresh] Error: {e}")
+            logging.error(f"[Auto-Refresh] Error: {e}")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -39,7 +41,7 @@ app = FastAPI(title="Fraude-Ary API", version="0.1.0", lifespan=lifespan)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-app.state.start_time = datetime.utcnow()
+app.state.start_time = datetime.now(timezone.utc)
 app.state.metrics = {
     "total_requests": 0,
     "by_endpoint": {},
@@ -73,7 +75,7 @@ async def log_requests(request: Request, call_next):
         / entry["count"]
     )
 
-    print(f"[{request.method}] {request.url.path} - {response.status_code} - {duration:.3f}s")
+    logging.info(f"[{request.method}] {request.url.path} - {response.status_code} - {duration:.3f}s")
     return response
 
 app.include_router(auth.router, prefix="/auth", tags=["auth"])

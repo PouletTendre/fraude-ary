@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from fastapi import APIRouter, Request
 
 router = APIRouter()
@@ -18,8 +18,8 @@ def _get_memory_mb():
 @router.get("/detailed")
 async def health_detailed(request: Request):
     metrics = getattr(request.app.state, "metrics", {})
-    start_time = getattr(request.app.state, "start_time", datetime.utcnow())
-    uptime_seconds = (datetime.utcnow() - start_time).total_seconds()
+    start_time = getattr(request.app.state, "start_time", datetime.now(timezone.utc))
+    uptime_seconds = (datetime.now(timezone.utc) - start_time).total_seconds()
 
     system = {
         "uptime_seconds": uptime_seconds,

@@ -14,7 +14,7 @@ import { SymbolSearch } from "@/components/SymbolSearch";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { Search, Filter, X, ArrowUpDown, TrendingUp, TrendingDown, ArrowLeft } from "lucide-react";
 import { fetchApi } from "@/lib/api";
-import { cn, formatNumber } from "@/lib/utils";
+import { cn, formatNumber, formatCurrency } from "@/lib/utils";
 import type { Asset } from "@/types";
 
 const TYPE_OPTIONS = [
@@ -34,19 +34,6 @@ const CURRENCY_OPTIONS = [
 
 type SortField = "symbol" | "value" | "performance";
 type SortDirection = "asc" | "desc";
-
-const CURRENCY_SYMBOLS: Record<string, string> = {
-  USD: "$",
-  EUR: "€",
-  GBP: "£",
-  JPY: "¥",
-  CHF: "CHF",
-};
-
-const formatCurrency = (value: number, currency: string = "USD") => {
-  const symbol = CURRENCY_SYMBOLS[currency] || "$";
-  return `${symbol}${new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value)}`;
-};
 
 export default function AssetsPage() {
   const router = useRouter();

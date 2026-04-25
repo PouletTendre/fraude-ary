@@ -12,6 +12,19 @@ from app.routers.auth import get_current_user
 
 router = APIRouter()
 
+
+def _notification_to_response(n: Notification) -> NotificationResponse:
+    return NotificationResponse(
+        id=n.id,
+        user_email=n.user_email,
+        message=n.message,
+        title=n.message[:50] if len(n.message) > 50 else n.message,
+        type="info",
+        read=n.is_read,
+        created_at=n.created_at,
+    )
+
+
 @router.get("", response_model=List[NotificationResponse])
 async def list_notifications(
     current_user: User = Depends(get_current_user),
@@ -26,18 +39,7 @@ async def list_notifications(
         .order_by(Notification.created_at.desc())
     )
     notifications = result.scalars().all()
-    return [
-        NotificationResponse(
-            id=n.id,
-            user_email=n.user_email,
-            message=n.message,
-            title=n.message[:50] if len(n.message) > 50 else n.message,
-            type="info",
-            read=n.is_read,
-            created_at=n.created_at,
-        )
-        for n in notifications
-    ]
+    return [_notification_to_response(n) for n in notifications]
 
 @router.post("/read-all")
 async def mark_all_notifications_read(
@@ -75,12 +77,4 @@ async def mark_notification_read(
     await db.commit()
     await db.refresh(notification)
 
-    return NotificationResponse(
-        id=notification.id,
-        user_email=notification.user_email,
-        message=notification.message,
-        title=notification.message[:50] if len(notification.message) > 50 else notification.message,
-        type="info",
-        read=notification.is_read,
-        created_at=notification.created_at,
-    )
+    return _notification_to_response(notification)

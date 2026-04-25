@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status, Request, U
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, delete
 from typing import List, Optional, DefaultDict, Tuple
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 import csv
 import io
@@ -13,12 +13,29 @@ import logging
 from app.database import get_db
 from app.models.user import User
 from app.models.asset import Asset, AssetType, PriceHistory
-from app.models.transaction import Transaction
+from app.models.transaction import Transaction, TransactionType
 from app.schemas.assets import AssetCreate, AssetUpdate, AssetResponse, PriceRefreshResponse, PriceHistoryEnrichedResponse, OHLCData, AssetImportResponse
 from app.routers.auth import get_current_user
 from app.services.price_service import price_service
 
 router = APIRouter()
+
+
+def _asset_to_response(asset: Asset) -> AssetResponse:
+    return AssetResponse(
+        id=asset.id,
+        user_email=asset.user_email,
+        type=asset.type_value,
+        symbol=asset.symbol,
+        quantity=asset.quantity,
+        purchase_price=asset.purchase_price,
+        purchase_price_eur=asset.purchase_price_eur,
+        current_price=asset.current_price,
+        total_value=asset.quantity * asset.current_price if asset.current_price else 0,
+        purchase_date=asset.purchase_date,
+        currency=asset.currency or "EUR",
+        created_at=asset.created_at,
+    )
 
 @router.post("/bulk-delete", status_code=status.HTTP_204_NO_CONTENT)
 async def bulk_delete_assets(
@@ -78,7 +95,7 @@ async def deduplicate_assets(
             len(duplicates),
             current_user.email,
             symbol,
-            asset_type.value if hasattr(asset_type, "value") else asset_type,
+            asset_type.value,
             master.id,
             master.quantity,
             total_quantity,
@@ -125,23 +142,7 @@ async def list_all_assets(
         select(Asset).where(Asset.user_email == current_user.email)
     )
     assets = result.scalars().all()
-    return [
-        AssetResponse(
-            id=a.id,
-            user_email=a.user_email,
-            type=a.type.value if hasattr(a.type, 'value') else a.type,
-            symbol=a.symbol,
-            quantity=a.quantity,
-            purchase_price=a.purchase_price,
-            purchase_price_eur=a.purchase_price_eur,
-            current_price=a.current_price,
-            total_value=a.quantity * a.current_price if a.current_price else 0,
-            purchase_date=a.purchase_date,
-            currency=a.currency or 'EUR',
-            created_at=a.created_at
-        )
-        for a in assets
-    ]
+    return [_asset_to_response(a) for a in assets]
 
 @router.get("/{asset_type}", response_model=List[AssetResponse])
 async def get_assets(
@@ -159,23 +160,7 @@ async def get_assets(
         )
     )
     assets = result.scalars().all()
-    return [
-        AssetResponse(
-            id=a.id,
-            user_email=a.user_email,
-            type=a.type.value if hasattr(a.type, 'value') else a.type,
-            symbol=a.symbol,
-            quantity=a.quantity,
-            purchase_price=a.purchase_price,
-            purchase_price_eur=a.purchase_price_eur,
-            current_price=a.current_price,
-            total_value=a.quantity * a.current_price if a.current_price else 0,
-            purchase_date=a.purchase_date,
-            currency=a.currency or 'EUR',
-            created_at=a.created_at
-        )
-        for a in assets
-    ]
+    return [_asset_to_response(a) for a in assets]
 
 @router.post("", response_model=AssetResponse, status_code=status.HTTP_201_CREATED)
 async def create_asset(
@@ -227,13 +212,13 @@ async def create_asset(
     if db_asset.purchase_date:
         try:
             purchase_dt = datetime.strptime(db_asset.purchase_date, "%Y-%m-%d")
-            asset_type_str = asset_type.value if hasattr(asset_type, 'value') else asset_type
+            asset_type_str = asset_type.value
             await price_service.backfill_price_history(db, db_asset.id, db_asset.symbol, asset_type_str, purchase_dt)
         except Exception as e:
             logging.warning(f"Failed to backfill history for {db_asset.symbol}: {e}")
 
     # Create transaction
-    purchase_date_str = asset.purchase_date or db_asset.purchase_date or datetime.utcnow().strftime("%Y-%m-%d")
+    purchase_date_str = asset.purchase_date or db_asset.purchase_date or datetime.now(timezone.utc).strftime("%Y-%m-%d")
     purchase_dt = datetime.strptime(purchase_date_str, "%Y-%m-%d")
     rate = await price_service.get_historical_exchange_rate(purchase_dt, asset.currency or 'EUR', 'EUR')
 
@@ -246,7 +231,6 @@ async def create_asset(
     else:
         db_asset.purchase_price_eur = asset.purchase_price * rate
 
-    from app.models.transaction import Transaction, TransactionType
     tx = Transaction(
         id=str(uuid.uuid4()),
         user_email=current_user.email,
@@ -264,20 +248,7 @@ async def create_asset(
     db.add(tx)
     await db.commit()
 
-    return AssetResponse(
-        id=db_asset.id,
-        user_email=db_asset.user_email,
-        type=db_asset.type.value if hasattr(db_asset.type, 'value') else db_asset.type,
-        symbol=db_asset.symbol,
-        quantity=db_asset.quantity,
-        purchase_price=db_asset.purchase_price,
-        purchase_price_eur=db_asset.purchase_price_eur,
-        current_price=db_asset.current_price,
-        total_value=db_asset.quantity * db_asset.current_price,
-        purchase_date=db_asset.purchase_date,
-        currency=db_asset.currency,
-        created_at=db_asset.created_at
-    )
+    return _asset_to_response(db_asset)
 
 @router.get("/search/symbols")
 async def search_symbols(q: str = Query(..., min_length=1)):
@@ -329,9 +300,7 @@ async def update_asset(
     for field, value in update_data.items():
         setattr(db_asset, field, value)
 
-    # Sync associated auto-created BUY transaction
     if {"symbol", "quantity", "purchase_price"} & set(update_data.keys()):
-        from app.models.transaction import Transaction, TransactionType
         result = await db.execute(
             select(Transaction).where(
                 Transaction.asset_id == asset_id,
@@ -352,20 +321,7 @@ async def update_asset(
     await db.commit()
     await db.refresh(db_asset)
 
-    return AssetResponse(
-        id=db_asset.id,
-        user_email=db_asset.user_email,
-        type=db_asset.type.value if hasattr(db_asset.type, 'value') else db_asset.type,
-        symbol=db_asset.symbol,
-        quantity=db_asset.quantity,
-        purchase_price=db_asset.purchase_price,
-        purchase_price_eur=db_asset.purchase_price_eur,
-        current_price=db_asset.current_price,
-        total_value=db_asset.quantity * db_asset.current_price if db_asset.current_price else 0,
-        purchase_date=db_asset.purchase_date,
-        currency=db_asset.currency or 'EUR',
-        created_at=db_asset.created_at
-    )
+    return _asset_to_response(db_asset)
 
 @router.post("/{asset_id}/backfill-history")
 async def backfill_asset_history(
@@ -384,7 +340,7 @@ async def backfill_asset_history(
         raise HTTPException(status_code=400, detail="Asset has no purchase_date")
 
     purchase_dt = datetime.strptime(asset.purchase_date, "%Y-%m-%d")
-    asset_type_str = asset.type.value if hasattr(asset.type, 'value') else asset.type
+    asset_type_str = asset.type_value
     count = await price_service.backfill_price_history(db, asset.id, asset.symbol, asset_type_str, purchase_dt)
     return {"backfilled_entries": count}
 
@@ -401,8 +357,6 @@ async def delete_asset(
     if not asset:
         raise HTTPException(status_code=404, detail="Asset not found")
 
-    # Delete all associated transactions
-    from app.models.transaction import Transaction
     await db.execute(
         delete(Transaction).where(
             Transaction.asset_id == asset_id,
@@ -428,7 +382,7 @@ async def refresh_all_prices(
     errors = []
 
     for asset in assets:
-        asset_type_str = asset.type.value if hasattr(asset.type, 'value') else asset.type
+        asset_type_str = asset.type_value
         current_price = await price_service.get_price(asset_type_str, asset.symbol)
         if current_price is not None and current_price != asset.current_price:
             asset.current_price = current_price
@@ -459,7 +413,7 @@ async def get_asset_history_enriched(
     if not asset:
         raise HTTPException(status_code=404, detail="Asset not found")
 
-    asset_type_str = asset.type.value if hasattr(asset.type, 'value') else asset.type
+    asset_type_str = asset.type_value
     current_price = await price_service.get_price(asset_type_str, asset.symbol)
     if current_price is None:
         current_price = asset.current_price

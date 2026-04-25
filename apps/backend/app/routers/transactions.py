@@ -16,6 +16,25 @@ from app.services.price_service import price_service
 
 router = APIRouter()
 
+
+def _tx_to_response(tx: Transaction) -> TransactionResponse:
+    return TransactionResponse(
+        id=tx.id,
+        user_email=tx.user_email,
+        asset_id=tx.asset_id,
+        type=tx.type_value,
+        symbol=tx.symbol,
+        quantity=tx.quantity,
+        unit_price=tx.unit_price,
+        currency=tx.currency,
+        exchange_rate=tx.exchange_rate,
+        fees=tx.fees,
+        total_invested=tx.total_invested,
+        date=tx.date,
+        created_at=tx.created_at,
+    )
+
+
 @router.get("", response_model=List[TransactionResponse])
 async def list_transactions(
     current_user: User = Depends(get_current_user),
@@ -25,24 +44,7 @@ async def list_transactions(
         select(Transaction).where(Transaction.user_email == current_user.email)
     )
     transactions = result.scalars().all()
-    return [
-        TransactionResponse(
-            id=t.id,
-            user_email=t.user_email,
-            asset_id=t.asset_id,
-            type=t.type.value if hasattr(t.type, 'value') else t.type,
-            symbol=t.symbol,
-            quantity=t.quantity,
-            unit_price=t.unit_price,
-            currency=t.currency,
-            exchange_rate=t.exchange_rate,
-            fees=t.fees,
-            total_invested=t.total_invested,
-            date=t.date,
-            created_at=t.created_at
-        )
-        for t in transactions
-    ]
+    return [_tx_to_response(t) for t in transactions]
 
 @router.post("", response_model=TransactionResponse, status_code=status.HTTP_201_CREATED)
 async def create_transaction(
@@ -149,7 +151,7 @@ async def create_transaction(
         id=tx.id,
         user_email=tx.user_email,
         asset_id=tx.asset_id,
-        type=tx.type.value if hasattr(tx.type, 'value') else tx.type,
+        type=tx.type_value,
         symbol=tx.symbol,
         quantity=tx.quantity,
         unit_price=tx.unit_price,
@@ -181,7 +183,7 @@ async def update_transaction(
         raise HTTPException(status_code=404, detail="Transaction not found")
 
     # Store old values for delta calculation
-    old_type = tx.type.value if hasattr(tx.type, 'value') else str(tx.type)
+    old_type = tx.type_value
     old_symbol = tx.symbol
     old_quantity = tx.quantity
     old_unit_price = tx.unit_price
@@ -211,7 +213,7 @@ async def update_transaction(
         tx.exchange_rate = await price_service.get_historical_exchange_rate(tx_date, tx.currency, "EUR")
         tx.total_invested = tx.quantity * tx.unit_price * tx.exchange_rate
 
-    new_type = tx.type.value if hasattr(tx.type, 'value') else str(tx.type)
+    new_type = tx.type_value
     new_symbol = tx.symbol
     new_quantity = tx.quantity
     new_unit_price = tx.unit_price
@@ -336,7 +338,7 @@ async def update_transaction(
         id=tx.id,
         user_email=tx.user_email,
         asset_id=tx.asset_id,
-        type=tx.type.value if hasattr(tx.type, 'value') else tx.type,
+        type=tx.type_value,
         symbol=tx.symbol,
         quantity=tx.quantity,
         unit_price=tx.unit_price,
@@ -364,7 +366,7 @@ async def delete_transaction(
     if not tx:
         raise HTTPException(status_code=404, detail="Transaction not found")
 
-    tx_type = tx.type.value if hasattr(tx.type, 'value') else str(tx.type)
+    tx_type = tx.type_value
     tx_quantity = tx.quantity
     tx_symbol = tx.symbol
     tx_asset_id = tx.asset_id

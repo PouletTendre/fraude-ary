@@ -12,7 +12,7 @@ class Asset(Base):
     __tablename__ = "assets"
     id = Column(String, primary_key=True)
     user_email = Column(String, nullable=False, index=True)
-    type = Column(SQLEnum(AssetType), nullable=False, index=True)
+    type = Column(SQLEnum(AssetType, values_callable=lambda x: [e.value for e in x]), nullable=False, index=True)
     symbol = Column(String, nullable=False, index=True)
     quantity = Column(Float, nullable=False)
     purchase_price = Column(Float, nullable=False)
@@ -22,6 +22,10 @@ class Asset(Base):
     currency = Column(String, default="EUR")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    @property
+    def type_value(self) -> str:
+        return self.type.value if hasattr(self.type, 'value') else str(self.type)
 
 class PriceHistory(Base):
     __tablename__ = "price_history"

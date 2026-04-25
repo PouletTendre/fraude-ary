@@ -12,6 +12,20 @@ from app.routers.auth import get_current_user
 
 router = APIRouter()
 
+
+def _alert_to_response(alert: PriceAlert) -> PriceAlertResponse:
+    return PriceAlertResponse(
+        id=alert.id,
+        user_email=alert.user_email,
+        symbol=alert.symbol,
+        target_price=alert.target_price,
+        condition=alert.condition.value if hasattr(alert.condition, "value") else alert.condition,
+        is_active=alert.is_active,
+        currency=alert.currency or "EUR",
+        created_at=alert.created_at,
+    )
+
+
 @router.post("", response_model=PriceAlertResponse, status_code=status.HTTP_201_CREATED)
 async def create_alert(
     alert: PriceAlertCreate,
@@ -31,16 +45,7 @@ async def create_alert(
     db.add(db_alert)
     await db.commit()
     await db.refresh(db_alert)
-    return PriceAlertResponse(
-        id=db_alert.id,
-        user_email=db_alert.user_email,
-        symbol=db_alert.symbol,
-        target_price=db_alert.target_price,
-        condition=db_alert.condition.value if hasattr(db_alert.condition, 'value') else db_alert.condition,
-        is_active=db_alert.is_active,
-        currency=db_alert.currency or "EUR",
-        created_at=db_alert.created_at,
-    )
+    return _alert_to_response(db_alert)
 
 @router.get("", response_model=List[PriceAlertResponse])
 async def list_alerts(
@@ -51,19 +56,7 @@ async def list_alerts(
         select(PriceAlert).where(PriceAlert.user_email == current_user.email)
     )
     alerts = result.scalars().all()
-    return [
-        PriceAlertResponse(
-            id=a.id,
-            user_email=a.user_email,
-            symbol=a.symbol,
-            target_price=a.target_price,
-            condition=a.condition.value if hasattr(a.condition, 'value') else a.condition,
-            is_active=a.is_active,
-            currency=a.currency or "EUR",
-            created_at=a.created_at,
-        )
-        for a in alerts
-    ]
+    return [_alert_to_response(a) for a in alerts]
 
 @router.get("/count", response_model=AlertCountResponse)
 async def get_alert_count(
@@ -112,16 +105,7 @@ async def update_alert(
     await db.commit()
     await db.refresh(alert)
 
-    return PriceAlertResponse(
-        id=alert.id,
-        user_email=alert.user_email,
-        symbol=alert.symbol,
-        target_price=alert.target_price,
-        condition=alert.condition.value if hasattr(alert.condition, 'value') else alert.condition,
-        is_active=alert.is_active,
-        currency=alert.currency or "EUR",
-        created_at=alert.created_at,
-    )
+    return _alert_to_response(alert)
 
 @router.delete("/{alert_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_alert(

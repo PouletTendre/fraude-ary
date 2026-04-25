@@ -59,14 +59,14 @@ async def seed_demo_assets(
         AssetResponse(
             id=a.id,
             user_email=a.user_email,
-            type=a.type.value if hasattr(a.type, 'value') else a.type,
+            type=a.type_value,
             symbol=a.symbol,
             quantity=a.quantity,
             purchase_price=a.purchase_price,
             purchase_price_eur=a.purchase_price_eur,
             current_price=a.current_price,
             total_value=a.quantity * a.current_price if a.current_price else 0,
-            created_at=a.created_at
+            created_at=a.created_at,
         )
         for a in created_assets
     ]

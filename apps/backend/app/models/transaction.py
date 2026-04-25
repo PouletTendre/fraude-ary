@@ -22,3 +22,7 @@ class Transaction(Base):
     total_invested = Column(Float, nullable=False)
     date = Column(String, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    @property
+    def type_value(self) -> str:
+        return self.type.value if hasattr(self.type, 'value') else str(self.type)

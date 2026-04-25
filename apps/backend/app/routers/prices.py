@@ -30,7 +30,7 @@ async def refresh_prices(
     stock_symbols = set()
     real_estate_symbols = set()
     for asset in assets:
-        asset_type_str = asset.type.value if hasattr(asset.type, 'value') else asset.type
+        asset_type_str = asset.type_value
         if asset_type_str == "crypto":
             crypto_symbols.add(asset.symbol.lower())
         elif asset_type_str == "stocks":

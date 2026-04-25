@@ -3,7 +3,7 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from typing import List, Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from dateutil.relativedelta import relativedelta
 import csv
 import io
@@ -116,13 +116,13 @@ async def _get_portfolio_history(
     # Add current portfolio value for today if missing
     total_current = 0.0
     for asset in assets:
-        asset_type_str = asset.type.value if hasattr(asset.type, 'value') else asset.type
+        asset_type_str = asset.type_value
         current_price = await price_service.get_price(asset_type_str, asset.symbol)
         if current_price is None:
             current_price = asset.current_price
         total_current += _to_eur(asset.quantity * current_price, asset.currency, rates)
 
-    today = datetime.utcnow().date()
+    today = datetime.now(timezone.utc).date()
     if today not in daily_values and total_current > 0:
         daily_values[today] = total_current
 
@@ -156,7 +156,7 @@ async def get_portfolio_summary(
     total_value = 0.0
     total_cost = 0.0
     for asset in assets:
-        asset_type_str = asset.type.value if hasattr(asset.type, 'value') else asset.type
+        asset_type_str = asset.type_value
         current_price = await price_service.get_price(asset_type_str, asset.symbol)
         if current_price is None:
             current_price = asset.current_price
@@ -190,7 +190,7 @@ async def get_portfolio_summary(
     # Compute history from the oldest purchase date so the chart shows full range
     oldest_purchase = min(
         (datetime.strptime(a.purchase_date, "%Y-%m-%d") for a in assets if a.purchase_date),
-        default=datetime.utcnow() - timedelta(days=365)
+        default=datetime.now(timezone.utc) - timedelta(days=365)
     )
     history_entries = await _get_portfolio_history(current_user.email, db, oldest_purchase)
 
@@ -209,7 +209,7 @@ async def get_portfolio_summary(
     yearly_perf = 0.0
 
     if total_value > 0 and history_entries:
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         today = now.date()
         yesterday = today - timedelta(days=1)
         month_ago = now - timedelta(days=30)
@@ -270,7 +270,7 @@ async def get_portfolio_history(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     if period == "1w":
         start_date = now - timedelta(weeks=1)
     elif period == "1m":
@@ -311,7 +311,7 @@ async def get_portfolio_statistics(
     total_cost = 0.0
 
     for asset in assets:
-        asset_type_str = asset.type.value if hasattr(asset.type, 'value') else asset.type
+        asset_type_str = asset.type_value
         current_price = await price_service.get_price(asset_type_str, asset.symbol)
         if current_price is None:
             current_price = asset.current_price
@@ -378,7 +378,7 @@ async def export_portfolio(
     rates = await get_exchange_rates()
     portfolio_data = []
     for asset in assets:
-        asset_type_str = asset.type.value if hasattr(asset.type, 'value') else asset.type
+        asset_type_str = asset.type_value
         current_price = await price_service.get_price(asset_type_str, asset.symbol)
         if current_price is None:
             current_price = asset.current_price
@@ -442,7 +442,7 @@ async def get_benchmark_comparison(
     total_cost = 0.0
     total_value = 0.0
     for asset in assets:
-        asset_type_str = asset.type.value if hasattr(asset.type, 'value') else asset.type
+        asset_type_str = asset.type_value
         current_price = await price_service.get_price(asset_type_str, asset.symbol)
         if current_price is None:
             current_price = asset.current_price
@@ -471,7 +471,7 @@ async def get_benchmark_comparison(
         asset_returns = []
         weights = []
         for asset in assets:
-            asset_type_str = asset.type.value if hasattr(asset.type, 'value') else asset.type
+            asset_type_str = asset.type_value
             current_price = await price_service.get_price(asset_type_str, asset.symbol)
             if current_price is None:
                 current_price = asset.current_price

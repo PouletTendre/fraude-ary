@@ -2,9 +2,11 @@ import asyncio
 import httpx
 import logging
 import uuid
+import yfinance
 from typing import Optional, Dict, List, Any, Tuple
-from datetime import datetime
+from datetime import datetime, timezone
 from app.services.cache_service import cache_service
+from app.models.asset import Asset, PriceHistory
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -78,9 +80,7 @@ class PriceService:
         except Exception as e:
             logging.warning(f"Yahoo chart API failed for {symbol_upper}: {e}")
 
-        # Fallback to yfinance if HTTP API fails
         try:
-            import yfinance
             def fetch_yf():
                 ticker = yfinance.Ticker(symbol_upper)
                 hist = ticker.history(period="1d")
@@ -117,12 +117,11 @@ class PriceService:
         return None
 
     async def save_price_history(self, db: AsyncSession, asset_id: str, price: float) -> None:
-        from app.models.asset import PriceHistory
         history_entry = PriceHistory(
             id=str(uuid.uuid4()),
             asset_id=asset_id,
             price=price,
-            timestamp=datetime.utcnow()
+            timestamp=datetime.now(timezone.utc)
         )
         db.add(history_entry)
 
@@ -151,7 +150,6 @@ class PriceService:
     async def get_benchmark_data(self, symbol: str, period: str = "1y") -> Optional[Dict]:
         try:
             def fetch_history():
-                import yfinance
                 ticker = yfinance.Ticker(symbol.upper())
                 hist = ticker.history(period=period)
                 if hist.empty:
@@ -229,8 +227,7 @@ class PriceService:
         return results
 
     async def backfill_price_history(self, db: AsyncSession, asset_id: str, symbol: str, asset_type: str, start_date: datetime) -> int:
-        from app.models.asset import PriceHistory
-        end_date = datetime.utcnow()
+        end_date = datetime.now(timezone.utc)
         if start_date > end_date:
             return 0
 
@@ -334,7 +331,6 @@ class PriceService:
         return 1.0
 
     async def auto_refresh_all_prices(self, db: AsyncSession) -> Dict[str, Any]:
-        from app.models.asset import Asset
         result = await db.execute(select(Asset))
         assets = result.scalars().all()
 
@@ -342,7 +338,7 @@ class PriceService:
         errors = []
         for asset in assets:
             try:
-                asset_type_str = asset.type.value if hasattr(asset.type, 'value') else asset.type
+                asset_type_str = asset.type_value
                 price = await self.get_price(asset_type_str, asset.symbol)
                 if price is not None:
                     asset.current_price = price

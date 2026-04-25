@@ -69,15 +69,14 @@ async def fetch_and_update_rates() -> dict:
 
     try:
         from app.database import async_session
-        db = async_session()
-        for currency, rate in rates.items():
-            existing = await db.get(ExchangeRate, currency)
-            if existing:
-                existing.rate_vs_usd = rate
-            else:
-                db.add(ExchangeRate(currency=currency, rate_vs_usd=rate))
-        await db.commit()
-        await db.close()
+        async with async_session() as db:
+            for currency, rate in rates.items():
+                existing = await db.get(ExchangeRate, currency)
+                if existing:
+                    existing.rate_vs_usd = rate
+                else:
+                    db.add(ExchangeRate(currency=currency, rate_vs_usd=rate))
+            await db.commit()
     except Exception as e:
         logging.warning(f"DB update for exchange rates failed: {e}")
 
