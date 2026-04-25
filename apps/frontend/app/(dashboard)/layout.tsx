@@ -25,6 +25,7 @@ import {
   BookOpen,
   Menu,
   X,
+  PieChart,
 } from "lucide-react";
 
 const navSections = [
@@ -35,6 +36,7 @@ const navSections = [
       { href: "/portfolio", label: "Portefeuille", icon: Wallet },
       { href: "/assets", label: "Marchés", icon: TrendingUp },
       { href: "/journal", label: "Analyse", icon: BarChart3 },
+      { href: "/diversification", label: "Diversification", icon: PieChart },
     ],
   },
   {
@@ -71,6 +73,7 @@ export default function DashboardLayout({
       await fetchApi("/api/v1/prices/refresh", { method: "POST" });
       await queryClient.invalidateQueries({ queryKey: ["assets"] });
       await queryClient.invalidateQueries({ queryKey: ["portfolio"] });
+      await queryClient.invalidateQueries({ queryKey: ["diversification"] });
     } finally {
       setIsRefreshing(false);
     }

@@ -133,6 +133,81 @@ async def deduplicate_assets(
         "total_assets_after": total_assets_after,
     }
 
+@router.post("/enrich-all")
+async def enrich_all_assets(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(
+        select(Asset).where(
+            Asset.user_email == current_user.email,
+            Asset.type == AssetType.STOCKS,
+            Asset.sector.is_(None)
+        )
+    )
+    assets = result.scalars().all()
+    enriched = 0
+    errors = []
+
+    for asset in assets:
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                resp = await client.get(
+                    f"https://query1.finance.yahoo.com/v10/finance/quoteSummary/{asset.symbol}",
+                    params={"modules": "assetProfile"},
+                    headers={"User-Agent": "Mozilla/5.0"}
+                )
+                if resp.status_code == 200:
+                    data = resp.json()
+                    profile = data.get("quoteSummary", {}).get("result", [{}])[0].get("assetProfile", {})
+                    if profile:
+                        asset.sector = profile.get("sector")
+                        asset.country = profile.get("country")
+                        asset.industry = profile.get("industry")
+                        enriched += 1
+        except Exception as e:
+            errors.append(f"{asset.symbol}: {str(e)}")
+
+    await db.commit()
+    return {"enriched": enriched, "errors": errors}
+
+@router.post("/{asset_id}/enrich")
+async def enrich_asset_metadata(
+    asset_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(
+        select(Asset).where(Asset.id == asset_id, Asset.user_email == current_user.email)
+    )
+    asset = result.scalars().first()
+    if not asset:
+        raise HTTPException(status_code=404, detail="Asset not found")
+
+    if asset.type_value != "stocks":
+        raise HTTPException(status_code=400, detail="Only stocks can be enriched")
+
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.get(
+                f"https://query1.finance.yahoo.com/v10/finance/quoteSummary/{asset.symbol}",
+                params={"modules": "assetProfile"},
+                headers={"User-Agent": "Mozilla/5.0"}
+            )
+            if resp.status_code == 200:
+                data = resp.json()
+                profile = data.get("quoteSummary", {}).get("result", [{}])[0].get("assetProfile", {})
+                if profile:
+                    asset.sector = profile.get("sector")
+                    asset.country = profile.get("country")
+                    asset.industry = profile.get("industry")
+                    await db.commit()
+                    return {"status": "enriched", "sector": asset.sector, "country": asset.country, "industry": asset.industry}
+    except Exception as e:
+        logging.warning(f"Failed to enrich {asset.symbol}: {e}")
+
+    raise HTTPException(status_code=502, detail="Failed to fetch asset metadata")
+
 @router.get("", response_model=List[AssetResponse])
 async def list_all_assets(
     current_user: User = Depends(get_current_user),

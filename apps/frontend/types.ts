@@ -110,3 +110,16 @@ export interface DividendSummary {
   yield_on_cost: number;
   count: number;
 }
+
+export interface DiversificationEntry {
+  label: string;
+  value: number;
+  percentage: number;
+}
+
+export interface DiversificationData {
+  total_value: number;
+  by_type: DiversificationEntry[];
+  by_sector: DiversificationEntry[];
+  by_country: DiversificationEntry[];
+}

@@ -5,6 +5,7 @@ from sqlalchemy import select, func
 from typing import List, Optional
 from datetime import datetime, timedelta, timezone
 from dateutil.relativedelta import relativedelta
+from collections import defaultdict
 import csv
 import io
 import json
@@ -508,3 +509,45 @@ async def get_benchmark_comparison(
         benchmark_symbol=symbol.upper(),
         period=period
     )
+
+@router.get("/diversification")
+async def get_diversification(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(
+        select(Asset).where(Asset.user_email == current_user.email)
+    )
+    assets = result.scalars().all()
+
+    total_value = sum(a.quantity * (a.current_price or 0) for a in assets)
+
+    by_type = defaultdict(float)
+    by_sector = defaultdict(float)
+    by_country = defaultdict(float)
+
+    for a in assets:
+        value = a.quantity * (a.current_price or 0)
+        asset_type = a.type_value if hasattr(a, 'type_value') else str(a.type)
+        by_type[asset_type] += value
+        if a.sector:
+            by_sector[a.sector] += value
+        else:
+            by_sector["Unknown"] += value
+        if a.country:
+            by_country[a.country] += value
+        else:
+            by_country["Unknown"] += value
+
+    def to_breakdown(d):
+        return [
+            {"label": k, "value": round(v, 2), "percentage": round((v / total_value * 100) if total_value > 0 else 0, 1)}
+            for k, v in sorted(d.items(), key=lambda x: -x[1])
+        ]
+
+    return {
+        "total_value": round(total_value, 2),
+        "by_type": to_breakdown(by_type),
+        "by_sector": to_breakdown(by_sector),
+        "by_country": to_breakdown(by_country),
+    }
