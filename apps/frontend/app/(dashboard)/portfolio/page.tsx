@@ -43,7 +43,7 @@ type SortKey = "symbol" | "type" | "quantity" | "purchase_price" | "current_pric
 type SortDirection = "asc" | "desc";
 
 interface AssetRow {
-  id: number;
+  id: string;
   symbol: string;
   type: string;
   quantity: number;

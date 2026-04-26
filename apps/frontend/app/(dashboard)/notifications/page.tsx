@@ -27,7 +27,7 @@ const getNotificationIcon = (type: string) => {
   }
 };
 
-function NotificationItem({ notification, onMarkAsRead }: { notification: Notification; onMarkAsRead: (id: number) => void }) {
+function NotificationItem({ notification, onMarkAsRead }: { notification: Notification; onMarkAsRead: (id: string) => void }) {
   return (
     <div
       className={cn(
@@ -87,7 +87,7 @@ export default function NotificationsPage() {
     });
   };
 
-  const handleMarkAsRead = (id: number) => {
+  const handleMarkAsRead = (id: string) => {
     markAsRead(id, {
       onSuccess: () => addToast("Notification marked as read", "success"),
       onError: () => addToast("Failed to mark as read", "error"),

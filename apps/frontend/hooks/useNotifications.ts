@@ -25,7 +25,7 @@ export function useNotifications() {
   });
 
   const markAsRead = useMutation({
-    mutationFn: async (id: number) => {
+    mutationFn: async (id: string) => {
       return fetchApi<void>(`/api/v1/notifications/${id}/read`, {
         method: "POST",
       });

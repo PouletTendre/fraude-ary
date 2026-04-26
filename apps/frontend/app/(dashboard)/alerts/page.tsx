@@ -16,8 +16,8 @@ import type { PriceAlert } from "@/types";
 
 function AlertCard({ alert, onToggle, onDelete, isToggling, isDeleting }: {
   alert: PriceAlert;
-  onToggle: (id: number, is_active: boolean) => void;
-  onDelete: (id: number) => void;
+  onToggle: (id: string, is_active: boolean) => void;
+  onDelete: (id: string) => void;
   isToggling: boolean;
   isDeleting: boolean;
 }) {
@@ -41,7 +41,7 @@ function AlertCard({ alert, onToggle, onDelete, isToggling, isDeleting }: {
               <p className="font-semibold text-text-primary uppercase">
                 {alert.symbol}
               </p>
-              <Badge variant={alert.is_active ? "success" : "default"}>
+              <Badge variant={alert.is_active ? "gain" : "neutral"}>
                 {alert.is_active ? "Active" : "Inactive"}
               </Badge>
               {alert.triggered_at && (
@@ -141,14 +141,14 @@ export default function AlertsPage() {
     }
   };
 
-  const handleToggle = (id: number, is_active: boolean) => {
+  const handleToggle = (id: string, is_active: boolean) => {
     toggleAlert({ id, is_active }, {
       onSuccess: () => addToast(is_active ? "Alert activated" : "Alert deactivated", "success"),
       onError: () => addToast("Failed to update alert", "error"),
     });
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => {
     if (confirm("Are you sure you want to delete this alert?")) {
       deleteAlert(id, {
         onSuccess: () => addToast("Alert deleted successfully", "success"),

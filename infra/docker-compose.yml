@@ -61,13 +61,13 @@ services:
   frontend:
     build:
       context: ../apps/frontend
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     environment:
       NEXT_PUBLIC_API_URL: http://localhost
     expose: ["3000"]
     networks: [frontend-net, backend-net]
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3000"]
       interval: 15s
       timeout: 5s
       retries: 3

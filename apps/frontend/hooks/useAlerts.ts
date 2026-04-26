@@ -32,7 +32,7 @@ export function useAlerts() {
   });
 
   const toggleAlert = useMutation({
-    mutationFn: async ({ id, is_active }: { id: number; is_active: boolean }) => {
+    mutationFn: async ({ id, is_active }: { id: string; is_active: boolean }) => {
       return fetchApi<PriceAlert>(`/api/v1/alerts/${id}`, {
         method: "PUT",
         body: JSON.stringify({ is_active }),
@@ -44,7 +44,7 @@ export function useAlerts() {
   });
 
   const deleteAlert = useMutation({
-    mutationFn: async (id: number) => {
+    mutationFn: async (id: string) => {
       return fetchApi<void>(`/api/v1/alerts/${id}`, {
         method: "DELETE",
       });

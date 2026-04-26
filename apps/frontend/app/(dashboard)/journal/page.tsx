@@ -393,7 +393,7 @@ export default function JournalPage() {
                                 {new Date(tx.date).toLocaleDateString()}
                               </td>
                               <td className="px-4 py-4 whitespace-nowrap">
-                                <Badge variant={tx.type === "buy" ? "success" : "error"}>
+                                <Badge variant={tx.type === "buy" ? "gain" : "loss"}>
                                   {tx.type.toUpperCase()}
                                 </Badge>
                               </td>

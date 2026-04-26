@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, ForwardRefExoticComponent, RefAttributes } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
@@ -27,9 +27,17 @@ import {
   X,
   PieChart,
   Calculator,
+  LucideProps,
 } from "lucide-react";
 
-const navSections = [
+interface NavItem {
+  href: string;
+  label: string;
+  icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>;
+  badge?: number | string;
+}
+
+const navSections: { label: string; items: NavItem[] }[] = [
   {
     label: "Principal",
     items: [

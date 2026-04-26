@@ -369,7 +369,7 @@ export default function AssetsPage() {
                 <p className="text-sm text-text-tertiary">Type</p>
                 <Badge variant={
                   selectedAsset.type === "crypto" ? "warning" :
-                  selectedAsset.type === "stocks" ? "success" : "info"
+                  selectedAsset.type === "stocks" ? "gain" : "info"
                 }>
                   {selectedAsset.type.replace("_", " ")}
                 </Badge>
@@ -696,7 +696,7 @@ export default function AssetsPage() {
                         <td className="px-4 py-4 whitespace-nowrap">
                           <Badge variant={
                             asset.type === "crypto" ? "warning" :
-                            asset.type === "stocks" ? "success" : "info"
+                            asset.type === "stocks" ? "gain" : "info"
                           }>
                             {asset.type.replace("_", " ")}
                           </Badge>
