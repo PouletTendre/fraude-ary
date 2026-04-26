@@ -14,23 +14,11 @@ branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
-    # Add lowercase values to the PostgreSQL enum type
     op.execute("ALTER TYPE assettype ADD VALUE IF NOT EXISTS 'stocks'")
     op.execute("ALTER TYPE assettype ADD VALUE IF NOT EXISTS 'crypto'")
     op.execute("ALTER TYPE assettype ADD VALUE IF NOT EXISTS 'real_estate'")
-    # Add lowercase values to transactiontype
     op.execute("ALTER TYPE transactiontype ADD VALUE IF NOT EXISTS 'buy'")
     op.execute("ALTER TYPE transactiontype ADD VALUE IF NOT EXISTS 'sell'")
-    # Now update rows to lowercase
-    op.execute("UPDATE assets SET type = 'stocks' WHERE type = 'STOCKS'")
-    op.execute("UPDATE assets SET type = 'crypto' WHERE type = 'CRYPTO'")
-    op.execute("UPDATE assets SET type = 'real_estate' WHERE type = 'REAL_ESTATE'")
-    op.execute("UPDATE transactions SET type = 'buy' WHERE type = 'BUY'")
-    op.execute("UPDATE transactions SET type = 'sell' WHERE type = 'SELL'")
 
 def downgrade() -> None:
-    op.execute("UPDATE assets SET type = 'STOCKS' WHERE type = 'stocks'")
-    op.execute("UPDATE assets SET type = 'CRYPTO' WHERE type = 'crypto'")
-    op.execute("UPDATE assets SET type = 'REAL_ESTATE' WHERE type = 'real_estate'")
-    op.execute("UPDATE transactions SET type = 'BUY' WHERE type = 'buy'")
-    op.execute("UPDATE transactions SET type = 'SELL' WHERE type = 'sell'")
+    pass

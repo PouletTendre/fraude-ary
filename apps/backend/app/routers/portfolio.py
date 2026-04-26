@@ -213,8 +213,8 @@ async def get_portfolio_summary(
         now = datetime.now(timezone.utc)
         today = now.date()
         yesterday = today - timedelta(days=1)
-        month_ago = now - timedelta(days=30)
-        year_ago_dt = now - timedelta(days=365)
+        month_ago = (now - timedelta(days=30)).replace(tzinfo=None)
+        year_ago_dt = (now - timedelta(days=365)).replace(tzinfo=None)
 
         yesterday_value = None
         month_ago_value = None
