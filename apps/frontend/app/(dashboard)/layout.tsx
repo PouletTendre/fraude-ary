@@ -18,6 +18,7 @@ import {
   TrendingUp,
   BarChart3,
   Bell,
+  Mail,
   ArrowLeftRight,
   DollarSign,
   Settings,
@@ -45,8 +46,6 @@ const navSections: { label: string; items: NavItem[] }[] = [
       { href: "/", label: "Dashboard", icon: LayoutDashboard },
       { href: "/portfolio", label: "Portefeuille", icon: Wallet },
       { href: "/assets", label: "Marchés", icon: TrendingUp },
-      { href: "/journal", label: "Analyse", icon: BarChart3 },
-      { href: "/diversification", label: "Diversification", icon: PieChart },
       { href: "/analysis", label: "Analyse Technique", icon: LineChart },
       { href: "/simulator", label: "Simulateur", icon: Calculator },
     ],
@@ -55,7 +54,7 @@ const navSections: { label: string; items: NavItem[] }[] = [
     label: "Gestion",
     items: [
       { href: "/alerts", label: "Alertes", icon: Bell },
-      { href: "/notifications", label: "Notifications", icon: Bell },
+      { href: "/notifications", label: "Notifications", icon: Mail },
       { href: "/journal", label: "Transactions", icon: ArrowLeftRight },
       { href: "/dividends", label: "Dividendes", icon: DollarSign },
       { href: "/settings", label: "Paramètres", icon: Settings },
@@ -115,7 +114,11 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="flex" style={{ minHeight: "100vh", background: "var(--bg)" }}>
+    <>
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary focus:text-white focus:rounded-lg">
+        Skip to content
+      </a>
+      <div className="flex" style={{ minHeight: "100vh", background: "var(--bg)" }}>
       {/* Overlay for mobile sidebar */}
       {sidebarOpen && (
         <div
@@ -206,21 +209,21 @@ export default function DashboardLayout({
                   <span>{item.label}</span>
                   {item.badge !== undefined && (
                     <span className="ml-auto">
-                      <Badge variant="loss" style={{ fontSize: "9px", padding: "2px 6px" }}>
+                      <Badge variant="info" style={{ fontSize: "9px", padding: "2px 6px" }}>
                         {item.badge}
                       </Badge>
                     </span>
                   )}
                   {item.href === "/alerts" && activeAlertCount > 0 && (
                     <span className="ml-auto">
-                      <Badge variant="loss" style={{ fontSize: "9px", padding: "2px 6px" }}>
+                      <Badge variant="info" style={{ fontSize: "9px", padding: "2px 6px" }}>
                         {activeAlertCount > 9 ? "9+" : activeAlertCount}
                       </Badge>
                     </span>
                   )}
                   {item.href === "/notifications" && unreadCount > 0 && !item.badge && (
                     <span className="ml-auto">
-                      <Badge variant="loss" style={{ fontSize: "9px", padding: "2px 6px" }}>
+                      <Badge variant="info" style={{ fontSize: "9px", padding: "2px 6px" }}>
                         {unreadCount > 9 ? "9+" : unreadCount}
                       </Badge>
                     </span>
@@ -280,6 +283,7 @@ export default function DashboardLayout({
 
       {/* Main content */}
       <main
+        id="main-content"
         className="flex-1 flex flex-col"
         style={{ padding: "32px", gap: "32px", overflow: "auto" }}
       >
@@ -294,5 +298,6 @@ export default function DashboardLayout({
         {children}
       </main>
     </div>
+    </>
   );
 }

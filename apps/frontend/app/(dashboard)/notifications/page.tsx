@@ -16,14 +16,14 @@ const getNotificationIcon = (type: string) => {
   switch (type) {
     case "error":
     case "alert":
-      return <AlertTriangle className="w-5 h-5 text-red-500" />;
+      return <AlertTriangle className="w-5 h-5 text-loss" />;
     case "success":
       return <CheckCircle className="w-5 h-5 text-gain" />;
     case "warning":
-      return <AlertTriangle className="w-5 h-5 text-amber-500" />;
+      return <AlertTriangle className="w-5 h-5 text-warning" />;
     case "info":
     default:
-      return <Info className="w-5 h-5 text-blue-500" />;
+      return <Info className="w-5 h-5 text-primary-hover" />;
   }
 };
 
@@ -34,7 +34,7 @@ function NotificationItem({ notification, onMarkAsRead }: { notification: Notifi
         "flex items-start gap-4 p-4 rounded-lg border transition-colors",
         notification.read
           ? "bg-surface-sunken/50 border-border"
-          : "bg-surface border-blue-100 bg-surface-sunken border-primary/20 shadow-sm"
+          : "bg-surface border-primary/20 bg-surface-sunken shadow-sm"
       )}
     >
       <div className="flex-shrink-0 mt-0.5">
@@ -159,7 +159,7 @@ export default function NotificationsPage() {
             className={cn(
               "px-3 py-1.5 text-sm rounded-lg transition-colors font-medium",
               filter === "all"
-                ? "bg-blue-600 text-white"
+                ? "bg-primary text-white"
                 : "text-text-secondary hover:bg-surface-raised bg-surface-sunken text-text-secondary hover:bg-surface-raised"
             )}
           >
@@ -170,7 +170,7 @@ export default function NotificationsPage() {
             className={cn(
               "px-3 py-1.5 text-sm rounded-lg transition-colors font-medium",
               filter === "unread"
-                ? "bg-blue-600 text-white"
+                ? "bg-primary text-white"
                 : "text-text-secondary hover:bg-surface-raised bg-surface-sunken text-text-secondary hover:bg-surface-raised"
             )}
           >

@@ -58,14 +58,14 @@ export default function SettingsPage() {
                   className={cn(
                     "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all",
                     theme === "light"
-                      ? "border-blue-600 bg-blue-50 dark:bg-blue-900/30"
+                      ? "border-primary bg-primary-subtle dark:bg-primary-muted/30"
                       : "border-border hover:border-border-hover"
                   )}
                 >
                   <Sun className="w-6 h-6 text-amber-500" />
                   <span className="text-sm font-medium text-text-secondary">Light</span>
                   {theme === "light" && (
-                    <div className="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center">
+                    <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
                       <Check className="w-3 h-3 text-white" />
                     </div>
                   )}
@@ -75,14 +75,14 @@ export default function SettingsPage() {
                   className={cn(
                     "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all",
                     theme === "dark"
-                      ? "border-blue-600 bg-blue-50 dark:bg-blue-900/30"
+                      ? "border-primary bg-primary-subtle dark:bg-primary-muted/30"
                       : "border-border hover:border-border-hover"
                   )}
                 >
                   <Moon className="w-6 h-6 text-indigo-500" />
                   <span className="text-sm font-medium text-text-secondary">Dark</span>
                   {theme === "dark" && (
-                    <div className="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center">
+                    <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
                       <Check className="w-3 h-3 text-white" />
                     </div>
                   )}
@@ -92,14 +92,14 @@ export default function SettingsPage() {
                   className={cn(
                     "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all",
                     theme === "system"
-                      ? "border-blue-600 bg-blue-50 dark:bg-blue-900/30"
+                      ? "border-primary bg-primary-subtle dark:bg-primary-muted/30"
                       : "border-border hover:border-border-hover"
                   )}
                 >
                   <Monitor className="w-6 h-6 text-text-tertiary" />
                   <span className="text-sm font-medium text-text-secondary">System</span>
                   {theme === "system" && (
-                    <div className="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center">
+                    <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
                       <Check className="w-3 h-3 text-white" />
                     </div>
                   )}
@@ -127,7 +127,7 @@ export default function SettingsPage() {
                   className={cn(
                     "flex items-center gap-3 p-4 rounded-xl border-2 transition-all",
                     settings.currency === c.value
-                      ? "border-blue-600 bg-blue-50 dark:bg-blue-900/30"
+                      ? "border-primary bg-primary-subtle dark:bg-primary-muted/30"
                       : "border-border hover:border-border-hover"
                   )}
                 >
@@ -139,7 +139,7 @@ export default function SettingsPage() {
                     <p className="text-xs text-text-tertiary">{c.value}</p>
                   </div>
                   {settings.currency === c.value && (
-                    <div className="ml-auto w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center">
+                    <div className="ml-auto w-5 h-5 rounded-full bg-primary flex items-center justify-center">
                       <Check className="w-3 h-3 text-white" />
                     </div>
                   )}
@@ -167,7 +167,7 @@ export default function SettingsPage() {
                   className={cn(
                     "flex items-center justify-between w-full p-4 rounded-xl border-2 transition-all",
                     settings.dateFormat === df.value
-                      ? "border-blue-600 bg-blue-50 dark:bg-blue-900/30"
+                      ? "border-primary bg-primary-subtle dark:bg-primary-muted/30"
                       : "border-border hover:border-border-hover"
                   )}
                 >
@@ -176,7 +176,7 @@ export default function SettingsPage() {
                     <p className="text-xs text-text-tertiary mt-0.5">{df.example}</p>
                   </div>
                   {settings.dateFormat === df.value && (
-                    <div className="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center">
+                    <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
                       <Check className="w-3 h-3 text-white" />
                     </div>
                   )}

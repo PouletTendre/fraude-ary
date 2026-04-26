@@ -19,6 +19,6 @@ const config: Config = {
       boxShadow: theme.shadows,
     },
   },
-  plugins: [],
+  plugins: [require("tailwindcss-animate")],
 };
 export default config;

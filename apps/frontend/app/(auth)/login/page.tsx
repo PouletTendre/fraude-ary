@@ -37,7 +37,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+    <div className="min-h-screen flex items-center justify-center bg-bg px-4">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl text-center">Welcome Back</CardTitle>
@@ -64,7 +64,7 @@ export default function LoginPage() {
               placeholder="••••••••"
             />
             {loginError && (
-              <p className="text-sm text-red-500 text-center">
+              <p className="text-sm text-loss text-center">
                 Invalid email or password
               </p>
             )}

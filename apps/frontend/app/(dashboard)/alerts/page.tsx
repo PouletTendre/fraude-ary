@@ -72,7 +72,7 @@ function AlertCard({ alert, onToggle, onDelete, isToggling, isDeleting }: {
           disabled={isToggling}
           className={cn(
             "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50",
-            alert.is_active ? "bg-blue-600" : "bg-surface-raised"
+            alert.is_active ? "bg-primary" : "bg-surface-raised"
           )}
         >
           <span
@@ -85,7 +85,7 @@ function AlertCard({ alert, onToggle, onDelete, isToggling, isDeleting }: {
         <button
           onClick={() => onDelete(alert.id)}
           disabled={isDeleting}
-          className="p-2 rounded-lg text-text-muted hover:text-loss hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50"
+          className="p-2 rounded-lg text-text-muted hover:text-loss hover:bg-loss-muted transition-colors disabled:opacity-50"
         >
           <Trash2 className="w-4 h-4" />
         </button>
@@ -261,7 +261,7 @@ export default function AlertsPage() {
                         className={cn(
                           "flex-1 flex items-center justify-center gap-2 h-10 px-3 rounded-lg border text-sm font-medium transition-colors",
                           formData.condition === "below"
-                            ? "border-red-500 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-loss"
+                            ? "border-loss bg-loss-muted text-loss"
                             : "border-border text-text-secondary hover:bg-surface-raised"
                         )}
                       >

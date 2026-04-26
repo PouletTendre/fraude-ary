@@ -41,7 +41,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+    <div className="min-h-screen flex items-center justify-center bg-bg px-4">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl text-center">Create Account</CardTitle>
@@ -76,7 +76,7 @@ export default function RegisterPage() {
               placeholder="••••••••"
             />
             {registerError && (
-              <p className="text-sm text-red-500 text-center">
+              <p className="text-sm text-loss text-center">
                 Registration failed. Email may already be in use.
               </p>
             )}

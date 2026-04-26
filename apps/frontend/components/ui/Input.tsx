@@ -29,9 +29,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           )}
           <input
             id={inputId}
+            aria-describedby={error ? `${inputId}-error` : undefined}
             className={cn(
               "w-full outline-none transition-all duration-150 ease-out bg-surface-sunken text-text-primary placeholder:text-text-muted",
-              error && "border-loss",
+              "focus:ring-2 focus:ring-primary focus:border-primary-hover",
+              error && "border-loss focus:ring-loss",
               className
             )}
             style={{
@@ -47,7 +49,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           />
         </div>
         {error && (
-          <p className="mt-1.5 text-label text-loss">{error}</p>
+          <p id={`${inputId}-error`} className="mt-1.5 text-label text-loss" role="alert">{error}</p>
         )}
       </div>
     );

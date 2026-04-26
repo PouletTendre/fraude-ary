@@ -50,19 +50,19 @@ export function useToast() {
 
 function ToastContainer({ toasts, removeToast }: { toasts: Toast[]; removeToast: (id: string) => void }) {
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
+    <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2" role="region" aria-label="Notifications" aria-live="polite">
       {toasts.map((toast) => (
         <div
           key={toast.id}
           className={cn(
             "animate-in slide-in-from-bottom-5 fade-in duration-300 px-4 py-3 rounded-lg shadow-lg text-white flex items-center gap-3 min-w-[300px]",
-            toast.type === "success" && "bg-green-600",
-            toast.type === "error" && "bg-red-600",
-            toast.type === "info" && "bg-blue-600"
+            toast.type === "success" && "bg-gain",
+            toast.type === "error" && "bg-loss",
+            toast.type === "info" && "bg-primary"
           )}
         >
           <span className="flex-1">{toast.message}</span>
-          <button onClick={() => removeToast(toast.id)} className="text-white/80 hover:text-white">
+          <button onClick={() => removeToast(toast.id)} className="text-white/80 hover:text-white" aria-label="Close notification">
             ×
           </button>
         </div>

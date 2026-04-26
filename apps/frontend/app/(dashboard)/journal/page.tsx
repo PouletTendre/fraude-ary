@@ -10,21 +10,8 @@ import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
 import { Pencil, Trash2, X, Check, Plus } from "lucide-react";
-import { cn, formatNumber } from "@/lib/utils";
+import { cn, formatNumber, formatCurrency } from "@/lib/utils";
 import type { Transaction } from "@/types";
-
-const CURRENCY_SYMBOLS: Record<string, string> = {
-  USD: "$",
-  EUR: "€",
-  GBP: "£",
-  JPY: "¥",
-  CHF: "CHF",
-};
-
-const formatCurrency = (value: number, currency: string = "USD") => {
-  const symbol = CURRENCY_SYMBOLS[currency] || "$";
-  return `${symbol}${new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value)}`;
-};
 
 export default function JournalPage() {
   const { data: transactions, isLoading, updateTransaction, createTransaction, deleteTransaction, isUpdating, isCreating, isDeleting } = useTransactions();
