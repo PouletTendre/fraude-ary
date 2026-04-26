@@ -13,6 +13,10 @@ from sqlalchemy import select
 CRYPTO_COMPARE_API = "https://min-api.cryptocompare.com/data"
 YAHOO_CHART_API = "https://query1.finance.yahoo.com/v8/finance/chart"
 
+CACHE_TTL_STOCK = 300
+CACHE_TTL_CRYPTO = 60
+CACHE_TTL_HISTORY = 86400
+
 # Fixed real estate prices per city (EUR/m2)
 REAL_ESTATE_PRICES = {
     "paris": 12500,
@@ -132,20 +136,20 @@ class PriceService:
         return await self.get_stock_price(symbol)
 
     async def refresh_crypto_prices(self, symbols: List[str]) -> Dict[str, float]:
-        results = {}
-        for symbol in symbols:
+        async def fetch_one(symbol: str) -> Tuple[str, Optional[float]]:
             price = await self.get_crypto_price(symbol)
-            if price:
-                results[symbol] = price
-        return results
+            return (symbol, price)
+
+        fetched = await asyncio.gather(*[fetch_one(s) for s in symbols])
+        return {sym: price for sym, price in fetched if price is not None}
 
     async def refresh_stock_prices(self, symbols: List[str]) -> Dict[str, float]:
-        results = {}
-        for symbol in symbols:
+        async def fetch_one(symbol: str) -> Tuple[str, Optional[float]]:
             price = await self.get_stock_price(symbol)
-            if price:
-                results[symbol] = price
-        return results
+            return (symbol, price)
+
+        fetched = await asyncio.gather(*[fetch_one(s) for s in symbols])
+        return {sym: price for sym, price in fetched if price is not None}
 
     async def get_benchmark_data(self, symbol: str, period: str = "1y") -> Optional[Dict]:
         try:
@@ -294,7 +298,7 @@ class PriceService:
                     rate = rates.get(to_currency.upper())
                     if rate is not None and rate > 0:
                         try:
-                            await cache_service.set(cache_key, {"rate": rate}, ttl=86400)
+                            await cache_service.set(cache_key, {"rate": rate}, ttl=CACHE_TTL_HISTORY)
                         except Exception as e:
                             logging.warning(f"Redis cache set for historical rate failed: {e}")
                         return float(rate)
@@ -334,20 +338,21 @@ class PriceService:
         result = await db.execute(select(Asset))
         assets = result.scalars().all()
 
-        updated = 0
-        errors = []
-        for asset in assets:
+        async def refresh_one(asset: Asset) -> Tuple[int, Optional[str]]:
             try:
                 asset_type_str = asset.type_value
                 price = await self.get_price(asset_type_str, asset.symbol)
                 if price is not None:
                     asset.current_price = price
                     await self.save_price_history(db, asset.id, price)
-                    updated += 1
-                else:
-                    errors.append(f"Could not fetch price for {asset.symbol}")
+                    return (1, None)
+                return (0, f"Could not fetch price for {asset.symbol}")
             except Exception as e:
-                errors.append(f"Error refreshing {asset.symbol}: {str(e)}")
+                return (0, f"Error refreshing {asset.symbol}: {str(e)}")
+
+        results = await asyncio.gather(*[refresh_one(a) for a in assets])
+        updated = sum(r[0] for r in results)
+        errors = [r[1] for r in results if r[1] is not None]
 
         await db.commit()
         return {"updated": updated, "errors": errors}
