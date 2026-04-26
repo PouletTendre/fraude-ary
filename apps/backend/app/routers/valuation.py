@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from typing import Optional, Dict
 
@@ -13,7 +14,6 @@ from app.services.valuation_service import calculate_valuation
 router = APIRouter(prefix="/valuation", tags=["valuation"])
 
 YAHOO_CHART_API = "https://query1.finance.yahoo.com/v8/finance/chart"
-YAHOO_QUOTE_SUMMARY = "https://query2.finance.yahoo.com/v10/finance/quoteSummary"
 
 
 async def _fetch_market_price(symbol: str) -> Optional[Dict]:
@@ -48,43 +48,40 @@ async def _fetch_market_price(symbol: str) -> Optional[Dict]:
         return None
 
 
-async def _fetch_financial_data(symbol: str) -> Optional[Dict]:
-    """Fetch financial data from Yahoo Finance quoteSummary."""
+def _fetch_financial_yfinance(symbol: str) -> Optional[Dict]:
+    """Fetch financial data using yfinance (handles crumb auth automatically)."""
     try:
-        async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as client:
-            url = f"{YAHOO_QUOTE_SUMMARY}/{symbol.upper()}?modules=defaultKeyStatistics,financialData,summaryDetail"
-            resp = await client.get(url, headers={
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
-            })
-            if resp.status_code != 200:
-                return None
-            data = resp.json()
-            result = data.get("quoteSummary", {}).get("result", [None])[0]
-            if not result:
-                return None
-
-            financial_data = result.get("financialData", {})
-            default_stats = result.get("defaultKeyStatistics", {})
-            summary_detail = result.get("summaryDetail", {})
-
-            fcf = financial_data.get("freeCashflow", {}).get("raw")
-            eps = default_stats.get("trailingEps", {}).get("raw") or summary_detail.get("trailingPE", {})
-            if isinstance(eps, dict):
-                eps = eps.get("raw")
-            shares = default_stats.get("sharesOutstanding", {}).get("raw")
-            pe_ratio = summary_detail.get("trailingPE", {}).get("raw")
-            revenue_growth = financial_data.get("revenueGrowth", {}).get("raw")
-
-            return {
-                "fcf": fcf,
-                "eps": eps,
-                "shares_outstanding": int(shares) if shares else None,
-                "pe_ratio": pe_ratio,
-                "revenue_growth": revenue_growth,
-            }
+        import yfinance as yf
+        ticker = yf.Ticker(symbol.upper())
+        info = ticker.info or {}
+        if not info:
+            return None
+        
+        fcf = info.get("freeCashflow")
+        # If FCF is 0 or None, try operatingCashflow - capex
+        if not fcf or fcf == 0:
+            fcf = info.get("operatingCashflow", 0) - info.get("capitalExpenditures", 0) or None
+        
+        eps = info.get("trailingEps")
+        shares = info.get("sharesOutstanding")
+        pe = info.get("trailingPE")
+        growth = info.get("revenueGrowth")
+        
+        return {
+            "fcf": float(fcf) if fcf else None,
+            "eps": float(eps) if eps else None,
+            "shares_outstanding": int(shares) if shares else None,
+            "pe_ratio": float(pe) if pe else None,
+            "revenue_growth": float(growth) if growth else None,
+        }
     except Exception as e:
-        logging.warning(f"Yahoo financial data fetch failed for {symbol}: {e}")
+        logging.warning(f"yfinance info fetch failed for {symbol}: {e}")
         return None
+
+
+async def _fetch_financial_data(symbol: str) -> Optional[Dict]:
+    """Fetch financial data, trying yfinance first."""
+    return await asyncio.to_thread(_fetch_financial_yfinance, symbol)
 
 
 @router.get("/{symbol}", response_model=ValuationResponse)
@@ -112,14 +109,19 @@ async def get_valuation(
     fcf = financial_data.get("fcf")
     shares = financial_data.get("shares_outstanding")
 
-    if not eps:
-        eps = market_price / 20.0
+    if not eps or eps <= 0:
+        eps = market_price / 15.0
         is_estimated = True
-    if not fcf:
-        if shares:
-            fcf = market_price * shares * 0.05
+    if not fcf or fcf <= 0:
+        if shares and shares > 0:
+            fcf = market_price * shares * 0.06
         else:
-            fcf = market_price * 1_000_000 * 0.05
+            fcf = market_price * 100_000_000 * 0.06
+        is_estimated = True
+    if not shares or shares <= 0:
+        # Estimate shares from market cap: typical large caps ~ $500B-$3T
+        # Use a reasonable default: assume market cap ~ price * 15B shares
+        shares = 15_000_000_000
         is_estimated = True
 
     fin_data = {
