@@ -286,7 +286,7 @@ async def create_asset(
     # Backfill historical prices from purchase_date
     if db_asset.purchase_date:
         try:
-            purchase_dt = datetime.strptime(db_asset.purchase_date, "%Y-%m-%d")
+            purchase_dt = datetime.strptime(db_asset.purchase_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
             asset_type_str = asset_type.value
             await price_service.backfill_price_history(db, db_asset.id, db_asset.symbol, asset_type_str, purchase_dt)
         except Exception as e:
@@ -414,7 +414,7 @@ async def backfill_asset_history(
     if not asset.purchase_date:
         raise HTTPException(status_code=400, detail="Asset has no purchase_date")
 
-    purchase_dt = datetime.strptime(asset.purchase_date, "%Y-%m-%d")
+    purchase_dt = datetime.strptime(asset.purchase_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
     asset_type_str = asset.type_value
     count = await price_service.backfill_price_history(db, asset.id, asset.symbol, asset_type_str, purchase_dt)
     return {"backfilled_entries": count}
