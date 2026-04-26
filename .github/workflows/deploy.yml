@@ -45,15 +45,12 @@ jobs:
 
       - name: Verify deployment
         run: |
-          echo "Waiting for backend to start (migrations + uvicorn)..."
+          echo "Waiting for services to start..."
           for i in {1..12}; do
             sleep 5
-            if curl -s http://localhost/api/v1/assets 2>/dev/null | grep -q '\['; then
+            if curl -s http://localhost/api/v1/assets/search/symbols?q=AAPL 2>/dev/null | grep -q 'symbol'; then
               echo "Deployment successful"
               exit 0
-            fi
-            if curl -s http://localhost/ 2>/dev/null | grep -q 'html'; then
-              echo "Frontend OK, waiting for backend..."
             fi
             echo "Attempt $i/12 - not ready yet..."
           done
