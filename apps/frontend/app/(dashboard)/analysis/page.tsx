@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { NewsCard } from "@/components/ui/NewsCard";
+import { ValuationCard } from "@/components/ui/ValuationCard";
 import { SymbolSearch } from "@/components/SymbolSearch";
 
 function rsiBadge(rsi: number | null): { label: string; variant: "gain" | "loss" | "warning" } {
@@ -283,6 +284,8 @@ export default function AnalysisPage() {
                 </div>
               </IndicatorCard>
             </div>
+
+            <ValuationCard symbol={symbol} />
 
             <NewsCard symbol={symbol} />
           </>

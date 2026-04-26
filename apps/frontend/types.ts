@@ -189,3 +189,29 @@ export interface NewsItem {
   published: string | null;
   source: string | null;
 }
+
+export interface ValuationMethod {
+  method: string;
+  intrinsic_value: number;
+  margin_pct: number;
+  label: string;
+}
+
+export interface ValuationScenario {
+  bear: number;
+  base: number;
+  bull: number;
+}
+
+export interface ValuationResponse {
+  symbol: string;
+  market_price: number;
+  currency: string;
+  intrinsic_value: number;
+  margin_pct: number;
+  label: string;
+  methods: ValuationMethod[];
+  scenarios: ValuationScenario;
+  financial_data: Record<string, any>;
+  is_estimated: boolean;
+}
