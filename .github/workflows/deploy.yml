@@ -48,14 +48,18 @@ jobs:
           echo "Waiting for backend to start (migrations + uvicorn)..."
           for i in {1..12}; do
             sleep 5
-            if curl -s http://localhost:8000/health | grep -q "ok"; then
+            if curl -s http://localhost/api/v1/assets 2>/dev/null | grep -q '\['; then
               echo "Deployment successful"
               exit 0
             fi
-            echo "Attempt $i/12 - backend not ready yet..."
+            if curl -s http://localhost/ 2>/dev/null | grep -q 'html'; then
+              echo "Frontend OK, waiting for backend..."
+            fi
+            echo "Attempt $i/12 - not ready yet..."
           done
-          echo "Backend failed to start"
+          echo "Deployment failed"
           docker logs infra-backend-1 --tail 50
+          docker logs infra-nginx-1 --tail 20
           exit 1
 
       - name: Release deployment lock
