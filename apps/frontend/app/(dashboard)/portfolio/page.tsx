@@ -12,6 +12,7 @@ import { useSettings } from "@/hooks/useSettings";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { PageTransition } from "@/components/ui/PageTransition";
+import { RiskMetricsCard } from "@/components/ui/RiskMetricsCard";
 import { 
   TrendingUp, TrendingDown, DollarSign, Activity, ArrowUpDown, ArrowUp, ArrowDown 
 } from "lucide-react";
@@ -331,6 +332,9 @@ export default function PortfolioPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Risk & Performance Metrics */}
+      <RiskMetricsCard />
 
       {/* Portfolio Evolution */}
       <Card>

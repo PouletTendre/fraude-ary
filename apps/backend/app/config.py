@@ -9,6 +9,9 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
     ALLOWED_ORIGINS: str = "http://localhost:3000"
     PYTHON_ENV: str = "production"
+    TIINGO_API_KEY: str = ""
+    TWELVE_DATA_API_KEY: str = ""
+    FRED_API_KEY: str = ""
 
     class Config:
         env_file = ".env"

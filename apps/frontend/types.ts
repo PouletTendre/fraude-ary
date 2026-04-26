@@ -151,3 +151,41 @@ export interface SimulatorResponse {
   total_gains: number;
   years: number;
 }
+
+export interface TechnicalIndicators {
+  symbol: string;
+  rsi: number | null;
+  macd: { macd_line: number; signal_line: number; histogram: number } | null;
+  bollinger: { upper: number; middle: number; lower: number } | null;
+  sma_20: number | null;
+  sma_50: number | null;
+  sma_200: number | null;
+  ema_12: number | null;
+  ema_26: number | null;
+  atr: number | null;
+  obv: number | null;
+  stochastic: { stoch_k: number; stoch_d: number } | null;
+  mfi: number | null;
+}
+
+export interface PortfolioAnalytics {
+  total_value: number;
+  daily_return: number | null;
+  weekly_return: number | null;
+  monthly_return: number | null;
+  sharpe_ratio: number | null;
+  sortino_ratio: number | null;
+  max_drawdown: number | null;
+  var_95: number | null;
+  cvar_95: number | null;
+  volatility_annual: number | null;
+  best_day: { date: string; return_pct: number } | null;
+  worst_day: { date: string; return_pct: number } | null;
+}
+
+export interface NewsItem {
+  title: string;
+  link: string;
+  published: string | null;
+  source: string | null;
+}

@@ -27,6 +27,7 @@ import {
   X,
   PieChart,
   Calculator,
+  LineChart,
   LucideProps,
 } from "lucide-react";
 
@@ -46,6 +47,7 @@ const navSections: { label: string; items: NavItem[] }[] = [
       { href: "/assets", label: "Marchés", icon: TrendingUp },
       { href: "/journal", label: "Analyse", icon: BarChart3 },
       { href: "/diversification", label: "Diversification", icon: PieChart },
+      { href: "/analysis", label: "Analyse Technique", icon: LineChart },
       { href: "/simulator", label: "Simulateur", icon: Calculator },
     ],
   },
