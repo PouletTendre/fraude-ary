@@ -53,12 +53,11 @@ def _fetch_financial_yfinance(symbol: str) -> Optional[Dict]:
     try:
         import yfinance as yf
         ticker = yf.Ticker(symbol.upper())
-        info = ticker.info or {}
-        if not info:
+        info = ticker.info
+        if not info or info.get("trailingEps") is None:
             return None
         
         fcf = info.get("freeCashflow")
-        # If FCF is 0 or None, try operatingCashflow - capex
         if not fcf or fcf == 0:
             fcf = info.get("operatingCashflow", 0) - info.get("capitalExpenditures", 0) or None
         
@@ -67,11 +66,17 @@ def _fetch_financial_yfinance(symbol: str) -> Optional[Dict]:
         pe = info.get("trailingPE")
         growth = info.get("revenueGrowth")
         
+        # Validate data looks reasonable (not stale/partial from cache)
+        if eps and eps < 0:
+            eps = None
+        if fcf and fcf < 0:
+            fcf = None
+        
         return {
             "fcf": float(fcf) if fcf else None,
             "eps": float(eps) if eps else None,
-            "shares_outstanding": int(shares) if shares else None,
-            "pe_ratio": float(pe) if pe else None,
+            "shares_outstanding": int(shares) if shares and shares > 0 else None,
+            "pe_ratio": float(pe) if pe and pe > 0 else None,
             "revenue_growth": float(growth) if growth else None,
         }
     except Exception as e:
@@ -109,19 +114,17 @@ async def get_valuation(
     fcf = financial_data.get("fcf")
     shares = financial_data.get("shares_outstanding")
 
+    # Use conservative fallback estimates when data is missing
     if not eps or eps <= 0:
-        eps = market_price / 15.0
-        is_estimated = True
-    if not fcf or fcf <= 0:
-        if shares and shares > 0:
-            fcf = market_price * shares * 0.06
-        else:
-            fcf = market_price * 100_000_000 * 0.06
+        eps = market_price / 15.0  # assume P/E ≈ 15
         is_estimated = True
     if not shares or shares <= 0:
-        # Estimate shares from market cap: typical large caps ~ $500B-$3T
-        # Use a reasonable default: assume market cap ~ price * 15B shares
-        shares = 15_000_000_000
+        # Typical large cap: 1B-20B shares; use mid-range default
+        shares = 5_000_000_000
+        is_estimated = True
+    if not fcf or fcf <= 0:
+        # Typical FCF yield: 3-8% of market cap; use 5%
+        fcf = market_price * shares * 0.05
         is_estimated = True
 
     fin_data = {
