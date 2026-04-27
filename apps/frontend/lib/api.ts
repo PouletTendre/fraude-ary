@@ -32,8 +32,8 @@ export async function fetchApi<T = unknown>(endpoint: string, options?: RequestI
         errorMessage = errorText || errorMessage;
       }
 
-      // Handle 401 - redirect to login
-      if (response.status === 401) {
+      // Handle 401 - redirect to login (skip for login endpoint itself)
+      if (response.status === 401 && endpoint !== "/auth/login") {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         if (typeof window !== "undefined") {
