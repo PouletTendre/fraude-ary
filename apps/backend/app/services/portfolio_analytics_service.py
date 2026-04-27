@@ -1,6 +1,6 @@
 """Portfolio analytics: Sharpe, Sortino, VaR, drawdowns, efficient frontier."""
 
-from typing import List, Dict, Optional, Tuple
+from typing import List, Dict, Optional
 import math
 
 try:

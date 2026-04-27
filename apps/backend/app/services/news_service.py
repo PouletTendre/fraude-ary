@@ -3,7 +3,6 @@
 import logging
 import httpx
 from typing import List, Dict, Optional
-from datetime import datetime
 
 
 async def get_news(symbol: str, limit: int = 10) -> List[Dict[str, Optional[str]]]:
@@ -14,7 +13,7 @@ async def get_news(symbol: str, limit: int = 10) -> List[Dict[str, Optional[str]
     try:
         async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
             resp = await client.get(
-                f"https://feeds.finance.yahoo.com/rss/2.0/headline",
+                "https://feeds.finance.yahoo.com/rss/2.0/headline",
                 params={"s": symbol_upper, "region": "US", "lang": "en-US"},
                 headers={"User-Agent": "Mozilla/5.0"}
             )

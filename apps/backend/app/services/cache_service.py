@@ -1,7 +1,6 @@
 import redis.asyncio as redis
 import json
 from typing import Optional, Any, List, Dict
-from datetime import datetime
 from app.config import settings
 
 class CacheService:

@@ -1,6 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field, field_validator
-from typing import Optional, List, Dict
-from datetime import datetime
+from typing import Optional
 
 class Token(BaseModel):
     access_token: str

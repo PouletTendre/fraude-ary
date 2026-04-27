@@ -1,20 +1,13 @@
-import asyncio
 import logging
-from typing import List, Dict, Optional
-from datetime import datetime, timezone
+from typing import Dict, Optional
 
 import httpx
 
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from fastapi import APIRouter, Depends, Query
 
-from app.database import get_db
 from app.models.user import User
-from app.models.asset import Asset
 from app.routers.auth import get_current_user
 from app.schemas.technical import (
-    IndicatorRequest,
     TechnicalIndicatorsResponse,
 )
 from app.services.technical_service import compute_all_indicators

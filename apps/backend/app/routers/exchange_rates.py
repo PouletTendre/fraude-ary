@@ -1,4 +1,3 @@
-import logging
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -7,7 +6,7 @@ from app.database import get_db
 from app.models.user import User
 from app.models.exchange_rate import ExchangeRate
 from app.schemas.exchange_rates import ExchangeRateResponse, ExchangeRatesListResponse
-from app.services.price_service import fetch_and_update_exchange_rates, DEFAULT_EXCHANGE_RATES
+from app.services.price_service import fetch_and_update_exchange_rates
 from app.routers.auth import get_current_user
 
 router = APIRouter()

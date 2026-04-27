@@ -61,7 +61,6 @@ async def test_delete_asset_not_found(client: AsyncClient, auth_headers: dict):
 @pytest.mark.asyncio
 @patch("app.services.price_service.price_service.get_price", new_callable=AsyncMock)
 async def test_update_asset(mock_get_price, client: AsyncClient, auth_headers: dict, db_session, test_user):
-    from app.database import get_db
     asset = Asset(
         id="test-asset-id",
         user_email="test@example.com",
@@ -96,7 +95,6 @@ async def test_update_asset_not_found(client: AsyncClient, auth_headers: dict):
 
 @pytest.mark.asyncio
 async def test_update_asset_no_fields(client: AsyncClient, auth_headers: dict, db_session):
-    from app.database import get_db
     asset = Asset(
         id="test-asset-id-2",
         user_email="test@example.com",

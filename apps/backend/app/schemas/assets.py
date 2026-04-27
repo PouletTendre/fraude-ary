@@ -1,7 +1,6 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Literal
 from datetime import datetime
-from decimal import Decimal
 
 class AssetCreate(BaseModel):
     type: Literal["crypto", "stocks", "real_estate"]

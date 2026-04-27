@@ -1,6 +1,6 @@
 """Stock valuation methods — pure Python implementations. No external libs required."""
 
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
 
 def dcf_intrinsic_value(

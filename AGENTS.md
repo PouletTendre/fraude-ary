@@ -2,502 +2,208 @@
 
 <!-- CAVEMAN MODE — ACTIVE EVERY RESPONSE -->
 <!-- Terse like caveman. Technical substance exact. Only fluff die. -->
-<!-- Drop: articles, filler, pleasantries, hedging. Fragments OK. Short synonyms. -->
-<!-- Pattern: [thing] [action] [reason]. [next step]. -->
-<!-- Off: "stop caveman" / "normal mode" -->
 
-> This file is the single source of truth for AI agents working on Fraude-Ary. Read it fully before making any change.
-
-## Project Identity
-
-**Name:** Fraude-Ary  
-**Type:** Multi-asset portfolio tracking platform (Finary alternative)  
-**Deployment:** Self-hosted via Docker + GitHub Actions (self-hosted runner)  
-**URL:** http://localhost (production), http://localhost:3000 (frontend dev), http://localhost:8000 (backend dev)
+> Single source of truth for agents. Read fully before any change.
 
 ## Architecture
 
 ```
-┌─────────────┐      ┌─────────────┐      ┌─────────────┐
-│   Nginx     │──────▶│  Frontend   │      │   Backend   │
-│  (Port 80)  │      │  (Next.js)  │◀─────▶│  (FastAPI)  │
-└─────────────┘      └─────────────┘      └──────┬──────┘
-                                                  │
-                     ┌─────────────┐      ┌────────┴────────┐
-                     │    Redis    │◀─────▶│   PostgreSQL    │
-                     │   (Cache)   │      │   (Database)    │
-                     └─────────────┘      └─────────────────┘
+User → Nginx :80 → Frontend (Next.js :3000) or Backend (FastAPI :8000)
+                          ↕
+Backend → PostgreSQL :5432, Redis :6379
 ```
 
-**Request flow:**
-1. User → Nginx (port 80)
-2. Nginx routes `/api/*` and `/auth/*` → backend:8000
-3. Nginx routes everything else → frontend:3000
-4. Frontend SSR or client-side React
-5. Browser API calls go through Nginx to backend
+Nginx routes: `/api/*` and `/auth/*` → backend, everything else → frontend.
 
-## Tech Stack
+## Tech Stack (versions matter)
 
-### Backend (`apps/backend/`)
-- **FastAPI** 0.111 — Async web framework
-- **SQLAlchemy 2.0** — Async ORM
-- **Alembic** — Database migrations
-- **Pydantic v2** — Validation
-- **python-jose** — JWT
-- **passlib** — Password hashing (bcrypt)
-- **httpx** — Async HTTP client
-- **yfinance** — Yahoo Finance fallback
-- **apscheduler** — Background tasks (price refresh every 5min)
-- **slowapi** — Rate limiting (100 req/min)
-- **redis.asyncio** — Cache
+| Layer | Tech | Version |
+|-------|------|---------|
+| Backend | FastAPI (async) | 0.115.6 |
+| ORM | SQLAlchemy (async) | 2.0.36 |
+| Migrations | Alembic | 1.14.1 |
+| Frontend | Next.js App Router | 14.2.29 |
+| UI | React | 18 |
+| Styling | Tailwind CSS + CSS custom properties (`next-themes`) | 3.4 |
+| Server state | TanStack Query | v5 |
+| Auth | JWT (24h expiry) | — |
+| Rate limit | slowapi | 100 req/min |
+| Scheduler | apscheduler | price refresh every 5min |
+| Linter (Python) | ruff | 0.8.6 |
+| E2E | Playwright + pytest | — |
 
-### Frontend (`apps/frontend/`)
-- **Next.js 14** (App Router)
-- **React 18**
-- **TypeScript 5.4**
-- **Tailwind CSS 3.4**
-- **TanStack Query v5** — Server state
-- **Recharts** — Charts
-- **Lucide React** — Icons
-
-### Infrastructure (`infra/`)
-- **Docker & Docker Compose**
-- **PostgreSQL 16**
-- **Redis 7**
-- **Nginx** — Reverse proxy
-- **GitHub Actions** — Self-hosted runner CI/CD
-
-## Directory Structure
+## Key Files (entrypoints)
 
 ```
-fraude-ary/
-├── AGENTS.md                  ← YOU ARE HERE
-├── README.md                  ← Human-facing quick start
-├── docs/                      ← Exhaustive documentation
-│   ├── index.md
-│   ├── architecture.md
-│   ├── api-reference.md
-│   ├── frontend.md
-│   ├── backend.md
-│   ├── ci-cd.md
-│   ├── development.md
-│   ├── troubleshooting.md
-│   └── pricing.md
-├── apps/
-│   ├── backend/
-│   │   ├── app/
-│   │   │   ├── main.py              # FastAPI app, lifespan, scheduler
-│   │   │   ├── config.py            # Settings (JWT_SECRET, DB_URL, etc.)
-│   │   │   ├── database.py          # AsyncSession, engine
-│   │   │   ├── models/              # SQLAlchemy models
-│   │   │   │   ├── user.py
-│   │   │   │   ├── asset.py
-│   │   │   │   └── transaction.py
-│   │   │   ├── schemas/             # Pydantic schemas
-│   │   │   │   ├── auth.py
-│   │   │   │   ├── assets.py
-│   │   │   │   └── transactions.py
-│   │   │   ├── routers/             # API endpoints
-│   │   │   │   ├── auth.py          # /auth/*
-│   │   │   │   ├── assets.py        # /api/v1/assets/*
-│   │   │   │   ├── portfolio.py     # /api/v1/portfolio/*
-│   │   │   │   ├── prices.py        # /api/v1/prices/*
-│   │   │   │   ├── transactions.py  # /api/v1/transactions/*
-│   │   │   │   ├── alerts.py
-│   │   │   │   ├── notifications.py
-│   │   │   │   ├── exchange_rates.py
-│   │   │   │   ├── cache.py
-│   │   │   │   ├── monitoring.py
-│   │   │   │   └── demo.py
-│   │   │   └── services/            # Business logic
-│   │   │       ├── price_service.py
-│   │   │       └── cache_service.py
-│   │   ├── alembic/
-│   │   │   ├── versions/            # Migration files (numbered 001, 002...)
-│   │   │   └── env.py
-│   │   ├── Dockerfile
-│   │   └── requirements.txt
-│   └── frontend/
-│       ├── app/                     # Next.js App Router
-│       │   ├── (auth)/              # Route group: login, register
-│       │   ├── (dashboard)/         # Route group: protected pages
-│       │   │   ├── assets/page.tsx
-│       │   │   ├── portfolio/page.tsx
-│       │   │   ├── journal/page.tsx
-│       │   │   ├── alerts/page.tsx
-│       │   │   ├── notifications/page.tsx
-│       │   │   ├── settings/page.tsx
-│       │   │   └── layout.tsx       # Sidebar + auth guard
-│       │   ├── layout.tsx           # Root layout
-│       │   ├── page.tsx             # Landing / redirect
-│       │   └── globals.css
-│       ├── components/
-│       │   ├── ui/                  # Reusable UI primitives
-│       │   │   ├── Button.tsx
-│       │   │   ├── Input.tsx
-│       │   │   ├── Card.tsx
-│       │   │   ├── Badge.tsx
-│       │   │   ├── Skeleton.tsx
-│       │   │   ├── Toast.tsx
-│       │   │   └── PageTransition.tsx
-│       │   ├── Sidebar.tsx
-│       │   ├── MobileNav.tsx
-│       │   ├── SymbolSearch.tsx     # Yahoo Finance real-time search
-│       │   ├── ThemeToggle.tsx
-│       │   └── DonutChart.tsx
-│       ├── hooks/
-│       │   ├── useAssets.ts
-│       │   ├── useAuth.ts
-│       │   ├── usePortfolio.ts
-│       │   ├── useSettings.ts
-│       │   ├── useNotifications.ts
-│       │   └── useTransactions.ts
-│       ├── lib/
-│       │   ├── api.ts               # fetchApi wrapper (JWT, 401 redirect, 204)
-│       │   └── utils.ts
-│       ├── types.ts                 # All TypeScript interfaces
-│       ├── next.config.js
-│       └── Dockerfile
-├── infra/
-│   ├── docker-compose.yml           # Production compose
-│   ├── docker-compose.dev.yml       # Dev compose (volumes)
-│   ├── nginx.conf                   # Reverse proxy rules
-│   └── Dockerfile*
-├── .github/workflows/deploy.yml     # CI/CD — self-hosted runner
-├── e2e/
-│   └── test_features.py             # Playwright E2E tests
-└── scripts/
-    └── continuous_loop.sh           # Monitoring loop
+apps/backend/app/main.py          # FastAPI app, all router registration, lifespan, scheduler
+apps/backend/app/config.py        # Settings + JWT_SECRET validation (rejects known defaults)
+apps/backend/app/database.py      # AsyncSession factory
+apps/frontend/lib/api.ts          # fetchApi wrapper (JWT inject, 401→redirect, 204 handling)
+apps/frontend/app/(dashboard)/layout.tsx  # Sidebar (inline), auth guard, theme
+apps/frontend/app/globals.css     # CSS custom properties for theming (dark + .light)
+infra/docker-compose.yml          # Production compose — all services defined here
+infra/nginx.conf                  # Reverse proxy + rate limits + security headers
+.github/workflows/deploy.yml      # CI/CD on push to main
+e2e/test_features.py              # Playwright E2E tests
 ```
 
-## Code Conventions
+## Routers (full list)
 
-### Backend (Python)
+| File | Prefix | Purpose |
+|------|--------|---------|
+| `auth.py` | `/auth` | Login (form-data), register, JWT |
+| `assets.py` | `/api/v1/assets` | CRUD + symbol search (Yahoo Finance) |
+| `transactions.py` | `/api/v1/transactions` | Buy/sell journal |
+| `portfolio.py` | `/api/v1/portfolio` | Aggregated portfolio data |
+| `prices.py` | `/api/v1/prices` | Price refresh + history |
+| `alerts.py` | `/api/v1/alerts` | Price alerts |
+| `notifications.py` | `/api/v1/notifications` | User notifications |
+| `exchange_rates.py` | `/api/v1/exchange-rates` | Currency conversion |
+| `dividends.py` | `/api/v1/dividends` | Dividend tracking |
+| `simulator.py` | `/api/v1/simulator` | Investment simulations |
+| `demo.py` | `/api/v1/demo` | Demo/test endpoints |
+| `cache.py` | `/api/v1/cache` | Cache management |
+| `monitoring.py` | `/api/v1/health` | Health + metrics |
+| `technical.py` | `/api/v1` | Technical analysis endpoints |
+| `analytics.py` | `/api/v1` | Portfolio analytics |
+| `news.py` | `/api/v1` | Market news |
+| `valuation.py` | `/api/v1` | Asset valuation (DCF, etc.) |
 
-1. **Use type hints everywhere.**
-2. **Use async/await for ALL I/O** (DB, HTTP, Redis). Never block the event loop.
-3. **Keep routers thin.** Business logic goes in `services/`.
-4. **Pydantic schemas** for every request/response.
-5. **Enum values** must match DB exactly. For SQLAlchemy `Enum`, use:
-   ```python
-   Column(Enum(MyEnum, values_callable=lambda x: [e.value for e in x]))
-   ```
-6. **JWT expiry:** 24 hours. Token stored in `localStorage` as `"token"`.
-7. **Auth format:** `OAuth2PasswordRequestForm` for login (form-data, not JSON).
-8. **Migrations:** Numbered sequentially (`001`, `002`, `003`...). `down_revision` must point to the previous revision ID exactly.
+## Critical Gotchas
 
-### Frontend (TypeScript/React)
+### Auth
+- Login endpoint expects **form-data** (`OAuth2PasswordRequestForm`), NOT JSON.
+- Token stored in `localStorage` key `"token"`. All API calls inject `Authorization: Bearer {token}`.
+- On 401, `fetchApi` clears token + user from localStorage, redirects to `/login`.
+- `JWT_SECRET` must be ≥32 chars. Config explicitly rejects known defaults (`devsecretchangeinprod`, `ci-cd-fallback-...`).
 
-1. **Strict TypeScript.** No `any` unless absolutely necessary.
-2. **All API calls through `lib/api.ts`.** Never use raw `fetch`.
-3. **Server state via TanStack Query.** Local state via `useState`.
-4. **Dark mode classes:** Always pair light + dark classes:
-   ```tsx
-   className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-   ```
-5. **Currency formatting:** Use `formatCurrency(value, currency)` helper. Never hardcode `$`.
-6. **Component files:** PascalCase. Hooks: `useCamelCase.ts`.
-7. **Symbol validation:** `^[A-Z0-9.\-]{1,20}$` (supports `AIR.PA`, `BRK.B`, etc.)
+### API Client (`lib/api.ts`)
+- `204 No Content` returns `undefined` (does NOT parse JSON). Callers must handle this.
+- Never use raw `fetch`. Always use `fetchApi<T>(endpoint, options)`.
 
-### API Patterns
+### Enums (SQLAlchemy)
+```python
+Column(Enum(MyEnum, values_callable=lambda x: [e.value for e in x]))
+```
+Without `values_callable`, SQLAlchemy stores Python enum names (`BUY`) instead of values (`buy`), causing validation errors.
 
-- List: `GET /api/v1/assets`
-- Create: `POST /api/v1/assets` → returns `AssetResponse`
-- Update: `PUT /api/v1/assets/{id}` → returns `AssetResponse`
-- Delete: `DELETE /api/v1/assets/{id}` → returns `204 No Content`
-- Bulk delete: `POST /api/v1/assets/bulk-delete` with body `{"asset_ids": [...]}` → returns `204`
-- Search: `GET /api/v1/assets/search/symbols?q={query}` → proxy to Yahoo Finance
+### Symbol validation
+Regex: `^[A-Z0-9.\-]{1,20}$` — supports `AIR.PA`, `BRK.B`, `BTC-USD`.
 
-### Database Schema (Key Tables)
+### Prices — NO FAKE DATA
+- Stocks: Yahoo Finance Chart API (`query1.finance.yahoo.com/v8/finance/chart/{SYMBOL}`). Fallback: `yfinance` lib.
+- Crypto: CryptoCompare (`min-api.cryptocompare.com/data/price?fsym={SYM}&tsyms=USD`).
+- Real Estate: Static fixed prices per city (EUR/m²).
+- If both fail → return `None`. Never generate random/simulated prices.
+- Cache: Redis. Stocks 5min, Crypto 1min, Exchange rates 1h.
 
-**assets:** id (UUID PK), user_email (FK→users.email), type (enum), symbol, quantity, purchase_price, current_price, currency, purchase_date, created_at, updated_at
+### Currency
+Never hardcode `$`. Use `formatCurrency(value, currency)` from `lib/utils.ts`.
 
-**transactions:** id (UUID PK), user_email (FK), asset_id (FK→assets.id, nullable), type (buy/sell enum), symbol, quantity, unit_price, currency, exchange_rate, fees, total_invested, date, created_at
+### Theme / Styling
+- Primary theme: CSS custom properties (`var(--bg)`, `var(--text-primary)`, `var(--border)`, etc.) defined in `globals.css`.
+- `html.light` class (toggled via `next-themes`) overrides variables for light mode.
+- Tailwind `dark:` classes supplement for edge cases. Prefer CSS variables for new code.
+- Border radius: use CSS variables (`var(--r-md)`, `var(--r-lg)`) not Tailwind `rounded-md`.
 
-**users:** email (PK), hashed_password, full_name, created_at
+### Migrations
+- Numbered sequentially: `001_initial.py` through `011_add_foreign_keys.py`.
+- `down_revision` MUST point to the previous file's `revision` exactly.
+- Never skip a migration when changing models.
+- Run: `docker exec infra-backend-1 alembic upgrade head`
 
-## Critical Implementation Details
+### CI/CD (Self-hosted GitHub Actions)
+- **Trigger:** Push to `main`.
+- Uses deployment lock at `/tmp/fraude-ary-deploy.lock`.
+- **Do NOT run `docker compose build` manually while CI/CD is active.** They conflict.
+- All containers are named `infra-*`.
+- Health check: curls `http://localhost/api/v1/assets/search/symbols?q=AAPL` up to 60s.
 
-### Price Fetching (NO FAKE PRICES)
+### Docker Commands
+```bash
+# Start (dev)
+cd infra && docker compose -f docker-compose.dev.yml up -d --build
 
-- **Stocks:** Primary = Yahoo Finance Chart API (`query1.finance.yahoo.com/v8/finance/chart/{SYMBOL}`). Fallback = `yfinance` Python lib. If both fail → return `None` (never generate random prices).
-- **Crypto:** CryptoCompare API (`min-api.cryptocompare.com/data/price?fsym={SYM}&tsyms=USD`).
-- **Real Estate:** Static fixed prices per city (EUR/m2).
-- **Cache:** Redis. Stocks 5min, Crypto 1min, Exchange rates 1h.
+# Start (prod)
+cd infra && docker compose up -d --build
 
-### Symbol Search
-
-- Real-time search via Yahoo Finance API: `query1.finance.yahoo.com/v1/finance/search?q={query}`
-- Returns symbol, name, type, exchange.
-- No local symbol list. Search is exhaustive worldwide.
-
-### Authentication Flow
-
-1. Login → `POST /auth/login` (form-data: username, password) → returns JWT
-2. Frontend stores token in `localStorage.setItem("token", token)`
-3. All API calls include `Authorization: Bearer {token}`
-4. Backend validates via `get_current_user` dependency
-5. On 401 → frontend clears token and redirects to `/login`
-
-### Frontend API Client (`lib/api.ts`)
-
-```typescript
-// Handles:
-// - JWT injection
-// - 401 redirect
-// - 204 No Content (returns undefined, does NOT parse JSON)
-// - Error parsing (detail field)
-const data = await fetchApi<Asset[]>("/api/v1/assets");
+# Force clean (ONLY if CI/CD is NOT running)
+cd infra
+docker compose down --remove-orphans
+docker stop $(docker ps -aq --filter "name=infra-") 2>/dev/null || true
+docker rm -f $(docker ps -aq --filter "name=infra-") 2>/dev/null || true
+docker compose up -d --build
 ```
 
-### CI/CD (GitHub Actions — Self-Hosted)
-
-**File:** `.github/workflows/deploy.yml`
-
-**Triggers:** Push to `main`
-
-**Steps:**
-1. Acquire lock (`/tmp/fraude-ary-deploy.lock`)
-2. `docker compose down --remove-orphans`
-3. Force remove all `infra-*` containers
-4. `docker compose build --no-cache`
-5. `docker compose up -d`
-6. Retry health check up to 60s
-7. Release lock
-
-**Important:** Do NOT run `docker compose build` manually when CI/CD is active. They will conflict.
+### DB Access
+```bash
+docker exec -it infra-postgres-1 psql -U app -d fraudeary
+```
+Note: DB user is `app` (not `postgres`).
 
 ### Deployment Verification
-
 ```bash
-curl -s http://localhost:8000/health          # {"status": "ok"}
-curl -s http://localhost/api/v1/assets/search/symbols?q=AAPL  # returns JSON
-curl -s http://localhost/login | head -c 20   # HTML page
+curl -s http://localhost:8000/health                    # {"status":"ok","database":"ok","redis":"ok"}
+curl -s http://localhost/api/v1/assets/search/symbols?q=AAPL  # returns JSON results
 ```
 
-## Agent Workflow (4 Agents)
-
-The project uses a 4-agent orchestration system. When implementing features:
-
-### Front-End Agent
-- Owns: `apps/frontend/`
-- Concerns: UI/UX, responsive design, dark mode, API integration
-- Must: Use existing hooks pattern, follow Tailwind conventions
-
-### Back-End Agent
-- Owns: `apps/backend/`
-- Concerns: API design, DB schema, migrations, business logic
-- Must: Add Pydantic schemas, update models, create migration, register router
-
-### Commits Agent
-- Owns: Git workflow
-- Concerns: Clean commit history, conventional commits, push to `main`
-- Must: `git add -A`, `git commit -m "type: description"`, `git push`
-
-### Testing Agent
-- Owns: `e2e/`
-- Concerns: Playwright E2E tests, verification
-- Must: Test the actual deployed application at `http://localhost`
-- Validates: Feature works end-to-end before marking complete
-
-**Loop Rule:** If tests fail, loop back to Front-End or Back-End agent, fix, re-commit, re-test.
-
-## Testing
-
-### E2E Tests (Playwright)
-
+### E2E Tests
 ```bash
 cd /root/fraude-ary
 curl -s http://localhost:8000/health | grep ok || echo "App not running"
 python3 -m pytest e2e/test_features.py --browser=chromium -v --base-url=http://localhost
 ```
 
-Requirements: `pip install playwright pytest pytest-playwright && playwright install chromium`
+### Backend dev commands
+```bash
+# Lint
+cd apps/backend && ruff check --fix .
 
-### Manual Testing Checklist
+# Run pytest
+cd apps/backend && python -m pytest -v
 
-- [ ] Register / Login
-- [ ] Create asset with EUR currency → shows € symbol
-- [ ] Create asset with dot symbol (AIR.PA) → accepted
-- [ ] Delete asset → disappears immediately
-- [ ] Bulk delete → multiple assets removed
-- [ ] Symbol search → Yahoo Finance results appear
-- [ ] Journal page → shows transactions table
-- [ ] Portfolio → charts render, total value correct
-- [ ] Dark mode toggle → works
-- [ ] Logout / Login again → token still valid (24h)
+# Run single test file
+cd apps/backend && python -m pytest tests/ -k "test_name"
+```
 
-## Common Pitfalls & How to Avoid Them
+### Frontend dev commands
+```bash
+# Dev server
+cd apps/frontend && npm run dev
 
-### "Container name already in use"
-**Why:** CI/CD and manual `docker compose up` conflict.  
-**Fix:** Wait for CI/CD. Do NOT run manual builds. If stuck: `docker stop $(docker ps -aq --filter "name=infra-") && docker rm -f $(docker ps -aq --filter "name=infra-")`
+# Lint
+cd apps/frontend && npm run lint
 
-### "Could not validate credentials"
-**Why:** Token expired (24h), wrong format, or backend `JWT_SECRET` changed.  
-**Fix:** Log out and log back in. Check `localStorage.getItem("token")`.
-
-### "Invalid input value for enum"
-**Why:** SQLAlchemy `Enum` stores Python enum names (`BUY`) instead of values (`buy`).  
-**Fix:** Always use `values_callable=lambda x: [e.value for e in x]`.
-
-### "Symbol must be 1-10 alphanumeric characters"
-**Why:** Old regex rejected dots/hyphens.  
-**Fix:** Use `^[A-Z0-9.\-]{1,20}$`.
-
-### Prices showing as random/simulated
-**Why:** Old code had `random.uniform()` fallback.  
-**Fix:** Already removed. If still happening, check `price_service.py` has no simulation.
-
-### Frontend shows old code after deploy
-**Why:** Next.js build cache or browser cache.  
-**Fix:** Hard refresh browser (Ctrl+Shift+R). Or rebuild: `docker compose build --no-cache frontend`.
-
-### Alembic migration fails
-**Why:** `down_revision` points to wrong ID, or duplicate revision numbers.  
-**Fix:** Check `grep "revision\|down_revision" alembic/versions/*.py`. Ensure chain is correct.
+# Build
+cd apps/frontend && npm run build
+```
 
 ## Environment Variables
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `POSTGRES_PASSWORD` | `devpassword123` | **CHANGE IN PROD** |
-| `JWT_SECRET` | `prodsecretchange123` | **CHANGE IN PROD** |
-| `DATABASE_URL` | `postgresql+asyncpg://postgres:...` | Postgres connection |
-| `REDIS_URL` | `redis://redis:6379` | Redis connection |
-| `ALLOWED_ORIGINS` | `*` | CORS origins |
+| Variable | Purpose | Default (dev) |
+|----------|---------|---------------|
+| `POSTGRES_PASSWORD` | DB password | `devpassword123` |
+| `REDIS_PASSWORD` | Redis auth | `changeme` |
+| `JWT_SECRET` | JWT signing (≥32 chars) | **(must override)** |
+| `DATABASE_URL` | asyncpg connection | `postgresql+asyncpg://app:...@postgres:5432/fraudeary` |
+| `REDIS_URL` | Redis connection | `redis://:changeme@redis:6379/0` |
+| `ALLOWED_ORIGINS` | CORS origins (comma-separated) | `http://localhost` |
+| `TIINGO_API_KEY` | Tiingo data source (optional) | — |
+| `TWELVE_DATA_API_KEY` | Twelve Data source (optional) | — |
+| `FRED_API_KEY` | FRED macro data (optional) | — |
 
-## Quick Commands
+## Skill System
 
-```bash
-# Start everything
-cd infra && docker compose up -d --build
+MemPalace (memory retrieval): Use `/mempalace:search <query>` before non-trivial tasks.
+ECC skills available at `/root/fraude-ary/.opencode/skills/ecc/`. Load via `skill` tool.
 
-# Check logs
-docker compose logs -f backend
-docker compose logs -f frontend
+## Branch + Orchestrator Workflow
 
-# DB console
-docker exec -it infra-postgres-1 psql -U postgres -d fraudeary
+1. Create branch: `git checkout main && git pull && git checkout -b feat/short-desc`
+2. Stay on the branch until committed + pushed.
+3. Spawn 4 sub-agents: frontend, backend, commits, testing.
+4. Sub-agents MUST NOT run git commands. Must verify branch with `git branch --show-current`.
+5. Commit on feature branch: `git add -A && git commit -m "type: description" && git push -u origin feat/short-desc`
+6. Merge only after push: `gh pr create` or `git checkout main && git merge feat/short-desc --no-edit && git push origin main`
 
-# Run migrations manually
-docker exec infra-backend-1 alembic upgrade head
-
-# Test backend directly
-curl -s http://localhost:8000/health
-curl -s http://localhost:8000/api/v1/assets/search/symbols?q=AAPL
-
-# Run E2E tests
-cd /root/fraude-ary && python3 -m pytest e2e/ --browser=chromium -v
-
-# Force rebuild after manual changes (ONLY if CI/CD is NOT running)
-cd infra
-docker compose down --remove-orphans
-docker ps -aq --filter "name=infra-" | xargs -r docker rm -f
-docker compose up -d --build
-```
-
-## Decision Log
-
-| Date | Decision | Reason |
-|------|----------|--------|
-| 2024-04 | Self-hosted over SaaS | Financial data privacy |
-| 2024-04 | Next.js App Router | SSR, nested layouts |
-| 2024-04 | FastAPI + async SQLAlchemy | Native async, auto-docs |
-| 2024-04 | Yahoo Finance for stocks | Most comprehensive symbol DB |
-| 2024-04 | CryptoCompare for crypto | Generous free limits |
-| 2024-04 | JWT 24h expiry | Balance security vs UX |
-| 2024-04 | No simulated prices | User demands real market data |
-| 2024-04 | 4-agent workflow | Parallel front/back dev + test loop |
-
-## MemPalace (Memory Retrieval)
-
-**Location:** `/root/fraude-ary/.opencode/skills/mempalace/`
-**API:** `mempalace search "query"` ou skill `/mempalace:search`
-**Architecture:** ChromaDB + SQLite, local-only
-
-### Usage obligatoire
-
-Avant toute tâche non-triviale, interroge MemPalace via le skill `mempalace-search` :
-- `/mempalace:search patterns de code` — patterns et conventions
-- `/mempalace:search décisions architecture` — décisions déjà prises
-- `/mempalace:search bug <symptom>` — bugs passés similaires
-- `/mempalace:search <feature>` — implémentations existantes similaires
-
-Utilise aussi `mempalace_status` pour voir la structure du palais avant de chercher.
-
-### Quand miner
-
-Après toute décision importante ou feature complétée → `/mempalace:mine` pour persist.
-- Architecture decisions → avant commit
-- Bug fixes → le fix ET la cause racine
-- Patterns découverts → conventions de code
-
-## ECC Skills (Engineering Code & Cognition)
-
-**Location:** `/root/fraude-ary/.opencode/skills/ecc/`
-**Commands:** `/ecc/{command}` — liste complète dans `.opencode/commands/ecc/`
-
-### Skills disponibles
-
-| Skill | Quand utiliser |
-|-------|---------------|
-| `api-design` | Nouveaux endpoints, pagination, status codes |
-| `backend-patterns` | Architecture backend, DB, optimisation |
-| `frontend-patterns` | React/Next.js, état, performance |
-| `e2e-testing` | Tests Playwright, Page Object Model |
-| `tdd-workflow` | Nouvelle feature, bug fix (80%+ coverage) |
-| `search-first` | Avant d'écrire du code custom — chercher libs existantes |
-| `security-review` | Auth, input user, secrets, endpoints sensibles |
-| `coding-standards` | Naming, conventions cross-projet |
-| `verification-loop` | Validation complète avant de déclarer fini |
-| `eval-harness` | Sessions d'évaluation formelles |
-
-### Commandes ECC utiles
-
-| Commande | Description |
-|----------|-------------|
-| `/ecc/code-review` | Review de code |
-| `/ecc/quality-gate` | Quality gate avant merge |
-| `/ecc/security` | Audit de sécurité |
-| `/ecc/plan` | Planifier une feature complexe |
-| `/ecc/orchestrate` | Orchestrer multi-agents |
-| `/ecc/tdd` | Lancer TDD workflow |
-| `/ecc/verify` | Vérifier déploiement |
-
-## Communication Rules for Agents
-
-1. **Read this file first** before any code change.
-2. **Load relevant skills** — avant toute tâche, charge le skill ECC ou MemPalace correspondant via `skill` tool.
-3. **Search MemPalace first** — avant d'implémenter, cherche si une décision ou pattern existe déjà.
-4. **Make minimal changes.** One feature per commit.
-5. **Follow existing patterns.** If unsure, grep for similar code or search MemPalace.
-6. **Test before declaring done.** Backend tests via curl, frontend via Playwright.
-7. **Never skip migrations** when changing models.
-8. **Never manually build Docker** while CI/CD is running.
-9. **Document new endpoints** in `docs/api-reference.md`.
-10. **Use conventional commits:** `feat:`, `fix:`, `docs:`, `ci:`, `test:`.
-11. **Currency matters.** Never hardcode `$`. Use `formatCurrency(value, asset.currency)`.
-12. **No fake data.** Prices must come from real APIs.
-13. **Mine MemPalace after decisions** — après chaque feature/bug fix important, lance `/mempalace:mine`.
-14. **Orchestrator pattern is mandatory — 4-agent workflow.** The current agent is the orchestrator ONLY and must NEVER write significant code itself. For every non-trivial task (feature, bug fix, refactor spanning >2 files), you MUST spawn exactly 4 specialized sub-agents via the `task` tool:
-    - **Front-End Agent** — owns `apps/frontend/`
-    - **Back-End Agent** — owns `apps/backend/`
-    - **Commits Agent** — owns `git add`, `git commit`, `git push`
-    - **Testing Agent** — owns `e2e/` Playwright validation
-    **If you have 2 tasks, that means 8 sub-agents total.** Parallelize Front-End and Back-End work for each task simultaneously. After both are done, the Commits Agent commits everything, then the Testing Agent runs E2E tests. If tests fail, loop back to Front-End or Back-End agent, fix, re-commit, re-test. Use `subagent_type: "general"` for all implementation work.
-15. **Branch-based workflow is mandatory — STRICT.** Never push directly to `main`.
-    - **Step 1 — Orchestrator creates branch:** `git checkout main && git pull && git checkout -b feat/short-description`
-    - **Step 2 — Orchestrator MUST stay on the feature branch.** Do NOT `git checkout main` until the feature is fully committed, pushed, and ready to merge. Verify with `git branch --show-current`.
-    - **Step 3 — Orchestrator verifies branch before spawning sub-agents.** Run `git branch --show-current` and confirm it says `feat/short-description` BEFORE calling ANY `task` tool. If on `main`, STOP and checkout the feature branch first.
-    - **Step 4 — Sub-agents MUST NOT run git commands.** The sub-agent prompt MUST include: "You are working on branch `feat/short-description`. Do NOT run `git checkout`, `git merge`, or any git command. Only read and modify files. Do NOT switch branches."
-    - **Step 5 — Sub-agents verify branch at start.** The sub-agent MUST run `git branch --show-current` at the beginning of its work and report it in its summary.
-    - **Step 6 — Commit on the feature branch only.** After sub-agents finish, the orchestrator runs `git add -A && git commit && git push -u origin feat/short-description` WHILE STILL ON THE FEATURE BRANCH.
-    - **Step 7 — Merge via PR or local merge.** The orchestrator creates a PR with `gh pr create` and merges with `gh pr merge` after CI passes. If `gh` CLI is unavailable, merge locally with `git checkout main && git merge feat/short-description --no-edit && git push origin main`.
-    - **CRITICAL:** Never merge to main before the feature branch is pushed. Never let sub-agents write to main. Never `git checkout main` between creating the branch and committing/pushing the feature.
-
-## Contact / Ownership
-
-- **Repository:** https://github.com/PouletTendre/fraude-ary
-- **Maintainer:** User (self-hosted)
-- **License:** MIT
+**Critical:** Never push directly to `main`. Never let sub-agents write to main.

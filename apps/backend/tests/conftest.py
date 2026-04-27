@@ -5,8 +5,6 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sess
 from app.main import app
 from app.database import Base, get_db
 from app.models.user import User
-from app.models.asset import Asset, AssetType
-from app.models.alert import PriceAlert, PortfolioSnapshot, Notification
 from app.routers.auth import pwd_context
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"

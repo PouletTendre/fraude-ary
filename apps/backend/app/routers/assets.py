@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status, Request, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, Query, status, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, delete, func
-from typing import List, Optional, DefaultDict, Tuple
+from typing import List, DefaultDict, Tuple
 from datetime import datetime, timezone, date
 import uuid
 import csv
@@ -14,7 +14,7 @@ from app.database import get_db
 from app.models.user import User
 from app.models.asset import Asset, AssetType, PriceHistory
 from app.models.transaction import Transaction, TransactionType
-from app.schemas.assets import AssetCreate, AssetUpdate, AssetResponse, PriceRefreshResponse, PriceHistoryEnrichedResponse, OHLCData, AssetImportResponse
+from app.schemas.assets import AssetCreate, AssetUpdate, AssetResponse, PriceRefreshResponse, PriceHistoryEnrichedResponse, AssetImportResponse
 from app.schemas.pagination import PaginatedResponse
 from app.routers.auth import get_current_user
 from app.services.price_service import price_service

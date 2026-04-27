@@ -3,7 +3,7 @@ import logging
 from collections import defaultdict
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func as sql_func
+from sqlalchemy import select
 from typing import List
 from datetime import datetime
 

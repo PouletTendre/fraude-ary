@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from passlib.context import CryptContext
 import jwt as pyjwt
-from jwt.exceptions import PyJWTError as JWTError, DecodeError, ExpiredSignatureError
+from jwt.exceptions import PyJWTError as JWTError
 from datetime import datetime, timedelta, timezone
 from slowapi import Limiter
 from slowapi.util import get_remote_address

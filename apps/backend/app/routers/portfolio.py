@@ -1,12 +1,11 @@
 import asyncio
 
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import APIRouter, Depends, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select
 from typing import List, Optional, Dict, Sequence
 from datetime import datetime, timedelta, timezone, date
-from dateutil.relativedelta import relativedelta
 from collections import defaultdict
 import csv
 import io
@@ -14,7 +13,7 @@ import json
 
 from app.database import get_db
 from app.models.user import User
-from app.models.asset import Asset, AssetType, PriceHistory
+from app.models.asset import Asset, PriceHistory
 from app.models.alert import PortfolioSnapshot
 from app.schemas.assets import PortfolioSummary, AssetResponse, PerformanceData, AllocationData, ByTypeEntry, PortfolioStatistics, HistoryPoint, BenchmarkResponse
 from app.schemas.alerts import PortfolioHistoryEntry, PortfolioHistoryResponse
@@ -96,11 +95,13 @@ async def _get_portfolio_history(
             )
         return entries
 
-    # Fallback: compute from price_history
+    # Fallback: compute from price_history with carry-forward
     if not assets:
         return []
 
     asset_ids = [a.id for a in assets]
+    asset_map = {a.id: a for a in assets}
+
     history_result = await db.execute(
         select(PriceHistory)
         .where(
@@ -111,52 +112,74 @@ async def _get_portfolio_history(
     )
     price_history_entries = history_result.scalars().all()
 
-    from collections import defaultdict
-    asset_map = {a.id: a for a in assets}
-
-    # Track latest price per asset per day to avoid double-counting
-    daily_asset_prices: dict = defaultdict(dict)
+    # Group last known price per asset per day
+    day_prices: dict = defaultdict(dict)
     for entry in price_history_entries:
-        asset = asset_map.get(entry.asset_id)
-        if asset:
-            day = entry.timestamp.date()
-            daily_asset_prices[day][asset.id] = entry.price
+        if entry.asset_id in asset_map:
+            day_prices[entry.timestamp.date()][entry.asset_id] = entry.price
 
-    daily_values: dict = {}
-    for day, asset_prices in daily_asset_prices.items():
-        total = 0.0
-        for aid, price in asset_prices.items():
-            asset = asset_map.get(aid)
-            if asset:
-                total += _to_eur(asset.quantity * price, asset.currency, rates)
-        daily_values[day] = total
-
-    # Add current portfolio value for today if missing
-    total_current = 0.0
+    # Fetch current prices for today
     prices = await _batch_fetch_prices(assets)
+
+    # Build timeline with carry-forward: for each day, use the latest
+    # known price for every asset, not just those updated that day.
+    # This prevents sawtooth patterns when assets don't all update
+    # on the same schedule (e.g. stocks not trading on weekends).
+    all_days = sorted(day_prices.keys())
+    last_prices: dict = {}  # asset_id → last known price
+    entries = []
+
+    today = datetime.now(timezone.utc).date()
+
+    for day in all_days:
+        # Update last known prices with entries from this day
+        for aid, price in day_prices[day].items():
+            last_prices[aid] = price
+
+        # Compute total using carry-forward prices for ALL assets
+        total = 0.0
+        for a in assets:
+            price = last_prices.get(a.id)
+            if price is not None:
+                total += _to_eur(a.quantity * price, a.currency, rates)
+
+        if total > 0:
+            invested = _compute_invested(day)
+            perf = ((total - invested) / invested * 100) if invested > 0 else 0.0
+            entries.append(
+                PortfolioHistoryEntry(
+                    date=datetime.combine(day, datetime.min.time()),
+                    total_value=round(total, 2),
+                    performance=round(perf, 2)
+                )
+            )
+
+    # Append today's live prices as final point
+    total_current = 0.0
     for asset in assets:
         asset_type_str = asset.type_value
         price_key = f"{asset_type_str}:{asset.symbol}"
         current_price = prices.get(price_key)
         if current_price is None:
             current_price = asset.current_price
-        total_current += _to_eur(asset.quantity * current_price, asset.currency, rates)
+        if current_price:
+            last_prices[asset.id] = current_price
+            total_current += _to_eur(asset.quantity * current_price, asset.currency, rates)
 
-    today = datetime.now(timezone.utc).date()
-    if today not in daily_values and total_current > 0:
-        daily_values[today] = total_current
-
-    entries = []
-    for day, value in sorted(daily_values.items()):
-        invested = _compute_invested(day)
-        perf = ((value - invested) / invested * 100) if invested > 0 else 0.0
+    if total_current > 0:
+        if all_days and all_days[-1] == today:
+            # Replace last entry with today's live prices
+            entries.pop()
+        invested = _compute_invested(today)
+        perf = ((total_current - invested) / invested * 100) if invested > 0 else 0.0
         entries.append(
             PortfolioHistoryEntry(
-                date=datetime.combine(day, datetime.min.time()),
-                total_value=value,
-                performance=perf
+                date=datetime.combine(today, datetime.min.time()),
+                total_value=round(total_current, 2),
+                performance=round(perf, 2)
             )
         )
+
     return entries
 
 @router.get("/summary", response_model=PortfolioSummary)
@@ -195,6 +218,11 @@ async def get_portfolio_summary(
             stocks_value += total_asset_value
         elif asset_type_str == "real_estate":
             real_estate_value += total_asset_value
+        purchase_date_str = None
+        if asset.purchase_date:
+            pd = asset.purchase_date
+            purchase_date_str = pd.isoformat() if hasattr(pd, 'isoformat') else str(pd)
+
         asset_responses.append(AssetResponse(
             id=asset.id,
             user_email=asset.user_email,
@@ -205,7 +233,7 @@ async def get_portfolio_summary(
             purchase_price_eur=asset.purchase_price_eur,
             current_price=current_price,
             total_value=total_asset_value_native,
-            purchase_date=asset.purchase_date,
+            purchase_date=purchase_date_str,
             currency=asset.currency or 'EUR',
             created_at=asset.created_at
         ))

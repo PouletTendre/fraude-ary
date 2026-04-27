@@ -2,7 +2,7 @@
 
 import logging
 import httpx
-from typing import Optional, Dict
+from typing import Optional
 
 from app.config import settings
 
