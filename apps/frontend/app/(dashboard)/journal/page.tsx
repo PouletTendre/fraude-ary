@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
+import { SymbolSearch } from "@/components/SymbolSearch";
 import { Pencil, Trash2, X, Check, Plus } from "lucide-react";
 import { cn, formatNumber, formatCurrency } from "@/lib/utils";
 import type { Transaction } from "@/types";
@@ -166,12 +167,11 @@ export default function JournalPage() {
                       <option value="sell">Vente</option>
                     </select>
                   </div>
-                  <Input
-                    label="Symbol"
-                    placeholder="e.g. AAPL"
+                  <SymbolSearch
                     value={formData.symbol}
-                    onChange={(e) => setFormData({ ...formData, symbol: e.target.value })}
+                    onChange={(value) => setFormData({ ...formData, symbol: value })}
                     error={formErrors.symbol}
+                    assetType={formData.asset_type as "crypto" | "stocks" | "real_estate" | undefined}
                   />
                   <div>
                     <label className="block text-sm font-medium text-text-secondary mb-1">Asset Type</label>
