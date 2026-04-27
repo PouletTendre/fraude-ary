@@ -393,22 +393,22 @@ export default function MarketsPage() {
                     </CardContent>
                   </Card>
                 )}
-                {technical.macd && (
+                {technical.macd && technical.macd.histogram !== null && (
                   <Card>
                     <CardContent className="pt-6">
                       <p className="text-sm text-text-tertiary">MACD</p>
                       <p
                         className={cn(
                           "text-lg font-bold mt-1",
-                          technical.macd.histogram >= 0
+                          (technical.macd.histogram ?? 0) >= 0
                             ? "text-gain"
                             : "text-loss"
                         )}
                       >
-                        {parseFloat(technical.macd.histogram.toFixed(4))}
+                        {(technical.macd.histogram ?? 0).toFixed(4)}
                       </p>
                       <p className="text-xs text-text-muted mt-1">
-                        Signal: {technical.macd.signal_line.toFixed(4)}
+                        Signal: {(technical.macd.signal_line ?? 0).toFixed(4)}
                       </p>
                     </CardContent>
                   </Card>
