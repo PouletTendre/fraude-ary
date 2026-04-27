@@ -7,6 +7,8 @@ BASE_URL = "http://localhost"
 def login(page: Page):
     page.goto(f"{BASE_URL}/login")
     page.wait_for_load_state("networkidle")
+    # Small delay to avoid hitting backend rate limits (5/min default)
+    page.wait_for_timeout(1000)
     page.fill('input[type="email"]', "demo@fraude-ary.com")
     page.fill('input[type="password"]', "demo1234")
     page.click('button[type="submit"]')

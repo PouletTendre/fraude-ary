@@ -56,7 +56,7 @@ async def get_current_user(
     return user
 
 @router.post("/register", response_model=Token)
-@limiter.limit("3/minute")
+@limiter.limit("30/minute")
 async def register(request: Request, user: UserCreate, db: AsyncSession = Depends(get_db)):
     existing = await db.get(User, user.email)
     if existing:
@@ -75,7 +75,7 @@ async def register(request: Request, user: UserCreate, db: AsyncSession = Depend
     }
 
 @router.post("/login", response_model=Token)
-@limiter.limit("5/minute")
+@limiter.limit("30/minute")
 async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(User).where(User.email == form_data.username))
     user = result.scalar_one_or_none()
