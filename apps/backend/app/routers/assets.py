@@ -288,6 +288,7 @@ async def create_asset(
         current_price = await price_service.get_price(asset.type, asset.symbol)
         if current_price is None:
             current_price = asset.purchase_price
+        purchase_date = datetime.strptime(asset.purchase_date, "%Y-%m-%d").date() if asset.purchase_date else None
         db_asset = Asset(
             id=asset_id,
             user_email=current_user.email,
@@ -296,7 +297,7 @@ async def create_asset(
             quantity=asset.quantity,
             purchase_price=asset.purchase_price,
             current_price=current_price,
-            purchase_date=asset.purchase_date,
+            purchase_date=purchase_date,
             currency=asset.currency or 'EUR'
         )
         db.add(db_asset)
@@ -581,7 +582,8 @@ async def import_assets(
         symbol = row.get("symbol", "").strip().upper()
         quantity_str = row.get("quantity", "").strip()
         purchase_price_str = row.get("purchase_price", "").strip()
-        purchase_date = row.get("purchase_date", "").strip() or None
+        purchase_date_str = row.get("purchase_date", "").strip() or None
+        purchase_date = datetime.strptime(purchase_date_str, "%Y-%m-%d").date() if purchase_date_str else None
 
         if asset_type_str not in ["crypto", "stocks", "real_estate"]:
             errors.append(f"Row {row_num}: invalid type '{asset_type_str}'")

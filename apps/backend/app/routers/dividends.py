@@ -109,7 +109,7 @@ async def create_dividend(
         quantity=dividend.quantity,
         total_amount=total_amount,
         currency=dividend.currency,
-        date=dividend.date,
+        date=datetime.strptime(dividend.date, "%Y-%m-%d").date(),
     )
     db.add(db_dividend)
     await db.commit()
@@ -139,6 +139,8 @@ async def update_dividend(
 
     update_data = dividend_update.model_dump(exclude_unset=True)
     for field, value in update_data.items():
+        if field == "date" and isinstance(value, str):
+            value = datetime.strptime(value, "%Y-%m-%d").date()
         setattr(db_dividend, field, value)
 
     if "amount_per_share" in update_data or "quantity" in update_data:

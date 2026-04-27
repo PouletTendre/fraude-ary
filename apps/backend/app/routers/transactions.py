@@ -148,7 +148,7 @@ async def create_transaction(
                 purchase_price=transaction.unit_price,
                 purchase_price_eur=round(transaction.unit_price * exchange_rate, 2),
                 current_price=current_price,
-                purchase_date=transaction.date,
+                purchase_date=datetime.strptime(transaction.date, "%Y-%m-%d").date(),
                 currency=transaction.currency
             )
             db.add(new_asset)
