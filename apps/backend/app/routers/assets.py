@@ -23,6 +23,8 @@ router = APIRouter()
 
 
 def _asset_to_response(asset: Asset) -> AssetResponse:
+    pd = asset.purchase_date
+    purchase_date_str = pd.isoformat() if hasattr(pd, 'isoformat') else str(pd) if pd else None
     return AssetResponse(
         id=asset.id,
         user_email=asset.user_email,
@@ -33,7 +35,7 @@ def _asset_to_response(asset: Asset) -> AssetResponse:
         purchase_price_eur=asset.purchase_price_eur,
         current_price=asset.current_price,
         total_value=asset.quantity * asset.current_price if asset.current_price else 0,
-        purchase_date=asset.purchase_date,
+        purchase_date=purchase_date_str,
         currency=asset.currency or "EUR",
         created_at=asset.created_at,
     )

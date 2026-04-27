@@ -18,6 +18,7 @@ router = APIRouter()
 
 
 def _dividend_to_response(d: Dividend) -> DividendResponse:
+    date_str = d.date.isoformat() if hasattr(d.date, 'isoformat') else str(d.date) if d.date else None
     return DividendResponse(
         id=d.id,
         user_email=d.user_email,
@@ -26,7 +27,7 @@ def _dividend_to_response(d: Dividend) -> DividendResponse:
         quantity=d.quantity,
         total_amount=d.total_amount,
         currency=d.currency or "EUR",
-        date=d.date,
+        date=date_str,
         created_at=d.created_at,
     )
 
@@ -59,7 +60,7 @@ async def get_dividend_summary(
     monthly = defaultdict(float)
     for d in dividends:
         by_symbol[d.symbol] += d.total_amount
-        month_key = d.date[:7] if len(d.date) >= 7 else d.date
+        month_key = d.date.isoformat()[:7] if hasattr(d.date, 'isoformat') else str(d.date)[:7]
         monthly[month_key] += d.total_amount
 
     monthly_history = [

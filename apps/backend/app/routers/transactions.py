@@ -19,6 +19,7 @@ router = APIRouter()
 
 
 def _tx_to_response(tx: Transaction) -> TransactionResponse:
+    date_str = tx.date.isoformat() if hasattr(tx.date, 'isoformat') else str(tx.date) if tx.date else None
     return TransactionResponse(
         id=tx.id,
         user_email=tx.user_email,
@@ -31,7 +32,7 @@ def _tx_to_response(tx: Transaction) -> TransactionResponse:
         exchange_rate=tx.exchange_rate,
         fees=tx.fees,
         total_invested=tx.total_invested,
-        date=tx.date,
+        date=date_str,
         created_at=tx.created_at,
     )
 
