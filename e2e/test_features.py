@@ -6,6 +6,7 @@ BASE_URL = "http://localhost"
 
 def login(page: Page):
     page.goto(f"{BASE_URL}/login")
+    page.wait_for_load_state("networkidle")
     page.fill('input[type="email"]', "demo@fraude-ary.com")
     page.fill('input[type="password"]', "demo1234")
     page.click('button[type="submit"]')
