@@ -43,6 +43,22 @@ class PortfolioAnalyticsResponse(BaseModel):
     worst_day: Optional[dict] = None
 
 
+class OHLCVPoint(BaseModel):
+    time: int
+    open: float
+    high: float
+    low: float
+    close: float
+    volume: int
+
+
+class OHLCVResponse(BaseModel):
+    symbol: str
+    period: str
+    interval: str
+    data: List[OHLCVPoint]
+
+
 class NewsItem(BaseModel):
     title: str
     link: str

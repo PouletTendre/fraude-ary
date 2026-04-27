@@ -1,13 +1,17 @@
+import asyncio
 import logging
-from typing import Dict, Optional
+from typing import Dict, List, Optional, Tuple
 
 import httpx
+import yfinance
 
 from fastapi import APIRouter, Depends, Query
 
 from app.models.user import User
 from app.routers.auth import get_current_user
 from app.schemas.technical import (
+    OHLCVResponse,
+    OHLCVPoint,
     TechnicalIndicatorsResponse,
 )
 from app.services.technical_service import compute_all_indicators
@@ -104,4 +108,86 @@ async def get_technical_indicators(
         stochastic=stochastic,
         mfi=indicators.get("mfi"),
         adx=indicators.get("adx"),
+    )
+
+
+def _fetch_ohlcv_yf(symbol: str, period: str = "6mo", interval: str = "1d") -> List[Dict]:
+    """Fetch OHLCV data via yfinance (primary source for charting)."""
+    try:
+        ticker = yfinance.Ticker(symbol.upper())
+        hist = ticker.history(period=period, interval=interval)
+        if hist.empty:
+            return []
+        results = []
+        for idx, row in hist.iterrows():
+            results.append({
+                "time": int(idx.timestamp()),
+                "open": round(float(row["Open"]), 2),
+                "high": round(float(row["High"]), 2),
+                "low": round(float(row["Low"]), 2),
+                "close": round(float(row["Close"]), 2),
+                "volume": int(row["Volume"]),
+            })
+        return results
+    except Exception as e:
+        logging.warning(f"yfinance OHLCV failed for {symbol}: {e}")
+        return []
+
+
+async def _fetch_ohlcv_chart_api(symbol: str, period: str = "6mo", interval: str = "1d") -> List[Dict]:
+    """Fallback OHLCV via Yahoo Chart API."""
+    period_map = {"1d": "1d", "5d": "5d", "1mo": "1mo", "3mo": "3mo", "6mo": "6mo", "1y": "1y", "2y": "2y", "5y": "5y"}
+    range_val = period_map.get(period, "6mo")
+    results = []
+    try:
+        async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as client:
+            url = f"{YAHOO_CHART_API}/{symbol.upper()}?interval={interval}&range={range_val}"
+            resp = await client.get(url, headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+            })
+            if resp.status_code != 200:
+                return []
+            data = resp.json()
+            result = data.get("chart", {}).get("result", [None])[0]
+            if not result:
+                return []
+            timestamps = result.get("timestamp", [])
+            quotes = result.get("indicators", {}).get("quote", [{}])[0]
+            for i, ts in enumerate(timestamps):
+                o = quotes.get("open", [])[i] if i < len(quotes.get("open", [])) else None
+                h = quotes.get("high", [])[i] if i < len(quotes.get("high", [])) else None
+                l = quotes.get("low", [])[i] if i < len(quotes.get("low", [])) else None
+                c = quotes.get("close", [])[i] if i < len(quotes.get("close", [])) else None
+                v = quotes.get("volume", [])[i] if i < len(quotes.get("volume", [])) else 0
+                if c is not None and ts is not None:
+                    results.append({
+                        "time": int(ts),
+                        "open": round(float(o or c), 2),
+                        "high": round(float(h or c), 2),
+                        "low": round(float(l or c), 2),
+                        "close": round(float(c), 2),
+                        "volume": int(v or 0),
+                    })
+    except Exception as e:
+        logging.warning(f"Yahoo chart OHLCV failed for {symbol}: {e}")
+    return results
+
+
+@router.get("/ohlcv", response_model=OHLCVResponse)
+async def get_ohlcv(
+    symbol: str = Query(..., min_length=1, pattern=r"^[A-Z0-9.\-]{1,20}$"),
+    period: str = Query("6mo"),
+    interval: str = Query("1d"),
+    current_user: User = Depends(get_current_user),
+):
+    # 1. yfinance (primary)
+    data = await asyncio.to_thread(_fetch_ohlcv_yf, symbol, period, interval)
+    # 2. Yahoo Chart API (fallback)
+    if not data:
+        data = await _fetch_ohlcv_chart_api(symbol, period, interval)
+    return OHLCVResponse(
+        symbol=symbol.upper(),
+        period=period,
+        interval=interval,
+        data=[OHLCVPoint(**p) for p in data],
     )
