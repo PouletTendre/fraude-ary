@@ -122,6 +122,9 @@ def test_login_invalid_credentials(page: Page):
     assert "/login" in page.url or page.locator("text=Connexion").count() > 0, \
         "Should remain on login page after invalid credentials"
 
+    # Cooldown: allow rate limit bucket to refill before next test
+    page.wait_for_timeout(5000)
+
 
 def test_portfolio_page_loads(page: Page):
     """Navigate to portfolio page and verify basic content loads."""
