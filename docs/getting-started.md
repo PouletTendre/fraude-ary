@@ -46,7 +46,7 @@ This mounts local directories as volumes for live code changes.
 
 A demo account is available for testing:
 - **Email**: `demo@fraude-ary.com`
-- **Password**: `demo123456`
+- **Password**: `demo1234`
 
 ## Environment Variables
 

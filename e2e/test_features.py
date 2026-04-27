@@ -6,7 +6,7 @@ BASE_URL = "http://localhost"
 def login(page: Page):
     page.goto(f"{BASE_URL}/login")
     page.fill('input[type="email"]', "demo@fraude-ary.com")
-    page.fill('input[type="password"]', "demo123456")
+    page.fill('input[type="password"]', "demo1234")
     page.click('button[type="submit"]')
     page.wait_for_url(re.compile("/portfolio|/assets|/journal|/alerts|/settings|/$"), timeout=25000)
 

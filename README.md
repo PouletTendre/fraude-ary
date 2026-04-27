@@ -40,7 +40,7 @@ docker compose -f docker-compose.dev.yml up -d
 ### Default Credentials
 
 - **Email**: `demo@fraude-ary.com`
-- **Password**: `demo123456`
+- **Password**: `demo1234`
 
 > **Warning**: Change `JWT_SECRET`, `POSTGRES_PASSWORD`, and `DATABASE_URL` in production. The app refuses to start if `JWT_SECRET` is a known default.
 

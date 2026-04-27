@@ -16,7 +16,7 @@ Login with email and password (OAuth2 form-data).
 ```bash
 curl -X POST http://localhost/auth/login \
   -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "username=demo@fraude-ary.com&password=demo123456"
+  -d "username=demo@fraude-ary.com&password=demo1234"
 ```
 
 **Response:**
