@@ -87,17 +87,8 @@ services:
     image: nginx:1.27-alpine
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      # ─── TLS/SSL certificates (uncomment for HTTPS) ───
-      # Mount your SSL certificate and key. For development, generate self-signed:
-      #   mkdir -p certs && cd certs
-      #   openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-      #     -keyout cert.key -out cert.crt \
-      #     -subj "/C=FR/ST=IdF/L=Paris/O=Local/CN=localhost"
-      # For production, mount real CA-issued certificates here.
-      # - ./certs:/etc/nginx/ssl:ro
     ports:
       - "80:80"
-      - "443:443"
     depends_on:
       backend: { condition: service_healthy }
       frontend: { condition: service_healthy }
