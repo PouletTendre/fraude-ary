@@ -178,7 +178,7 @@ async def create_transaction(
         exchange_rate=tx.exchange_rate,
         fees=tx.fees,
         total_invested=tx.total_invested,
-        date=tx.date,
+        date=tx.date.isoformat() if hasattr(tx.date, 'isoformat') else str(tx.date) if tx.date else None,
         created_at=tx.created_at
     )
 
@@ -365,7 +365,7 @@ async def update_transaction(
         exchange_rate=tx.exchange_rate,
         fees=tx.fees,
         total_invested=tx.total_invested,
-        date=tx.date,
+        date=tx.date.isoformat() if hasattr(tx.date, 'isoformat') else str(tx.date) if tx.date else None,
         created_at=tx.created_at
     )
 
