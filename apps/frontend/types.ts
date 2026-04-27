@@ -223,3 +223,19 @@ export interface ValuationResponse {
   financial_data: Record<string, unknown>;
   is_estimated: boolean;
 }
+
+export interface OHLCVPoint {
+  time: number;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+}
+
+export interface OHLCVResponse {
+  symbol: string;
+  period: string;
+  interval: string;
+  data: OHLCVPoint[];
+}

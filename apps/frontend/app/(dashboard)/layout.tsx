@@ -46,8 +46,9 @@ const navSections: { label: string; items: NavItem[] }[] = [
     items: [
       { href: "/", label: "Dashboard", icon: LayoutDashboard },
       { href: "/portfolio", label: "Portefeuille", icon: Wallet },
-      { href: "/assets", label: "Marchés", icon: TrendingUp },
-      { href: "/analysis", label: "Analyse Technique", icon: LineChart },
+      { href: "/markets", label: "Marchés", icon: TrendingUp },
+      { href: "/assets", label: "Actifs", icon: BarChart3 },
+      { href: "/analysis", label: "Analyse", icon: LineChart },
       { href: "/simulator", label: "Simulateur", icon: Calculator },
     ],
   },
