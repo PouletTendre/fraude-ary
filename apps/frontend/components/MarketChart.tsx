@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useRef, useMemo, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import type { OHLCVPoint } from "@/types";
 
@@ -15,6 +15,7 @@ interface MarketChartProps {
   showBollinger?: boolean;
   height?: number;
   className?: string;
+  onLoadMore?: (earliestTime: number) => void;
 }
 
 function computeSMA(data: number[], period: number): (number | null)[] {
@@ -60,9 +61,21 @@ export function MarketChart({
   showBollinger = false,
   height = 500,
   className,
+  onLoadMore,
 }: MarketChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
+  const mainSeriesRef = useRef<ISeriesApi<"Candlestick" | "Line" | "Area" | "Histogram"> | null>(null);
+  const volumeSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null);
+  const sma20SeriesRef = useRef<ISeriesApi<"Line"> | null>(null);
+  const sma50SeriesRef = useRef<ISeriesApi<"Line"> | null>(null);
+  const bollingerUpperRef = useRef<ISeriesApi<"Line"> | null>(null);
+  const bollingerMiddleRef = useRef<ISeriesApi<"Line"> | null>(null);
+  const bollingerLowerRef = useRef<ISeriesApi<"Line"> | null>(null);
+  const loadingMoreRef = useRef(false);
+  const earliestTimeRef = useRef<number>(Infinity);
+  const onLoadMoreRef = useRef(onLoadMore);
+  onLoadMoreRef.current = onLoadMore;
 
   const chartData = useMemo(() => {
     return data.map((d) => ({
@@ -110,8 +123,16 @@ export function MarketChart({
     }));
   }, [data, showVolume]);
 
+  // Create chart on mount / type change
   useEffect(() => {
     if (!containerRef.current || data.length === 0) return;
+
+    // Cleanup previous
+    const prevChart = chartRef.current;
+    if (prevChart) {
+      prevChart.remove();
+      chartRef.current = null;
+    }
 
     const chart = createChart(containerRef.current, {
       layout: {
@@ -137,10 +158,20 @@ export function MarketChart({
     });
 
     chartRef.current = chart;
+    earliestTimeRef.current = data.length > 0 ? data[0].time : Infinity;
 
-    // Main series
-    let mainSeries: ISeriesApi<"Candlestick" | "Line" | "Area">;
+    // Zoom-back detection
+    chart.timeScale().subscribeVisibleLogicalRangeChange(() => {
+      if (!onLoadMoreRef.current || loadingMoreRef.current) return;
 
+      const visibleRange = chart.timeScale().getVisibleRange();
+      if (visibleRange && (visibleRange.from as number) < earliestTimeRef.current) {
+        loadingMoreRef.current = true;
+        onLoadMoreRef.current(earliestTimeRef.current);
+      }
+    });
+
+    // Add main series based on type
     if (type === "candle") {
       const candleSeries = chart.addCandlestickSeries({
         upColor: "#10B981",
@@ -151,7 +182,7 @@ export function MarketChart({
         wickDownColor: "#EF4444",
       });
       candleSeries.setData(chartData as CandleOhlcv[]);
-      mainSeries = candleSeries;
+      mainSeriesRef.current = candleSeries;
 
       // Volume on separate pane
       if (volumeData) {
@@ -163,6 +194,7 @@ export function MarketChart({
         volumePane.priceScale().applyOptions({
           scaleMargins: { top: 0.9, bottom: 0 },
         });
+        volumeSeriesRef.current = volumePane;
       }
     } else if (type === "line") {
       const lineSeries = chart.addLineSeries({
@@ -171,7 +203,7 @@ export function MarketChart({
       });
       const lineData: LinePoint[] = data.map((d) => ({ time: d.time as Time, value: d.close }));
       lineSeries.setData(lineData);
-      mainSeries = lineSeries;
+      mainSeriesRef.current = lineSeries;
     } else if (type === "area") {
       const areaSeries = chart.addAreaSeries({
         lineColor: "#6366F1",
@@ -181,9 +213,9 @@ export function MarketChart({
       });
       const areaData: LinePoint[] = data.map((d) => ({ time: d.time as Time, value: d.close }));
       areaSeries.setData(areaData);
-      mainSeries = areaSeries;
+      mainSeriesRef.current = areaSeries;
     } else {
-      // Fallback to candle
+      // Fallback candle
       const candleSeries = chart.addCandlestickSeries({
         upColor: "#10B981",
         downColor: "#EF4444",
@@ -193,7 +225,7 @@ export function MarketChart({
         wickDownColor: "#EF4444",
       });
       candleSeries.setData(chartData as CandleOhlcv[]);
-      mainSeries = candleSeries;
+      mainSeriesRef.current = candleSeries;
     }
 
     // SMA 20 overlay
@@ -207,6 +239,7 @@ export function MarketChart({
         .map((v, i) => (v !== null ? { time: data[i].time as Time, value: v } : null))
         .filter(Boolean) as LinePoint[];
       sma20Series.setData(sma20Data);
+      sma20SeriesRef.current = sma20Series;
     }
 
     // SMA 50 overlay
@@ -220,11 +253,11 @@ export function MarketChart({
         .map((v, i) => (v !== null ? { time: data[i].time as Time, value: v } : null))
         .filter(Boolean) as LinePoint[];
       sma50Series.setData(sma50Data);
+      sma50SeriesRef.current = sma50Series;
     }
 
     // Bollinger Bands
     if (showBollinger && bollinger) {
-      // Upper band
       const upperSeries = chart.addLineSeries({
         color: "#A78BFA",
         lineWidth: 1,
@@ -234,8 +267,8 @@ export function MarketChart({
         .map((v, i) => (v !== null ? { time: data[i].time as Time, value: v } : null))
         .filter(Boolean) as LinePoint[];
       upperSeries.setData(upperData);
+      bollingerUpperRef.current = upperSeries;
 
-      // Middle (SMA 20)
       const middleSeries = chart.addLineSeries({
         color: "#F59E0B",
         lineWidth: 1,
@@ -245,8 +278,8 @@ export function MarketChart({
         .map((v, i) => (v !== null ? { time: data[i].time as Time, value: v } : null))
         .filter(Boolean) as LinePoint[];
       middleSeries.setData(middleData);
+      bollingerMiddleRef.current = middleSeries;
 
-      // Lower band
       const lowerSeries = chart.addLineSeries({
         color: "#A78BFA",
         lineWidth: 1,
@@ -256,6 +289,7 @@ export function MarketChart({
         .map((v, i) => (v !== null ? { time: data[i].time as Time, value: v } : null))
         .filter(Boolean) as LinePoint[];
       lowerSeries.setData(lowerData);
+      bollingerLowerRef.current = lowerSeries;
     }
 
     chart.timeScale().fitContent();
@@ -276,7 +310,66 @@ export function MarketChart({
       chart.remove();
       chartRef.current = null;
     };
-  }, [data, type, showVolume, showSMA20, showSMA50, showBollinger, height, chartData, volumeData, sma20, sma50, bollinger]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [type, height]);
+
+  // Update data when data or overlays change (incremental, no chart recreate)
+  useEffect(() => {
+    const chart = chartRef.current;
+    if (!chart || data.length === 0) return;
+
+    // Track earliest time for zoom-back detection
+    earliestTimeRef.current = data[0].time;
+
+    const main = mainSeriesRef.current;
+    if (type === "candle" && main) {
+      main.setData(chartData as CandleOhlcv[]);
+    } else if (type === "line" && main) {
+      const lineData: LinePoint[] = data.map((d) => ({ time: d.time as Time, value: d.close }));
+      main.setData(lineData);
+    } else if (type === "area" && main) {
+      const areaData: LinePoint[] = data.map((d) => ({ time: d.time as Time, value: d.close }));
+      main.setData(areaData);
+    } else if (main && type !== "candle" && type !== "line" && type !== "area") {
+      main.setData(chartData as CandleOhlcv[]);
+    }
+
+    if (volumeSeriesRef.current && volumeData) {
+      volumeSeriesRef.current.setData(volumeData as VolumePoint[]);
+    }
+    if (sma20SeriesRef.current && sma20) {
+      const sma20Data: LinePoint[] = sma20
+        .map((v, i) => (v !== null ? { time: data[i].time as Time, value: v } : null))
+        .filter(Boolean) as LinePoint[];
+      sma20SeriesRef.current.setData(sma20Data);
+    }
+    if (sma50SeriesRef.current && sma50) {
+      const sma50Data: LinePoint[] = sma50
+        .map((v, i) => (v !== null ? { time: data[i].time as Time, value: v } : null))
+        .filter(Boolean) as LinePoint[];
+      sma50SeriesRef.current.setData(sma50Data);
+    }
+    if (bollingerUpperRef.current && bollinger) {
+      const upperData: LinePoint[] = bollinger.upper
+        .map((v, i) => (v !== null ? { time: data[i].time as Time, value: v } : null))
+        .filter(Boolean) as LinePoint[];
+      bollingerUpperRef.current.setData(upperData);
+    }
+    if (bollingerMiddleRef.current && bollinger) {
+      const middleData: LinePoint[] = bollinger.sma
+        .map((v, i) => (v !== null ? { time: data[i].time as Time, value: v } : null))
+        .filter(Boolean) as LinePoint[];
+      bollingerMiddleRef.current.setData(middleData);
+    }
+    if (bollingerLowerRef.current && bollinger) {
+      const lowerData: LinePoint[] = bollinger.lower
+        .map((v, i) => (v !== null ? { time: data[i].time as Time, value: v } : null))
+        .filter(Boolean) as LinePoint[];
+      bollingerLowerRef.current.setData(lowerData);
+    }
+
+    loadingMoreRef.current = false;
+  }, [data, type, chartData, volumeData, sma20, sma50, bollinger]);
 
   if (data.length === 0) {
     return (

@@ -4,6 +4,7 @@ from typing import Dict, List, Optional, Tuple
 
 import httpx
 import yfinance
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, Query
 
@@ -173,18 +174,47 @@ async def _fetch_ohlcv_chart_api(symbol: str, period: str = "6mo", interval: str
     return results
 
 
+def _fetch_ohlcv_yf_date_range(symbol: str, start_date: str, end_date: str, interval: str = "1d") -> List[Dict]:
+    """Fetch OHLCV via yfinance for an explicit date range."""
+    try:
+        ticker = yfinance.Ticker(symbol.upper())
+        hist = ticker.history(start=start_date, end=end_date, interval=interval)
+        if hist.empty:
+            return []
+        results = []
+        for idx, row in hist.iterrows():
+            results.append({
+                "time": int(idx.timestamp()),
+                "open": round(float(row["Open"]), 2),
+                "high": round(float(row["High"]), 2),
+                "low": round(float(row["Low"]), 2),
+                "close": round(float(row["Close"]), 2),
+                "volume": int(row["Volume"]),
+            })
+        return results
+    except Exception as e:
+        logging.warning(f"yfinance OHLCV date range failed for {symbol}: {e}")
+        return []
+
+
 @router.get("/ohlcv", response_model=OHLCVResponse)
 async def get_ohlcv(
     symbol: str = Query(..., min_length=1, pattern=r"^[A-Z0-9.\-]{1,20}$"),
     period: str = Query("6mo"),
     interval: str = Query("1d"),
+    start_date: Optional[str] = Query(None, description="Start date YYYY-MM-DD (overrides period)"),
+    end_date: Optional[str] = Query(None, description="End date YYYY-MM-DD (overrides period)"),
     current_user: User = Depends(get_current_user),
 ):
-    # 1. yfinance (primary)
-    data = await asyncio.to_thread(_fetch_ohlcv_yf, symbol, period, interval)
-    # 2. Yahoo Chart API (fallback)
-    if not data:
-        data = await _fetch_ohlcv_chart_api(symbol, period, interval)
+    if start_date and end_date:
+        # Explicit date range (used for lazy zoom load)
+        data = await asyncio.to_thread(_fetch_ohlcv_yf_date_range, symbol, start_date, end_date, interval)
+    else:
+        # 1. yfinance (period-based primary)
+        data = await asyncio.to_thread(_fetch_ohlcv_yf, symbol, period, interval)
+        # 2. Yahoo Chart API (fallback)
+        if not data:
+            data = await _fetch_ohlcv_chart_api(symbol, period, interval)
     return OHLCVResponse(
         symbol=symbol.upper(),
         period=period,

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
+import { fetchApi } from "@/lib/api";
 import { useOHLCV } from "@/hooks/useOHLCV";
 import { useTechnical } from "@/hooks/useTechnical";
 import { useSettings } from "@/hooks/useSettings";
@@ -12,6 +13,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import type { OHLCVPoint, OHLCVResponse } from "@/types";
 import {
   TrendingUp,
   TrendingDown,
@@ -123,26 +125,60 @@ export default function MarketsPage() {
 
   const interval = period === "1d" ? "5m" : "1d";
 
-  const {
-    data: ohlcv,
-    isLoading,
-    error,
-  } = useOHLCV(symbol, period, interval);
+        const {
+                data: ohlcv,
+                isLoading,
+                error,
+        } = useOHLCV(symbol, period, interval);
 
-  const { data: technical } = useTechnical(symbol);
+        const { data: technical } = useTechnical(symbol);
 
-  const summaryData = useMemo(() => {
-    if (!ohlcv?.data || ohlcv.data.length === 0) return [];
-    return ohlcv.data.map((d) => ({
-      time: d.time,
-      close: d.close,
-      high: d.high,
-      low: d.low,
-      open: d.open,
-    }));
-  }, [ohlcv]);
+        // Lazy-load chunks when user zooms back beyond loaded data
+        const [lazyChunks, setLazyChunks] = useState<OHLCVPoint[]>([]);
+        const symbolRef = useRef(symbol);
 
-  const hasData = ohlcv && ohlcv.data && ohlcv.data.length > 0;
+        useEffect(() => {
+                setLazyChunks([]);
+                symbolRef.current = symbol;
+        }, [symbol]);
+
+        const handleLoadMore = useCallback(async (earliestTime: number) => {
+                const endDate = new Date((earliestTime - 86400) * 1000).toISOString().split("T")[0];
+                const startDate = new Date((earliestTime - 365 * 86400) * 1000).toISOString().split("T")[0];
+                try {
+                        const resp = await fetchApi<OHLCVResponse>(
+                                `/api/v1/technical/ohlcv?symbol=${encodeURIComponent(symbolRef.current)}&start_date=${startDate}&end_date=${endDate}&interval=1d`
+                        );
+                        if (resp.data?.length > 0) {
+                                setLazyChunks(prev => [...resp.data, ...prev]);
+                        }
+                } catch {
+                        // Silently ignore — user can try zooming again
+                }
+        }, []);
+
+        // Merge initial + lazy chunks, dedup by time
+        const mergedData = useMemo(() => {
+                const inline = ohlcv?.data || [];
+                const all = [...lazyChunks, ...inline];
+                const seen = new Set<number>();
+                return all
+                        .filter(p => { if (seen.has(p.time)) return false; seen.add(p.time); return true; })
+                        .sort((a, b) => a.time - b.time);
+        }, [ohlcv?.data, lazyChunks]);
+
+        const summaryData = useMemo(() => {
+                if (mergedData.length === 0) return [];
+                return mergedData.map((d) => ({
+                        time: d.time,
+                        close: d.close,
+                        high: d.high,
+                        low: d.low,
+                        open: d.open,
+                }));
+        }, [mergedData]);
+
+        const hasData = mergedData.length > 0;
 
   return (
     <PageTransition>
@@ -332,12 +368,13 @@ export default function MarketsPage() {
             {/* Chart */}
             <ErrorBoundary>
               <MarketChart
-                data={ohlcv.data}
+                data={mergedData}
                 type={chartType}
                 showVolume={chartType === "candle"}
                 showSMA20={showSMA20}
                 showSMA50={showSMA50}
                 showBollinger={showBollinger}
+                onLoadMore={handleLoadMore}
               />
             </ErrorBoundary>
 
