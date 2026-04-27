@@ -12,6 +12,7 @@ from sqlalchemy import select
 
 CRYPTO_COMPARE_API = "https://min-api.cryptocompare.com/data"
 YAHOO_CHART_API = "https://query1.finance.yahoo.com/v8/finance/chart"
+COINCAP_API = "https://api.coincap.io/v2"
 EXCHANGE_RATE_API_URL = "https://api.frankfurter.app/latest?from=EUR"
 REDIS_KEY_EXCHANGE_RATES = "exchange_rates"
 CACHE_TTL_EXCHANGE = 3600
@@ -50,6 +51,7 @@ class PriceService:
         if cached:
             return cached
 
+        # 1. CryptoCompare (primary)
         try:
             async with httpx.AsyncClient(timeout=10.0) as client:
                 resp = await client.get(
@@ -64,6 +66,39 @@ class PriceService:
                         return price
         except Exception as e:
             logging.warning(f"CryptoCompare failed for {symbol_upper}: {e}")
+
+        # 2. yfinance fallback (supports crypto pairs like BTC-USD)
+        try:
+            def fetch_yf():
+                yf_symbol = symbol_upper if "-" in symbol_upper else f"{symbol_upper}-USD"
+                ticker = yfinance.Ticker(yf_symbol)
+                hist = ticker.history(period="1d")
+                if not hist.empty:
+                    return float(hist["Close"].iloc[-1])
+                return None
+            price = await asyncio.to_thread(fetch_yf)
+            if price and price > 0:
+                await cache_service.set_crypto_price(symbol_upper, price)
+                return price
+        except Exception as e:
+            logging.warning(f"yfinance crypto fallback failed for {symbol_upper}: {e}")
+
+        # 3. CoinCap fallback (free REST API, no key needed)
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                resp = await client.get(
+                    f"{COINCAP_API}/assets/{symbol_upper.lower()}",
+                )
+                if resp.status_code == 200:
+                    data = resp.json().get("data", {})
+                    price = data.get("priceUsd")
+                    if price:
+                        price = float(price)
+                        if price > 0:
+                            await cache_service.set_crypto_price(symbol_upper, price)
+                            return price
+        except Exception as e:
+            logging.warning(f"CoinCap failed for {symbol_upper}: {e}")
 
         return None
 
@@ -187,6 +222,24 @@ class PriceService:
     async def get_stock_history(self, symbol: str, start: datetime, end: datetime) -> List[Tuple[datetime, float]]:
         symbol_upper = symbol.upper()
         results: List[Tuple[datetime, float]] = []
+
+        # 1. yfinance — most reliable for historical data (used by FinceptTerminal)
+        try:
+            def fetch_yf():
+                r: List[Tuple[datetime, float]] = []
+                ticker = yfinance.Ticker(symbol_upper)
+                hist = ticker.history(start=start, end=end, interval="1d")
+                if not hist.empty:
+                    for idx, row in hist.iterrows():
+                        r.append((idx.to_pydatetime(), float(row["Close"])))
+                return r
+            results = await asyncio.to_thread(fetch_yf)
+            if results:
+                return results
+        except Exception as e:
+            logging.warning(f"yfinance history failed for {symbol_upper}: {e}")
+
+        # 2. Yahoo Chart API (existing fallback)
         try:
             async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
                 url = f"{YAHOO_CHART_API}/{symbol_upper}"
@@ -211,6 +264,7 @@ class PriceService:
                                 results.append((dt, float(close)))
         except Exception as e:
             logging.warning(f"Yahoo chart history API failed for {symbol_upper}: {e}")
+
         return results
 
     async def get_crypto_history(self, symbol: str, start: datetime, end: datetime) -> List[Tuple[datetime, float]]:
@@ -219,6 +273,8 @@ class PriceService:
         days = (end - start).days + 1
         if days <= 0:
             return results
+
+        # 1. CryptoCompare histoday (primary)
         try:
             async with httpx.AsyncClient(timeout=30.0) as client:
                 url = f"{CRYPTO_COMPARE_API}/v2/histoday"
@@ -240,6 +296,25 @@ class PriceService:
                             results.append((dt, float(close)))
         except Exception as e:
             logging.warning(f"CryptoCompare histoday API failed for {symbol_upper}: {e}")
+
+        if results:
+            return results
+
+        # 2. yfinance fallback (supports crypto pairs like BTC-USD)
+        try:
+            def fetch_yf():
+                r: List[Tuple[datetime, float]] = []
+                yf_symbol = symbol_upper if "-" in symbol_upper else f"{symbol_upper}-USD"
+                ticker = yfinance.Ticker(yf_symbol)
+                hist = ticker.history(start=start, end=end, interval="1d")
+                if not hist.empty:
+                    for idx, row in hist.iterrows():
+                        r.append((idx.to_pydatetime(), float(row["Close"])))
+                return r
+            results = await asyncio.to_thread(fetch_yf)
+        except Exception as e:
+            logging.warning(f"yfinance crypto history fallback failed for {symbol_upper}: {e}")
+
         return results
 
     async def backfill_price_history(self, db: AsyncSession, asset_id: str, symbol: str, asset_type: str, start_date: datetime) -> int:

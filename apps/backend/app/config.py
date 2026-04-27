@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     TIINGO_API_KEY: str = ""
     TWELVE_DATA_API_KEY: str = ""
     FRED_API_KEY: str = ""
+    ALPHA_VANTAGE_API_KEY: str = ""
+    COINCAP_API_KEY: str = ""
 
     class Config:
         env_file = ".env"
