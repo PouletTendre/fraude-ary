@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, ForwardRefExoticComponent, RefAttributes } from "react";
+import { useEffect, useState, Suspense, ForwardRefExoticComponent, RefAttributes } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
@@ -145,6 +145,7 @@ export default function DashboardLayout({
         {/* Close button for mobile */}
         <button
           onClick={() => setSidebarOpen(false)}
+          aria-label="Fermer le menu"
           className="md:hidden absolute top-4 right-4 p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-raised transition-colors"
         >
           <X className="w-5 h-5" />
@@ -235,10 +236,11 @@ export default function DashboardLayout({
         ))}
 
         {/* Refresh button */}
-        <button
-          onClick={handleRefresh}
-          disabled={isRefreshing}
-          className="flex items-center gap-[10px] cursor-pointer transition-all duration-150 ease-out mt-2 text-text-secondary hover:bg-surface-raised hover:text-text-primary"
+          <button
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            aria-label="Actualiser les prix"
+            className="flex items-center gap-[10px] cursor-pointer transition-all duration-150 ease-out mt-2 text-text-secondary hover:bg-surface-raised hover:text-text-primary"
           style={{
             padding: "9px 12px",
             borderRadius: "8px",
@@ -268,6 +270,7 @@ export default function DashboardLayout({
           </div>
           <button
             onClick={logout}
+            aria-label="Se déconnecter"
             className="w-full text-left text-[13px] text-text-secondary hover:text-text-primary hover:bg-surface-rounded transition-all duration-150 ease-out"
             style={{
               padding: "8px 12px",
@@ -276,7 +279,7 @@ export default function DashboardLayout({
               border: "none",
             }}
           >
-            Sign Out
+            Déconnexion
           </button>
         </div>
       </aside>
@@ -290,12 +293,19 @@ export default function DashboardLayout({
         <div className="md:hidden flex items-center">
           <button
             onClick={() => setSidebarOpen(true)}
+            aria-label="Ouvrir le menu"
             className="p-2 rounded-lg bg-surface border border-border text-text-primary hover:bg-surface-raised transition-colors"
           >
             <Menu className="w-5 h-5" />
           </button>
         </div>
-        {children}
+        <Suspense fallback={
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+          </div>
+        }>
+          {children}
+        </Suspense>
       </main>
     </div>
     </>

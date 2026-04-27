@@ -125,12 +125,8 @@ export default function AssetsPage() {
         currency: formData.currency,
       };
       
-      console.log("[handleSubmit] Creating asset:", assetData);
-      console.log("[handleSubmit] Token present:", !!localStorage.getItem("token"));
-      
       createAsset(assetData, {
         onSuccess: (data) => {
-          console.log("[handleSubmit] Asset created:", data);
           addToast("Asset created successfully!", "success");
           setFormData({ type: "crypto", symbol: "", quantity: "", purchase_price: "", purchase_date: "", currency: "USD" });
           setShowForm(false);
@@ -735,6 +731,7 @@ export default function AssetsPage() {
                                 currency: asset.currency,
                               });
                             }}
+                            aria-label={`Modifier ${asset.symbol}`}
                             className="text-text-secondary hover:text-primary text-sm mr-3"
                           >
                             Edit
@@ -742,6 +739,7 @@ export default function AssetsPage() {
                           <button
                             onClick={() => handleDelete(asset.id)}
                             disabled={isDeleting}
+                            aria-label={`Supprimer ${asset.symbol}`}
                             className="text-loss hover:text-red-800 dark:text-loss dark:hover:text-loss text-sm disabled:opacity-50"
                           >
                             {isDeleting ? "Deleting..." : "Delete"}

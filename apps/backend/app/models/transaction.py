@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Float, DateTime, Enum as SQLEnum
+from sqlalchemy import Column, String, Float, Date, DateTime, Enum as SQLEnum, ForeignKey
 from sqlalchemy.sql import func
 from app.database import Base
 import enum
@@ -10,8 +10,8 @@ class TransactionType(str, enum.Enum):
 class Transaction(Base):
     __tablename__ = "transactions"
     id = Column(String, primary_key=True)
-    user_email = Column(String, nullable=False, index=True)
-    asset_id = Column(String, nullable=True, index=True)
+    user_email = Column(String, ForeignKey("users.email", ondelete="CASCADE"), nullable=False, index=True)
+    asset_id = Column(String, ForeignKey("assets.id", ondelete="CASCADE"), nullable=True, index=True)
     type = Column(SQLEnum(TransactionType, values_callable=lambda x: [e.value for e in x]), nullable=False)
     symbol = Column(String, nullable=False)
     quantity = Column(Float, nullable=False)
@@ -20,8 +20,8 @@ class Transaction(Base):
     exchange_rate = Column(Float, default=1.0)
     fees = Column(Float, default=0.0)
     total_invested = Column(Float, nullable=False)
-    date = Column(String, nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    date = Column(Date, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
 
     @property
     def type_value(self) -> str:

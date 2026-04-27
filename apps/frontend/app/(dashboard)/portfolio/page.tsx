@@ -169,7 +169,7 @@ export default function PortfolioPage() {
           <h1 className="text-3xl font-bold text-text-primary">Portfolio</h1>
           <Card>
             <CardContent className="py-12 text-center">
-              <p className="text-text-tertiary">Failed to load portfolio data. Please try again later.</p>
+              <p className="text-text-tertiary">Impossible de charger les données du portfolio. Veuillez réessayer plus tard.</p>
             </CardContent>
           </Card>
         </div>
@@ -396,7 +396,7 @@ export default function PortfolioPage() {
             {filteredHistory.length < 2 ? (
               <div className="h-full flex flex-col items-center justify-center text-text-tertiary gap-2">
                 <Activity className="w-8 h-8 opacity-50" />
-                <p>Not enough history data</p>
+                <p>Données historiques insuffisantes</p>
               </div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">

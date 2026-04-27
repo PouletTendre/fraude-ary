@@ -1,9 +1,11 @@
+import asyncio
+
 from fastapi import APIRouter, Depends, Query, HTTPException
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
-from typing import List, Optional
-from datetime import datetime, timedelta, timezone
+from typing import List, Optional, Dict, Sequence
+from datetime import datetime, timedelta, timezone, date
 from dateutil.relativedelta import relativedelta
 from collections import defaultdict
 import csv
@@ -20,6 +22,21 @@ from app.routers.auth import get_current_user
 from app.services.price_service import price_service, get_exchange_rates
 
 router = APIRouter()
+
+
+async def _batch_fetch_prices(assets: Sequence[Asset]) -> Dict[str, float]:
+    """Fetch prices for all assets in parallel using asyncio.gather.
+    
+    Returns dict keyed by "{type}:{symbol}" → price.
+    """
+    async def _fetch_one(asset: Asset):
+        asset_type_str = asset.type_value
+        key = f"{asset_type_str}:{asset.symbol}"
+        price = await price_service.get_price(asset_type_str, asset.symbol)
+        return key, price
+
+    results = await asyncio.gather(*[_fetch_one(a) for a in assets])
+    return {key: price for key, price in results if price is not None}
 
 
 def _to_eur(amount: float, currency: str, rates: dict) -> float:
@@ -49,7 +66,7 @@ async def _get_portfolio_history(
             if a.purchase_date is None:
                 total += a.quantity * (a.purchase_price_eur or 0)
             else:
-                pd = datetime.strptime(a.purchase_date, "%Y-%m-%d").date()
+                pd = a.purchase_date if isinstance(a.purchase_date, date) else datetime.strptime(a.purchase_date, "%Y-%m-%d").date()
                 if pd <= day:
                     total += a.quantity * (a.purchase_price_eur or 0)
         return total
@@ -116,9 +133,11 @@ async def _get_portfolio_history(
 
     # Add current portfolio value for today if missing
     total_current = 0.0
+    prices = await _batch_fetch_prices(assets)
     for asset in assets:
         asset_type_str = asset.type_value
-        current_price = await price_service.get_price(asset_type_str, asset.symbol)
+        price_key = f"{asset_type_str}:{asset.symbol}"
+        current_price = prices.get(price_key)
         if current_price is None:
             current_price = asset.current_price
         total_current += _to_eur(asset.quantity * current_price, asset.currency, rates)
@@ -150,6 +169,7 @@ async def get_portfolio_summary(
     )
     assets = result.scalars().all()
     rates = await get_exchange_rates()
+    prices = await _batch_fetch_prices(assets)
     asset_responses = []
     crypto_value = 0.0
     stocks_value = 0.0
@@ -158,7 +178,8 @@ async def get_portfolio_summary(
     total_cost = 0.0
     for asset in assets:
         asset_type_str = asset.type_value
-        current_price = await price_service.get_price(asset_type_str, asset.symbol)
+        price_key = f"{asset_type_str}:{asset.symbol}"
+        current_price = prices.get(price_key)
         if current_price is None:
             current_price = asset.current_price
         else:
@@ -189,8 +210,15 @@ async def get_portfolio_summary(
             created_at=asset.created_at
         ))
     # Compute history from the oldest purchase date so the chart shows full range
+    def _parse_purchase_date(pd_val) -> datetime:
+        if pd_val is None:
+            return None
+        if isinstance(pd_val, date):
+            return datetime.combine(pd_val, datetime.min.time())
+        return datetime.strptime(pd_val, "%Y-%m-%d")
+    
     oldest_purchase = min(
-        (datetime.strptime(a.purchase_date, "%Y-%m-%d") for a in assets if a.purchase_date),
+        (_parse_purchase_date(a.purchase_date) for a in assets if a.purchase_date),
         default=datetime.now(timezone.utc) - timedelta(days=365)
     )
     history_entries = await _get_portfolio_history(current_user.email, db, oldest_purchase)
@@ -307,13 +335,15 @@ async def get_portfolio_statistics(
         )
 
     rates = await get_exchange_rates()
+    prices = await _batch_fetch_prices(assets)
     asset_performances = []
     total_value = 0.0
     total_cost = 0.0
 
     for asset in assets:
         asset_type_str = asset.type_value
-        current_price = await price_service.get_price(asset_type_str, asset.symbol)
+        price_key = f"{asset_type_str}:{asset.symbol}"
+        current_price = prices.get(price_key)
         if current_price is None:
             current_price = asset.current_price
         current_value = _to_eur(asset.quantity * current_price, asset.currency, rates)
@@ -377,10 +407,12 @@ async def export_portfolio(
     assets = result.scalars().all()
 
     rates = await get_exchange_rates()
+    prices = await _batch_fetch_prices(assets)
     portfolio_data = []
     for asset in assets:
         asset_type_str = asset.type_value
-        current_price = await price_service.get_price(asset_type_str, asset.symbol)
+        price_key = f"{asset_type_str}:{asset.symbol}"
+        current_price = prices.get(price_key)
         if current_price is None:
             current_price = asset.current_price
         current_value = _to_eur(asset.quantity * current_price, asset.currency, rates)
@@ -440,11 +472,13 @@ async def get_benchmark_comparison(
         )
 
     rates = await get_exchange_rates()
+    prices = await _batch_fetch_prices(assets)
     total_cost = 0.0
     total_value = 0.0
     for asset in assets:
         asset_type_str = asset.type_value
-        current_price = await price_service.get_price(asset_type_str, asset.symbol)
+        price_key = f"{asset_type_str}:{asset.symbol}"
+        current_price = prices.get(price_key)
         if current_price is None:
             current_price = asset.current_price
         total_cost += asset.quantity * (asset.purchase_price_eur or 0)
@@ -473,7 +507,8 @@ async def get_benchmark_comparison(
         weights = []
         for asset in assets:
             asset_type_str = asset.type_value
-            current_price = await price_service.get_price(asset_type_str, asset.symbol)
+            price_key = f"{asset_type_str}:{asset.symbol}"
+            current_price = prices.get(price_key)
             if current_price is None:
                 current_price = asset.current_price
             cost = asset.quantity * (asset.purchase_price_eur or 0)

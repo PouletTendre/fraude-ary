@@ -143,14 +143,14 @@ export default function JournalPage() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <h1 className="text-3xl font-bold text-text-primary">Journal</h1>
           <Button onClick={() => setShowForm(!showForm)} disabled={isCreating}>
-            {showForm ? "Cancel" : "+ Add Transaction"}
+            {showForm ? "Annuler" : "+ Ajouter Transaction"}
           </Button>
         </div>
 
         {showForm && (
           <Card>
             <CardHeader>
-              <CardTitle>Add Transaction</CardTitle>
+              <CardTitle>Ajouter une Transaction</CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -162,8 +162,8 @@ export default function JournalPage() {
                       onChange={(e) => setFormData({ ...formData, type: e.target.value as "buy" | "sell" })}
                       className="flex h-10 w-full rounded-lg border border-border bg-surface-sunken px-3 py-2 text-sm text-text-primary"
                     >
-                      <option value="buy">Buy</option>
-                      <option value="sell">Sell</option>
+                      <option value="buy">Achat</option>
+                      <option value="sell">Vente</option>
                     </select>
                   </div>
                   <Input
@@ -180,7 +180,7 @@ export default function JournalPage() {
                       onChange={(e) => setFormData({ ...formData, asset_type: e.target.value as "crypto" | "stocks" | "real_estate" })}
                       className="flex h-10 w-full rounded-lg border border-border bg-surface-sunken px-3 py-2 text-sm text-text-primary"
                     >
-                      <option value="">Select type</option>
+                                   <option value="">Sélectionner type</option>
                       <option value="crypto">Crypto</option>
                       <option value="stocks">Stocks</option>
                       <option value="real_estate">Real Estate</option>
@@ -234,10 +234,10 @@ export default function JournalPage() {
                 </div>
                 <div className="flex gap-2">
                   <Button type="submit" disabled={isCreating}>
-                    {isCreating ? "Creating..." : "Add Transaction"}
+                    {isCreating ? "Création..." : "Ajouter Transaction"}
                   </Button>
                   <Button type="button" variant="secondary" onClick={() => setShowForm(false)}>
-                    Cancel
+                    Annuler
                   </Button>
                 </div>
               </form>
@@ -247,7 +247,7 @@ export default function JournalPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Transaction History</CardTitle>
+            <CardTitle>Historique des Transactions</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
@@ -290,7 +290,7 @@ export default function JournalPage() {
                                   <option value="buy">BUY</option>
                                   <option value="sell">SELL</option>
                                 </select>
-                                <p className="text-xs text-text-muted mt-1">Changing type will update your asset holdings.</p>
+                                <p className="text-xs text-text-muted mt-1">Changer le type mettra à jour vos avoirs.</p>
                               </td>
                               <td className="px-4 py-3 whitespace-nowrap">
                                 <input
@@ -304,7 +304,7 @@ export default function JournalPage() {
                                   onChange={(e) => setEditForm({ ...editForm, asset_type: e.target.value })}
                                   className="h-8 w-full rounded-md border border-border bg-surface-sunken px-2 text-sm text-text-primary mt-1"
                                 >
-                                  <option value="">Select type</option>
+                      <option value="">Sélectionner type</option>
                                   <option value="crypto">Crypto</option>
                                   <option value="stocks">Stocks</option>
                                   <option value="real_estate">Real Estate</option>
@@ -434,7 +434,7 @@ export default function JournalPage() {
                   ) : (
                     <tr>
                       <td colSpan={9} className="px-4 py-12 text-center text-text-tertiary">
-                        No transactions found.
+                        Aucune transaction trouvée.
                       </td>
                     </tr>
                   )}

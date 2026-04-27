@@ -14,7 +14,7 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
   EUR: "\u20ac",
   GBP: "\u00a3",
   JPY: "\u00a5",
-  CHF: "CHF",
+  CHF: "Fr.",
 };
 
 export function formatCurrency(value: number, currency: string = "EUR"): string {

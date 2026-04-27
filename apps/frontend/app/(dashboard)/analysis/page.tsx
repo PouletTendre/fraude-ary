@@ -105,7 +105,7 @@ export default function AnalysisPage() {
           <Card>
             <CardContent className="py-12 text-center">
               <Search className="w-10 h-10 text-text-muted mx-auto mb-3" />
-              <p className="text-text-tertiary">Search for a symbol to analyze</p>
+              <p className="text-text-tertiary">Recherchez un symbole à analyser</p>
             </CardContent>
           </Card>
         ) : isLoading ? (
@@ -125,7 +125,7 @@ export default function AnalysisPage() {
           <Card>
             <CardContent className="py-12 text-center">
               <p className="text-text-tertiary">
-                Failed to load technical data for {symbol}. Please verify the symbol.
+                Échec du chargement des données techniques pour {symbol}. Veuillez vérifier le symbole.
               </p>
             </CardContent>
           </Card>

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status, Request, U
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, delete
 from typing import List, Optional, DefaultDict, Tuple
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 import uuid
 import csv
 import io
@@ -286,15 +286,24 @@ async def create_asset(
     # Backfill historical prices from purchase_date
     if db_asset.purchase_date:
         try:
-            purchase_dt = datetime.strptime(db_asset.purchase_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+            pd_val = db_asset.purchase_date
+            if isinstance(pd_val, date):
+                purchase_dt = datetime.combine(pd_val, datetime.min.time()).replace(tzinfo=timezone.utc)
+            else:
+                purchase_dt = datetime.strptime(pd_val, "%Y-%m-%d").replace(tzinfo=timezone.utc)
             asset_type_str = asset_type.value
             await price_service.backfill_price_history(db, db_asset.id, db_asset.symbol, asset_type_str, purchase_dt)
         except Exception as e:
             logging.warning(f"Failed to backfill history for {db_asset.symbol}: {e}")
 
     # Create transaction
-    purchase_date_str = asset.purchase_date or db_asset.purchase_date or datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    purchase_dt = datetime.strptime(purchase_date_str, "%Y-%m-%d")
+    pd_val = asset.purchase_date or db_asset.purchase_date
+    if isinstance(pd_val, date):
+        purchase_dt = datetime.combine(pd_val, datetime.min.time())
+    elif isinstance(pd_val, str):
+        purchase_dt = datetime.strptime(pd_val, "%Y-%m-%d")
+    else:
+        purchase_dt = datetime.now(timezone.utc)
     rate = await price_service.get_historical_exchange_rate(purchase_dt, asset.currency or 'EUR', 'EUR')
 
     if existing:
@@ -318,8 +327,9 @@ async def create_asset(
         exchange_rate=rate,
         fees=0.0,
         total_invested=asset.quantity * asset.purchase_price * rate,
-        date=purchase_date_str
+        date=purchase_dt.date()
     )
+    db.add(tx)
     db.add(tx)
     await db.commit()
 
@@ -414,7 +424,11 @@ async def backfill_asset_history(
     if not asset.purchase_date:
         raise HTTPException(status_code=400, detail="Asset has no purchase_date")
 
-    purchase_dt = datetime.strptime(asset.purchase_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+    pd_val = asset.purchase_date
+    if isinstance(pd_val, date):
+        purchase_dt = datetime.combine(pd_val, datetime.min.time()).replace(tzinfo=timezone.utc)
+    else:
+        purchase_dt = datetime.strptime(pd_val, "%Y-%m-%d").replace(tzinfo=timezone.utc)
     asset_type_str = asset.type_value
     count = await price_service.backfill_price_history(db, asset.id, asset.symbol, asset_type_str, purchase_dt)
     return {"backfilled_entries": count}

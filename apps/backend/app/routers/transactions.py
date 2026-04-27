@@ -71,7 +71,7 @@ async def create_transaction(
         exchange_rate=exchange_rate,
         fees=transaction.fees,
         total_invested=total_invested,
-        date=transaction.date
+        date=tx_date.date()
     )
     db.add(tx)
 
@@ -205,11 +205,11 @@ async def update_transaction(
     if update.fees is not None:
         tx.fees = update.fees
     if update.date is not None:
-        tx.date = update.date
+        tx.date = datetime.strptime(update.date, "%Y-%m-%d").date()
 
     # Recalculate exchange_rate and total_invested server-side if relevant fields changed
     if update.date is not None or update.currency is not None or update.quantity is not None or update.unit_price is not None:
-        tx_date = datetime.strptime(tx.date, "%Y-%m-%d")
+        tx_date = datetime.combine(tx.date, datetime.min.time())
         tx.exchange_rate = await price_service.get_historical_exchange_rate(tx_date, tx.currency, "EUR")
         tx.total_invested = tx.quantity * tx.unit_price * tx.exchange_rate
 

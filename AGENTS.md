@@ -410,25 +410,83 @@ docker compose up -d --build
 | 2024-04 | No simulated prices | User demands real market data |
 | 2024-04 | 4-agent workflow | Parallel front/back dev + test loop |
 
+## MemPalace (Memory Retrieval)
+
+**Location:** `/root/fraude-ary/.opencode/skills/mempalace/`
+**API:** `mempalace search "query"` ou skill `/mempalace:search`
+**Architecture:** ChromaDB + SQLite, local-only
+
+### Usage obligatoire
+
+Avant toute tâche non-triviale, interroge MemPalace via le skill `mempalace-search` :
+- `/mempalace:search patterns de code` — patterns et conventions
+- `/mempalace:search décisions architecture` — décisions déjà prises
+- `/mempalace:search bug <symptom>` — bugs passés similaires
+- `/mempalace:search <feature>` — implémentations existantes similaires
+
+Utilise aussi `mempalace_status` pour voir la structure du palais avant de chercher.
+
+### Quand miner
+
+Après toute décision importante ou feature complétée → `/mempalace:mine` pour persist.
+- Architecture decisions → avant commit
+- Bug fixes → le fix ET la cause racine
+- Patterns découverts → conventions de code
+
+## ECC Skills (Engineering Code & Cognition)
+
+**Location:** `/root/fraude-ary/.opencode/skills/ecc/`
+**Commands:** `/ecc/{command}` — liste complète dans `.opencode/commands/ecc/`
+
+### Skills disponibles
+
+| Skill | Quand utiliser |
+|-------|---------------|
+| `api-design` | Nouveaux endpoints, pagination, status codes |
+| `backend-patterns` | Architecture backend, DB, optimisation |
+| `frontend-patterns` | React/Next.js, état, performance |
+| `e2e-testing` | Tests Playwright, Page Object Model |
+| `tdd-workflow` | Nouvelle feature, bug fix (80%+ coverage) |
+| `search-first` | Avant d'écrire du code custom — chercher libs existantes |
+| `security-review` | Auth, input user, secrets, endpoints sensibles |
+| `coding-standards` | Naming, conventions cross-projet |
+| `verification-loop` | Validation complète avant de déclarer fini |
+| `eval-harness` | Sessions d'évaluation formelles |
+
+### Commandes ECC utiles
+
+| Commande | Description |
+|----------|-------------|
+| `/ecc/code-review` | Review de code |
+| `/ecc/quality-gate` | Quality gate avant merge |
+| `/ecc/security` | Audit de sécurité |
+| `/ecc/plan` | Planifier une feature complexe |
+| `/ecc/orchestrate` | Orchestrer multi-agents |
+| `/ecc/tdd` | Lancer TDD workflow |
+| `/ecc/verify` | Vérifier déploiement |
+
 ## Communication Rules for Agents
 
 1. **Read this file first** before any code change.
-2. **Make minimal changes.** One feature per commit.
-3. **Follow existing patterns.** If unsure, grep for similar code.
-4. **Test before declaring done.** Backend tests via curl, frontend via Playwright.
-5. **Never skip migrations** when changing models.
-6. **Never manually build Docker** while CI/CD is running.
-7. **Document new endpoints** in `docs/api-reference.md`.
-8. **Use conventional commits:** `feat:`, `fix:`, `docs:`, `ci:`, `test:`.
-9. **Currency matters.** Never hardcode `$`. Use `formatCurrency(value, asset.currency)`.
-10. **No fake data.** Prices must come from real APIs.
-11. **Orchestrator pattern is mandatory — 4-agent workflow.** The current agent is the orchestrator ONLY and must NEVER write significant code itself. For every non-trivial task (feature, bug fix, refactor spanning >2 files), you MUST spawn exactly 4 specialized sub-agents via the `task` tool:
+2. **Load relevant skills** — avant toute tâche, charge le skill ECC ou MemPalace correspondant via `skill` tool.
+3. **Search MemPalace first** — avant d'implémenter, cherche si une décision ou pattern existe déjà.
+4. **Make minimal changes.** One feature per commit.
+5. **Follow existing patterns.** If unsure, grep for similar code or search MemPalace.
+6. **Test before declaring done.** Backend tests via curl, frontend via Playwright.
+7. **Never skip migrations** when changing models.
+8. **Never manually build Docker** while CI/CD is running.
+9. **Document new endpoints** in `docs/api-reference.md`.
+10. **Use conventional commits:** `feat:`, `fix:`, `docs:`, `ci:`, `test:`.
+11. **Currency matters.** Never hardcode `$`. Use `formatCurrency(value, asset.currency)`.
+12. **No fake data.** Prices must come from real APIs.
+13. **Mine MemPalace after decisions** — après chaque feature/bug fix important, lance `/mempalace:mine`.
+14. **Orchestrator pattern is mandatory — 4-agent workflow.** The current agent is the orchestrator ONLY and must NEVER write significant code itself. For every non-trivial task (feature, bug fix, refactor spanning >2 files), you MUST spawn exactly 4 specialized sub-agents via the `task` tool:
     - **Front-End Agent** — owns `apps/frontend/`
     - **Back-End Agent** — owns `apps/backend/`
     - **Commits Agent** — owns `git add`, `git commit`, `git push`
     - **Testing Agent** — owns `e2e/` Playwright validation
     **If you have 2 tasks, that means 8 sub-agents total.** Parallelize Front-End and Back-End work for each task simultaneously. After both are done, the Commits Agent commits everything, then the Testing Agent runs E2E tests. If tests fail, loop back to Front-End or Back-End agent, fix, re-commit, re-test. Use `subagent_type: "general"` for all implementation work.
-12. **Branch-based workflow is mandatory — STRICT.** Never push directly to `main`.
+15. **Branch-based workflow is mandatory — STRICT.** Never push directly to `main`.
     - **Step 1 — Orchestrator creates branch:** `git checkout main && git pull && git checkout -b feat/short-description`
     - **Step 2 — Orchestrator MUST stay on the feature branch.** Do NOT `git checkout main` until the feature is fully committed, pushed, and ready to merge. Verify with `git branch --show-current`.
     - **Step 3 — Orchestrator verifies branch before spawning sub-agents.** Run `git branch --show-current` and confirm it says `feat/short-description` BEFORE calling ANY `task` tool. If on `main`, STOP and checkout the feature branch first.

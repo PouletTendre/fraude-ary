@@ -30,7 +30,7 @@ function formatNumber(value: number, currency?: string) {
 }
 
 export default function DashboardPage() {
-  const { portfolio, isLoading: portfolioLoading } = usePortfolio();
+  const { portfolio, analytics, isLoading: portfolioLoading } = usePortfolio();
   const { assets, isLoading: assetsLoading } = useAssets();
   const { formatCurrency } = useSettings();
   const [lastUpdate, setLastUpdate] = useState<string>("");
@@ -192,16 +192,16 @@ export default function DashboardPage() {
             isPositive={dailyChange ? dailyChange.change >= 0 : null}
           />
           <KPICard
-            label="Beta portefeuille"
-            value="0.87"
-            delta="neutre"
-            isPositive={null}
+            label="Volatilité annualisée"
+            value={analytics?.volatility_annual != null ? `${(analytics.volatility_annual * 100).toFixed(1)}%` : "—"}
+            delta={analytics?.volatility_annual != null ? (analytics.volatility_annual < 0.15 ? "faible" : analytics.volatility_annual < 0.25 ? "modérée" : "élevée") : undefined}
+            isPositive={analytics?.volatility_annual != null ? analytics.volatility_annual < 0.2 : null}
           />
           <KPICard
-            label="Sharpe ratio"
-            value="1.62"
-            delta="bon"
-            isPositive={true}
+            label="Ratio de Sharpe"
+            value={analytics?.sharpe_ratio != null ? analytics.sharpe_ratio.toFixed(2) : "—"}
+            delta={analytics?.sharpe_ratio != null ? (analytics.sharpe_ratio > 1 ? "bon" : analytics.sharpe_ratio > 0 ? "moyen" : "négatif") : undefined}
+            isPositive={analytics?.sharpe_ratio != null ? analytics.sharpe_ratio > 0 : null}
           />
         </div>
 
@@ -249,7 +249,7 @@ export default function DashboardPage() {
                 color: "var(--primary)",
               }}
             >
-              View details <ArrowRight style={{ width: "16px", height: "16px" }} />
+              Voir détails <ArrowRight style={{ width: "16px", height: "16px" }} />
             </Link>
           </div>
 

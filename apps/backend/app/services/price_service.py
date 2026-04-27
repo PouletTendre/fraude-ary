@@ -12,10 +12,22 @@ from sqlalchemy import select
 
 CRYPTO_COMPARE_API = "https://min-api.cryptocompare.com/data"
 YAHOO_CHART_API = "https://query1.finance.yahoo.com/v8/finance/chart"
+EXCHANGE_RATE_API_URL = "https://api.frankfurter.app/latest?from=EUR"
+REDIS_KEY_EXCHANGE_RATES = "exchange_rates"
+CACHE_TTL_EXCHANGE = 3600
 
 CACHE_TTL_STOCK = 300
 CACHE_TTL_CRYPTO = 60
 CACHE_TTL_HISTORY = 86400
+
+# Default exchange rates (fallback when API is unavailable)
+DEFAULT_EXCHANGE_RATES = {
+    "EUR": 1.0,
+    "USD": 1.087,
+    "GBP": 0.85,
+    "JPY": 162.0,
+    "CHF": 0.95,
+}
 
 # Fixed real estate prices per city (EUR/m2)
 REAL_ESTATE_PRICES = {
@@ -360,9 +372,65 @@ class PriceService:
 price_service = PriceService()
 
 
+async def fetch_and_update_exchange_rates() -> Dict[str, float]:
+    """Fetch exchange rates from API, cache in Redis, and persist to DB.
+
+    Single source of truth for exchange rate fetching used by both
+    the exchange_rates router and portfolio/price services.
+    """
+    try:
+        cached = await cache_service.get(REDIS_KEY_EXCHANGE_RATES)
+        if cached:
+            return cached
+    except Exception as e:
+        logging.warning(f"Redis cache miss for exchange rates: {e}")
+
+    rates = None
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.get(EXCHANGE_RATE_API_URL)
+            if resp.status_code == 200:
+                data = resp.json()
+                api_rates = data.get("rates", {})
+                rates = {
+                    "EUR": 1.0,
+                    "USD": api_rates.get("USD", DEFAULT_EXCHANGE_RATES["USD"]),
+                    "GBP": api_rates.get("GBP", DEFAULT_EXCHANGE_RATES["GBP"]),
+                    "JPY": api_rates.get("JPY", DEFAULT_EXCHANGE_RATES["JPY"]),
+                    "CHF": api_rates.get("CHF", DEFAULT_EXCHANGE_RATES["CHF"]),
+                }
+    except Exception as e:
+        logging.warning(f"Exchange rate API failed: {e}")
+
+    if not rates:
+        rates = DEFAULT_EXCHANGE_RATES.copy()
+
+    try:
+        await cache_service.set(REDIS_KEY_EXCHANGE_RATES, rates, ttl=CACHE_TTL_EXCHANGE)
+    except Exception as e:
+        logging.warning(f"Redis cache set for exchange rates failed: {e}")
+
+    # Persist to DB
+    try:
+        from app.database import async_session
+        from app.models.exchange_rate import ExchangeRate
+        async with async_session() as db:
+            for currency, rate in rates.items():
+                existing = await db.get(ExchangeRate, currency)
+                if existing:
+                    existing.rate_vs_usd = rate
+                else:
+                    db.add(ExchangeRate(currency=currency, rate_vs_usd=rate))
+            await db.commit()
+    except Exception as e:
+        logging.warning(f"DB update for exchange rates failed: {e}")
+
+    return rates
+
+
 async def get_exchange_rates() -> Dict[str, float]:
-    from app.routers.exchange_rates import fetch_and_update_rates
-    return await fetch_and_update_rates()
+    """Public API for exchange rates — delegates to the unified fetcher."""
+    return await fetch_and_update_exchange_rates()
 
 
 async def convert_to_eur(amount: float, currency: str, db: AsyncSession = None) -> float:

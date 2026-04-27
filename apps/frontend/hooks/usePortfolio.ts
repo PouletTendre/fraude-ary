@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { fetchApi } from "@/lib/api";
-import type { PortfolioSummary } from "@/types";
+import type { PortfolioSummary, PortfolioAnalytics } from "@/types";
 
 export function usePortfolio() {
   const { data, isLoading, error } = useQuery<PortfolioSummary>({
@@ -11,9 +11,19 @@ export function usePortfolio() {
     enabled: typeof window !== "undefined" && !!localStorage.getItem("token"),
   });
 
+  const {
+    data: analytics,
+    isLoading: isAnalyticsLoading,
+  } = useQuery<PortfolioAnalytics>({
+    queryKey: ["portfolio", "analytics"],
+    queryFn: () => fetchApi<PortfolioAnalytics>("/api/v1/portfolio/analytics/summary"),
+    enabled: typeof window !== "undefined" && !!localStorage.getItem("token"),
+  });
+
   return {
     portfolio: data,
-    isLoading,
+    analytics,
+    isLoading: isLoading || isAnalyticsLoading,
     error,
   };
 }

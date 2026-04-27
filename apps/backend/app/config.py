@@ -20,7 +20,7 @@ class Settings(BaseSettings):
         super().__init__(**kwargs)
         if not self.DATABASE_URL:
             raise RuntimeError("DATABASE_URL is required — set via env var or .env file")
-        if not self.JWT_SECRET or len(self.JWT_SECRET) < 32 or self.JWT_SECRET in ("devsecretchangeinprod", "change_this_secret_in_production"):
+        if not self.JWT_SECRET or len(self.JWT_SECRET) < 32 or self.JWT_SECRET in ("devsecretchangeinprod", "change_this_secret_in_production", "ci-cd-fallback-jwt-secret-not-for-production-use-32c"):
             raise RuntimeError("JWT_SECRET must be at least 32 characters and changed from default")
 
 settings = Settings()

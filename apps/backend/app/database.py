@@ -7,7 +7,7 @@ class Base(DeclarativeBase):
 
 engine = create_async_engine(
     settings.DATABASE_URL,
-    echo=(settings.PYTHON_ENV == "development"),
+    echo=False,  # Set PYTHON_ENV=development to enable SQL echo logging
     pool_size=20,
     max_overflow=10,
 )

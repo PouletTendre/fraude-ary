@@ -35,9 +35,9 @@ export default function SettingsPage() {
     <PageTransition>
       <div className="space-y-6 max-w-3xl mx-auto">
         <div>
-          <h1 className="text-3xl font-bold text-text-primary">Settings</h1>
+          <h1 className="text-3xl font-bold text-text-primary">Paramètres</h1>
           <p className="text-text-tertiary mt-1">
-            Customize your experience and preferences
+            Personnalisez votre expérience et vos préférences
           </p>
         </div>
 
@@ -45,7 +45,7 @@ export default function SettingsPage() {
         <Card>
           <CardHeader className="flex flex-row items-center gap-2 pb-2">
             <Settings2 className="w-5 h-5 text-primary" />
-            <CardTitle className="text-base">Appearance</CardTitle>
+            <CardTitle className="text-base">Apparence</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
@@ -63,7 +63,7 @@ export default function SettingsPage() {
                   )}
                 >
                   <Sun className="w-6 h-6 text-amber-500" />
-                  <span className="text-sm font-medium text-text-secondary">Light</span>
+                  <span className="text-sm font-medium text-text-secondary">Clair</span>
                   {theme === "light" && (
                     <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
                       <Check className="w-3 h-3 text-white" />
@@ -80,7 +80,7 @@ export default function SettingsPage() {
                   )}
                 >
                   <Moon className="w-6 h-6 text-indigo-500" />
-                  <span className="text-sm font-medium text-text-secondary">Dark</span>
+                  <span className="text-sm font-medium text-text-secondary">Sombre</span>
                   {theme === "dark" && (
                     <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
                       <Check className="w-3 h-3 text-white" />
@@ -97,7 +97,7 @@ export default function SettingsPage() {
                   )}
                 >
                   <Monitor className="w-6 h-6 text-text-tertiary" />
-                  <span className="text-sm font-medium text-text-secondary">System</span>
+                  <span className="text-sm font-medium text-text-secondary">Système</span>
                   {theme === "system" && (
                     <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
                       <Check className="w-3 h-3 text-white" />
@@ -113,11 +113,11 @@ export default function SettingsPage() {
         <Card>
           <CardHeader className="flex flex-row items-center gap-2 pb-2">
             <DollarSign className="w-5 h-5 text-gain" />
-            <CardTitle className="text-base">Currency</CardTitle>
+            <CardTitle className="text-base">Devise</CardTitle>
           </CardHeader>
           <CardContent>
             <label className="text-sm font-medium text-text-secondary mb-3 block">
-              Display Currency
+              Devise d&apos;affichage
             </label>
             <div className="grid grid-cols-2 gap-3">
               {currencies.map((c) => (
@@ -153,11 +153,11 @@ export default function SettingsPage() {
         <Card>
           <CardHeader className="flex flex-row items-center gap-2 pb-2">
             <CalendarDays className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-            <CardTitle className="text-base">Date Format</CardTitle>
+            <CardTitle className="text-base">Format de date</CardTitle>
           </CardHeader>
           <CardContent>
             <label className="text-sm font-medium text-text-secondary mb-3 block">
-              Preferred Format
+              Format préféré
             </label>
             <div className="space-y-2">
               {dateFormats.map((df) => (

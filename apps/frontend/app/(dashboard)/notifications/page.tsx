@@ -51,9 +51,9 @@ function NotificationItem({ notification, onMarkAsRead }: { notification: Notifi
             </p>
           </div>
           {!notification.read && (
-            <Badge variant="info" className="flex-shrink-0">
-              New
-            </Badge>
+              <Badge variant="info" className="flex-shrink-0">
+                Nouveau
+              </Badge>
           )}
         </div>
         <div className="flex items-center gap-3 mt-2">
@@ -66,7 +66,7 @@ function NotificationItem({ notification, onMarkAsRead }: { notification: Notifi
               onClick={() => onMarkAsRead(notification.id)}
               className="text-xs text-primary hover:text-primary-hover dark:text-primary-hover hover:text-primary-hover font-medium"
             >
-              Mark as read
+                Marquer comme lu
             </button>
           )}
         </div>
@@ -82,15 +82,15 @@ export default function NotificationsPage() {
 
   const handleMarkAllAsRead = () => {
     markAllAsRead(undefined, {
-      onSuccess: () => addToast("All notifications marked as read", "success"),
-      onError: () => addToast("Failed to mark all as read", "error"),
+      onSuccess: () => addToast("Toutes les notifications marquées comme lues", "success"),
+      onError: () => addToast("Échec du marquage comme lu", "error"),
     });
   };
 
   const handleMarkAsRead = (id: string) => {
     markAsRead(id, {
-      onSuccess: () => addToast("Notification marked as read", "success"),
-      onError: () => addToast("Failed to mark as read", "error"),
+      onSuccess: () => addToast("Notification marquée comme lue", "success"),
+      onError: () => addToast("Échec du marquage comme lu", "error"),
     });
   };
 
@@ -132,10 +132,10 @@ export default function NotificationsPage() {
             <p className="text-text-tertiary mt-1">
               {unreadCount > 0 ? (
                 <span>
-                  You have <span className="font-medium text-primary">{unreadCount}</span> unread notification{unreadCount > 1 ? "s" : ""}
+                  Vous avez <span className="font-medium text-primary">{unreadCount}</span> notification{unreadCount > 1 ? "s" : ""} non lue{unreadCount > 1 ? "s" : ""}
                 </span>
               ) : (
-                "All caught up! No unread notifications."
+                "Tout est lu ! Aucune notification non lue."
               )}
             </p>
           </div>
@@ -148,7 +148,7 @@ export default function NotificationsPage() {
               className="flex items-center gap-2"
             >
               <CheckCheck className="w-4 h-4" />
-              {isMarkingAll ? "Marking..." : "Mark all as read"}
+              {isMarkingAll ? "Marquage..." : "Tout marquer comme lu"}
             </Button>
           )}
         </div>
@@ -163,7 +163,7 @@ export default function NotificationsPage() {
                 : "text-text-secondary hover:bg-surface-raised bg-surface-sunken text-text-secondary hover:bg-surface-raised"
             )}
           >
-            All ({notifications.length})
+            Toutes ({notifications.length})
           </button>
           <button
             onClick={() => setFilter("unread")}
@@ -174,7 +174,7 @@ export default function NotificationsPage() {
                 : "text-text-secondary hover:bg-surface-raised bg-surface-sunken text-text-secondary hover:bg-surface-raised"
             )}
           >
-            Unread ({unreadCount})
+            Non lues ({unreadCount})
           </button>
         </div>
 
@@ -193,12 +193,12 @@ export default function NotificationsPage() {
             <CardContent className="py-16 text-center">
               <Bell className="w-12 h-12 text-text-muted dark:text-text-secondary mx-auto mb-4" />
               <p className="text-text-tertiary text-lg font-medium">
-                {filter === "unread" ? "No unread notifications" : "No notifications yet"}
+                {filter === "unread" ? "Aucune notification non lue" : "Aucune notification pour le moment"}
               </p>
               <p className="text-sm text-text-muted dark:text-text-tertiary mt-1">
                 {filter === "unread"
-                  ? "You have read all your notifications."
-                  : "Notifications about your portfolio will appear here."}
+                  ? "Vous avez lu toutes vos notifications."
+                  : "Les notifications concernant votre portfolio apparaîtront ici."}
               </p>
             </CardContent>
           </Card>

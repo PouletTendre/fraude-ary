@@ -12,9 +12,9 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD || 'devpassword123' }}
-  JWT_SECRET: ${{ secrets.JWT_SECRET || 'ci-cd-fallback-jwt-secret-not-for-production-use-32c' }}
-  REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD || 'changeme' }}
+  POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+  JWT_SECRET: ${{ secrets.JWT_SECRET }}
+  REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
 
 jobs:
   deploy:

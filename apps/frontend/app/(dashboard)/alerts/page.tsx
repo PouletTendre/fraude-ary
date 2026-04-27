@@ -45,11 +45,11 @@ function AlertCard({ alert, onToggle, onDelete, isToggling, isDeleting }: {
                 {alert.is_active ? "Active" : "Inactive"}
               </Badge>
               {alert.triggered_at && (
-                <Badge variant="warning">Triggered</Badge>
+                <Badge variant="warning">Déclenchée</Badge>
               )}
             </div>
             <p className="text-sm text-text-tertiary mt-1">
-              Alert when price goes{" "}
+              Alerte quand le prix passe{" "}
               <span className={cn(
                 "font-medium",
                 alert.condition === "above" ? "text-gain" : "text-loss"
@@ -62,7 +62,7 @@ function AlertCard({ alert, onToggle, onDelete, isToggling, isDeleting }: {
         </div>
         <div className="flex items-center gap-3 mt-3">
           <p className="text-xs text-text-muted dark:text-text-tertiary">
-            Created {new Date(alert.created_at).toLocaleDateString("fr-FR")}
+            Créée le {new Date(alert.created_at).toLocaleDateString("fr-FR")}
           </p>
         </div>
       </div>
@@ -108,12 +108,12 @@ export default function AlertsPage() {
   const validate = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.symbol.trim()) {
-      newErrors.symbol = "Symbol is required";
+      newErrors.symbol = "Symbole requis";
     } else if (!/^[A-Z0-9.\-]{1,20}$/.test(formData.symbol.toUpperCase())) {
-      newErrors.symbol = "Symbol must be 1-20 characters (letters, numbers, dots, hyphens)";
+      newErrors.symbol = "Symbole : 1-20 caractères (lettres, chiffres, points, tirets)";
     }
     if (!formData.target_price || formData.target_price <= 0) {
-      newErrors.target_price = "Valid target price required (greater than 0)";
+      newErrors.target_price = "Prix cible valide requis (supérieur à 0)";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -129,12 +129,12 @@ export default function AlertsPage() {
       };
       createAlert(data, {
         onSuccess: () => {
-          addToast("Alert created successfully!", "success");
+          addToast("Alerte créée avec succès !", "success");
           setFormData({ symbol: "", target_price: 0, condition: "above" });
           setShowForm(false);
         },
-        onError: (error: any) => {
-          const msg = error?.message || "Failed to create alert";
+        onError: (error: unknown) => {
+          const msg = error instanceof Error ? error.message : "Failed to create alert";
           addToast(msg, "error");
         },
       });
@@ -143,16 +143,16 @@ export default function AlertsPage() {
 
   const handleToggle = (id: string, is_active: boolean) => {
     toggleAlert({ id, is_active }, {
-      onSuccess: () => addToast(is_active ? "Alert activated" : "Alert deactivated", "success"),
-      onError: () => addToast("Failed to update alert", "error"),
+      onSuccess: () => addToast(is_active ? "Alerte activée" : "Alerte désactivée", "success"),
+      onError: () => addToast("Échec de la mise à jour de l'alerte", "error"),
     });
   };
 
   const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to delete this alert?")) {
+    if (confirm("Êtes-vous sûr de vouloir supprimer cette alerte ?")) {
       deleteAlert(id, {
-        onSuccess: () => addToast("Alert deleted successfully", "success"),
-        onError: () => addToast("Failed to delete alert", "error"),
+      onSuccess: () => addToast("Alerte supprimée", "success"),
+      onError: () => addToast("Échec de la suppression de l'alerte", "error"),
       });
     }
   };
@@ -183,28 +183,28 @@ export default function AlertsPage() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-text-primary flex items-center gap-3">
-              <Bell className="w-8 h-8 text-primary" />
-              Price Alerts
-            </h1>
+              <h1 className="text-3xl font-bold text-text-primary flex items-center gap-3">
+                <Bell className="w-8 h-8 text-primary" />
+                Alertes de Prix
+              </h1>
             <p className="text-text-tertiary mt-1">
               {alerts.length > 0 ? (
                 <span>
-                  You have <span className="font-medium text-primary">{alerts.filter(a => a.is_active).length}</span> active alert{alerts.filter(a => a.is_active).length !== 1 ? "s" : ""}
+                  Vous avez <span className="font-medium text-primary">{alerts.filter(a => a.is_active).length}</span> alerte{alerts.filter(a => a.is_active).length !== 1 ? "s" : ""} active{alerts.filter(a => a.is_active).length !== 1 ? "s" : ""}
                 </span>
               ) : (
-                "Create alerts to get notified when prices hit your targets."
+                "Créez des alertes pour être notifié quand les prix atteignent vos objectifs."
               )}
             </p>
           </div>
           <Button onClick={() => setShowForm(!showForm)} disabled={isCreating}>
             {showForm ? (
               <>
-                <X className="w-4 h-4 mr-2" /> Cancel
+                <X className="w-4 h-4 mr-2" /> Annuler
               </>
             ) : (
               <>
-                <Plus className="w-4 h-4 mr-2" /> New Alert
+                <Plus className="w-4 h-4 mr-2" /> Nouvelle Alerte
               </>
             )}
           </Button>
@@ -215,21 +215,21 @@ export default function AlertsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <AlertCircle className="w-5 h-5 text-primary" />
-                Create New Alert
+                Créer une Nouvelle Alerte
               </CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <Input
-                    label="Symbol"
-                    placeholder="e.g. BTC, AAPL"
+                    label="Symbole"
+                    placeholder="ex: BTC, AAPL"
                     value={formData.symbol}
                     onChange={(e) => setFormData({ ...formData, symbol: e.target.value })}
                     error={errors.symbol}
                   />
                   <Input
-                    label="Target Price"
+                    label="Prix Cible"
                     type="number"
                     step="any"
                     placeholder="0.00"
@@ -253,7 +253,7 @@ export default function AlertsPage() {
                         )}
                       >
                         <TrendingUp className="w-4 h-4" />
-                        Above
+                        Au-dessus
                       </button>
                       <button
                         type="button"
@@ -266,14 +266,14 @@ export default function AlertsPage() {
                         )}
                       >
                         <TrendingDown className="w-4 h-4" />
-                        Below
+                        En-dessous
                       </button>
                     </div>
                   </div>
                 </div>
                 <div className="flex justify-end">
                   <Button type="submit" disabled={isCreating}>
-                    {isCreating ? "Creating..." : "Create Alert"}
+                    {isCreating ? "Création..." : "Créer l'Alerte"}
                   </Button>
                 </div>
               </form>
@@ -298,13 +298,13 @@ export default function AlertsPage() {
           <Card>
             <CardContent className="py-16 text-center">
               <Bell className="w-12 h-12 text-text-muted dark:text-text-secondary mx-auto mb-4" />
-              <p className="text-text-tertiary text-lg font-medium">No alerts yet</p>
+              <p className="text-text-tertiary text-lg font-medium">Aucune alerte</p>
               <p className="text-sm text-text-muted dark:text-text-tertiary mt-1">
-                Create your first price alert to get notified when an asset hits your target price.
+                Créez votre première alerte de prix pour être notifié quand un actif atteint votre prix cible.
               </p>
               <Button onClick={() => setShowForm(true)} className="mt-4">
                 <Plus className="w-4 h-4 mr-2" />
-                Create Alert
+                Créer une Alerte
               </Button>
             </CardContent>
           </Card>

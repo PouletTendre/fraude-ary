@@ -179,6 +179,7 @@ export interface PortfolioAnalytics {
   var_95: number | null;
   cvar_95: number | null;
   volatility_annual: number | null;
+  beta: number | null;
   best_day: { date: string; return_pct: number } | null;
   worst_day: { date: string; return_pct: number } | null;
 }
@@ -212,6 +213,6 @@ export interface ValuationResponse {
   label: string;
   methods: ValuationMethod[];
   scenarios: ValuationScenario;
-  financial_data: Record<string, any>;
+  financial_data: Record<string, unknown>;
   is_estimated: boolean;
 }

@@ -15,6 +15,7 @@ export function ThemeToggle() {
   if (!mounted) {
     return (
       <button
+        aria-label="Theme settings"
         className="flex items-center gap-[10px] w-full text-left text-[13px] text-text-secondary hover:text-text-primary hover:bg-surface-raised transition-all duration-150 ease-out"
         style={{
           padding: "8px 12px",
@@ -34,6 +35,7 @@ export function ThemeToggle() {
   return (
     <button
       onClick={() => setTheme(isLight ? "dark" : "light")}
+      aria-label={isLight ? "Passer en mode sombre" : "Passer en mode clair"}
       className="flex items-center gap-[10px] w-full text-left text-[13px] text-text-secondary hover:text-text-primary hover:bg-surface-raised transition-all duration-150 ease-out"
       style={{
         padding: "8px 12px",

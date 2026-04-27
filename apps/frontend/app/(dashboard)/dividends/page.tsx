@@ -119,7 +119,7 @@ export default function DividendsPage() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <h1 className="text-3xl font-bold text-text-primary">Dividendes</h1>
           <Button onClick={() => setShowForm(!showForm)} disabled={isCreating}>
-            {showForm ? "Cancel" : <><Plus className="w-4 h-4" /> Add Dividend</>}
+            {showForm ? "Annuler" : <><Plus className="w-4 h-4" /> Ajouter Dividende</>}
           </Button>
         </div>
 
@@ -129,7 +129,7 @@ export default function DividendsPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-text-tertiary">Total Dividends</p>
+                  <p className="text-sm text-text-tertiary">Total Dividendes</p>
                   <p className="text-2xl font-bold text-text-primary mt-1">
                     {formatCurrency(summary?.total_dividends ?? 0)}
                   </p>
@@ -144,7 +144,7 @@ export default function DividendsPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-text-tertiary">Yield on Cost</p>
+                  <p className="text-sm text-text-tertiary">Rendement sur coût</p>
                   <p className="text-2xl font-bold text-gain mt-1">
                     {(summary?.yield_on_cost ?? 0).toFixed(2)}%
                   </p>
@@ -159,7 +159,7 @@ export default function DividendsPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-text-tertiary">Dividend Count</p>
+                  <p className="text-sm text-text-tertiary">Nombre de dividendes</p>
                   <p className="text-2xl font-bold text-text-primary mt-1">
                     {summary?.count ?? 0}
                   </p>
@@ -174,7 +174,7 @@ export default function DividendsPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-text-tertiary">Top Symbol</p>
+                  <p className="text-sm text-text-tertiary">Meilleur Symbole</p>
                   <p className="text-2xl font-bold text-text-primary mt-1">
                     {topSymbol}
                   </p>
@@ -191,7 +191,7 @@ export default function DividendsPage() {
         {showForm && (
           <Card>
             <CardHeader>
-              <CardTitle>Add Dividend</CardTitle>
+              <CardTitle>Ajouter Dividende</CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -243,10 +243,10 @@ export default function DividendsPage() {
                 </div>
                 <div className="flex gap-2">
                   <Button type="submit" disabled={isCreating}>
-                    {isCreating ? "Creating..." : "Add Dividend"}
+                    {isCreating ? "Création..." : "Ajouter Dividende"}
                   </Button>
                   <Button type="button" variant="secondary" onClick={() => setShowForm(false)}>
-                    Cancel
+                    Annuler
                   </Button>
                 </div>
               </form>
@@ -291,11 +291,11 @@ export default function DividendsPage() {
                 <thead className="bg-surface-sunken border-b border-border">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-medium text-text-tertiary uppercase tracking-wider">Date</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-text-tertiary uppercase tracking-wider">Symbol</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-text-tertiary uppercase tracking-wider">Amount / Share</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-text-tertiary uppercase tracking-wider">Quantity</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-text-tertiary uppercase tracking-wider">Symbole</th>
+                      <th className="px-4 py-3 text-right text-xs font-medium text-text-tertiary uppercase tracking-wider">Montant / Action</th>
+                      <th className="px-4 py-3 text-right text-xs font-medium text-text-tertiary uppercase tracking-wider">Quantité</th>
                     <th className="px-4 py-3 text-right text-xs font-medium text-text-tertiary uppercase tracking-wider">Total</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-text-tertiary uppercase tracking-wider">Currency</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-text-tertiary uppercase tracking-wider">Devise</th>
                     <th className="px-4 py-3 text-center text-xs font-medium text-text-tertiary uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
@@ -336,7 +336,7 @@ export default function DividendsPage() {
                   ) : (
                     <tr>
                       <td colSpan={7} className="px-4 py-12 text-center text-text-tertiary">
-                        No dividends recorded yet.
+                        Aucun dividende enregistré.
                       </td>
                     </tr>
                   )}

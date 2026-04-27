@@ -16,14 +16,14 @@ export default function LoginPage() {
   const validate = () => {
     const newErrors: { email?: string; password?: string } = {};
     if (!email) {
-      newErrors.email = "Email is required";
+      newErrors.email = "Email requis";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = "Invalid email format";
+      newErrors.email = "Format d'email invalide";
     }
     if (!password) {
-      newErrors.password = "Password is required";
-    } else if (password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
+      newErrors.password = "Mot de passe requis";
+    } else if (password.length < 8) {
+      newErrors.password = "Le mot de passe doit contenir au moins 8 caractères";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -40,9 +40,9 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-bg px-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl text-center">Welcome Back</CardTitle>
+          <CardTitle className="text-2xl text-center">Connexion</CardTitle>
           <p className="text-center text-sm text-text-tertiary mt-2">
-            Sign in to your Fraude-Ary account
+            Connectez-vous à votre compte Fraude-Ary
           </p>
         </CardHeader>
         <CardContent>
@@ -53,10 +53,10 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               error={errors.email}
-              placeholder="you@example.com"
+              placeholder="vous@exemple.com"
             />
             <Input
-              label="Password"
+              label="Mot de passe"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -65,16 +65,16 @@ export default function LoginPage() {
             />
             {loginError && (
               <p className="text-sm text-loss text-center">
-                Invalid email or password
+                Email ou mot de passe invalide
               </p>
             )}
             <Button type="submit" className="w-full" disabled={isLoggingIn}>
-              {isLoggingIn ? "Signing in..." : "Sign In"}
+              {isLoggingIn ? "Connexion..." : "Se Connecter"}
             </Button>
             <p className="text-center text-sm text-text-tertiary">
-              Don&apos;t have an account?{" "}
+              Vous n&apos;avez pas de compte ?{" "}
               <Link href="/register" className="text-primary hover:underline dark:text-primary-hover">
-                Create one
+                Créer un compte
               </Link>
             </p>
           </form>

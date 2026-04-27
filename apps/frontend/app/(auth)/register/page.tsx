@@ -17,17 +17,17 @@ export default function RegisterPage() {
   const validate = () => {
     const newErrors: { email?: string; password?: string; full_name?: string } = {};
     if (!fullName) {
-      newErrors.full_name = "Full name is required";
+      newErrors.full_name = "Le nom complet est requis";
     }
     if (!email) {
-      newErrors.email = "Email is required";
+      newErrors.email = "Email requis";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = "Invalid email format";
+      newErrors.email = "Format d'email invalide";
     }
     if (!password) {
-      newErrors.password = "Password is required";
-    } else if (password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
+      newErrors.password = "Mot de passe requis";
+    } else if (password.length < 8) {
+      newErrors.password = "Le mot de passe doit contenir au moins 8 caractères";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -44,20 +44,20 @@ export default function RegisterPage() {
     <div className="min-h-screen flex items-center justify-center bg-bg px-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl text-center">Create Account</CardTitle>
+          <CardTitle className="text-2xl text-center">Créer un Compte</CardTitle>
           <p className="text-center text-sm text-text-tertiary mt-2">
-            Join Fraude-Ary to track your portfolio
+            Rejoignez Fraude-Ary pour suivre votre portfolio
           </p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
-              label="Full Name"
+              label="Nom complet"
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               error={errors.full_name}
-              placeholder="John Doe"
+              placeholder="Jean Dupont"
             />
             <Input
               label="Email"
@@ -65,10 +65,10 @@ export default function RegisterPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               error={errors.email}
-              placeholder="you@example.com"
+              placeholder="vous@exemple.com"
             />
             <Input
-              label="Password"
+              label="Mot de passe"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -77,16 +77,16 @@ export default function RegisterPage() {
             />
             {registerError && (
               <p className="text-sm text-loss text-center">
-                Registration failed. Email may already be in use.
+                Échec de l&apos;inscription. Cet email est peut-être déjà utilisé.
               </p>
             )}
             <Button type="submit" className="w-full" disabled={isRegistering}>
-              {isRegistering ? "Creating account..." : "Create Account"}
+              {isRegistering ? "Création du compte..." : "Créer un Compte"}
             </Button>
             <p className="text-center text-sm text-text-tertiary">
-              Already have an account?{" "}
+              Vous avez déjà un compte ?{" "}
               <Link href="/login" className="text-primary hover:underline dark:text-primary-hover">
-                Sign in
+                Se connecter
               </Link>
             </p>
           </form>

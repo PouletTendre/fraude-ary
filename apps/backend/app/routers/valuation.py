@@ -108,24 +108,18 @@ async def get_valuation(
 
     if not financial_data:
         financial_data = {}
-        is_estimated = True
 
     eps = financial_data.get("eps")
     fcf = financial_data.get("fcf")
     shares = financial_data.get("shares_outstanding")
 
-    # Use conservative fallback estimates when data is missing
-    if not eps or eps <= 0:
-        eps = market_price / 15.0  # assume P/E ≈ 15
-        is_estimated = True
-    if not shares or shares <= 0:
-        # Typical large cap: 1B-20B shares; use mid-range default
-        shares = 5_000_000_000
-        is_estimated = True
-    if not fcf or fcf <= 0:
-        # Typical FCF yield: 3-8% of market cap; use 5%
-        fcf = market_price * shares * 0.05
-        is_estimated = True
+    # Only use real data; return None for metrics where data is unavailable
+    if eps is not None and eps <= 0:
+        eps = None
+    if fcf is not None and fcf <= 0:
+        fcf = None
+    if shares is not None and shares <= 0:
+        shares = None
 
     fin_data = {
         "fcf": fcf,
