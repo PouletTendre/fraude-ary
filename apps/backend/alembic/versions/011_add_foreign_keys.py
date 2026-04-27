@@ -16,6 +16,17 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
+    # --- Clean up orphaned records before adding FK constraints ---
+    # Delete child records whose parent doesn't exist
+    op.execute("DELETE FROM price_history WHERE asset_id IS NOT NULL AND asset_id NOT IN (SELECT id FROM assets)")
+    op.execute("DELETE FROM transactions WHERE asset_id IS NOT NULL AND asset_id NOT IN (SELECT id FROM assets)")
+    op.execute("DELETE FROM transactions WHERE user_email NOT IN (SELECT email FROM users)")
+    op.execute("DELETE FROM dividends WHERE user_email NOT IN (SELECT email FROM users)")
+    op.execute("DELETE FROM price_alerts WHERE user_email NOT IN (SELECT email FROM users)")
+    op.execute("DELETE FROM portfolio_snapshots WHERE user_email NOT IN (SELECT email FROM users)")
+    op.execute("DELETE FROM notifications WHERE user_email NOT IN (SELECT email FROM users)")
+    op.execute("DELETE FROM assets WHERE user_email NOT IN (SELECT email FROM users)")
+
     # --- Foreign key constraints ---
     # assets → users
     op.create_foreign_key(
