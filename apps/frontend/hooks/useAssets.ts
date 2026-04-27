@@ -2,14 +2,17 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchApi } from "@/lib/api";
-import type { Asset } from "@/types";
+import type { Asset, PaginatedResponse } from "@/types";
 
-export function useAssets() {
+export function useAssets(limit = 50, offset = 0) {
   const queryClient = useQueryClient();
 
-  const { data: assets, isLoading, error } = useQuery<Asset[]>({
-    queryKey: ["assets"],
-    queryFn: () => fetchApi<Asset[]>("/api/v1/assets"),
+  const { data: paginated, isLoading, error } = useQuery<PaginatedResponse<Asset>>({
+    queryKey: ["assets", limit, offset],
+    queryFn: () =>
+      fetchApi<PaginatedResponse<Asset>>(
+        `/api/v1/assets?limit=${limit}&offset=${offset}`
+      ),
     enabled: typeof window !== "undefined" && !!localStorage.getItem("token"),
   });
 
@@ -69,7 +72,10 @@ export function useAssets() {
   });
 
   return {
-    assets: assets || [],
+    assets: paginated?.data || [],
+    total: paginated?.total || 0,
+    limit: paginated?.limit || limit,
+    offset: paginated?.offset || offset,
     isLoading,
     error,
     createAsset: createAsset.mutate,

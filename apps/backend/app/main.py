@@ -9,6 +9,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from sqlalchemy import text
 
 from app.routers import auth, assets, portfolio, prices, demo, alerts, notifications, exchange_rates, cache, monitoring, transactions, dividends, simulator, technical, analytics, news, valuation
 from app.services.cache_service import cache_service
@@ -98,7 +99,31 @@ app.include_router(valuation.router, prefix="/api/v1")
 
 @app.get("/health")
 async def health():
-    return {"status": "ok"}
+    db_status = "ok"
+    redis_status = "ok"
+
+    # Check database connectivity
+    try:
+        async with async_session() as db:
+            await db.execute(text("SELECT 1"))
+    except Exception:
+        db_status = "error"
+
+    # Check Redis connectivity
+    try:
+        if cache_service._redis:
+            await cache_service._redis.ping()
+        else:
+            redis_status = "error"
+    except Exception:
+        redis_status = "error"
+
+    overall = "ok" if db_status == "ok" and redis_status == "ok" else "degraded"
+    return {
+        "status": overall,
+        "database": db_status,
+        "redis": redis_status,
+    }
 
 @app.get("/rate-limit-test")
 @limiter.limit("10/minute")

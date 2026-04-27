@@ -13,6 +13,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { RiskMetricsCard } from "@/components/ui/RiskMetricsCard";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { 
   TrendingUp, TrendingDown, DollarSign, Activity, ArrowUpDown, ArrowUp, ArrowDown 
 } from "lucide-react";
@@ -249,6 +250,7 @@ export default function PortfolioPage() {
       </div>
 
       {/* Charts */}
+      <ErrorBoundary>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Donut Chart - Allocation */}
         <Card>
@@ -332,11 +334,13 @@ export default function PortfolioPage() {
           </CardContent>
         </Card>
       </div>
+      </ErrorBoundary>
 
       {/* Risk & Performance Metrics */}
       <RiskMetricsCard />
 
       {/* Portfolio Evolution */}
+      <ErrorBoundary>
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between flex-wrap gap-4">
@@ -480,6 +484,7 @@ export default function PortfolioPage() {
           </div>
         </CardContent>
       </Card>
+      </ErrorBoundary>
 
       {/* Detailed Assets Table */}
       <Card>

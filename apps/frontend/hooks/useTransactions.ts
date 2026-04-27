@@ -1,14 +1,17 @@
 "use client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchApi } from "@/lib/api";
-import type { Transaction } from "@/types";
+import type { Transaction, PaginatedResponse } from "@/types";
 
-export function useTransactions() {
+export function useTransactions(limit = 50, offset = 0) {
   const queryClient = useQueryClient();
 
-  const query = useQuery<Transaction[]>({
-    queryKey: ["transactions"],
-    queryFn: () => fetchApi<Transaction[]>("/api/v1/transactions"),
+  const query = useQuery<PaginatedResponse<Transaction>>({
+    queryKey: ["transactions", limit, offset],
+    queryFn: () =>
+      fetchApi<PaginatedResponse<Transaction>>(
+        `/api/v1/transactions?limit=${limit}&offset=${offset}`
+      ),
     enabled: typeof window !== "undefined" && !!localStorage.getItem("token"),
   });
 
@@ -54,7 +57,10 @@ export function useTransactions() {
   });
 
   return {
-    data: query.data,
+    data: query.data?.data,
+    total: query.data?.total || 0,
+    limit: query.data?.limit || limit,
+    offset: query.data?.offset || offset,
     isLoading: query.isLoading,
     error: query.error,
     updateTransaction: updateTransaction.mutate,

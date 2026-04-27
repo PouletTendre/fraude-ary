@@ -13,6 +13,7 @@ import { PageTransition } from "@/components/ui/PageTransition";
 import { MarketWeatherWidget } from "@/components/MarketWeatherWidget";
 import { RecentTransactionsWidget } from "@/components/RecentTransactionsWidget";
 import { GoalsWidget } from "@/components/GoalsWidget";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -164,6 +165,7 @@ export default function DashboardPage() {
         </div>
 
         {/* KPI Cards */}
+        <ErrorBoundary>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[12px]">
           <KPICard
             label="Valeur totale"
@@ -204,16 +206,19 @@ export default function DashboardPage() {
             isPositive={analytics?.sharpe_ratio != null ? analytics.sharpe_ratio > 0 : null}
           />
         </div>
+        </ErrorBoundary>
 
         {/* Time filter */}
         <TimeFilterChips value={timeFilter} onChange={setTimeFilter} />
 
         {/* Widgets */}
+        <ErrorBoundary>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-[24px]">
           <MarketWeatherWidget />
           <RecentTransactionsWidget />
           <GoalsWidget />
         </div>
+        </ErrorBoundary>
 
         {/* Asset Table */}
         <div

@@ -5,6 +5,13 @@ export interface User {
   created_at: string;
 }
 
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
 export interface Asset {
   id: string;
   type: 'crypto' | 'stocks' | 'real_estate';

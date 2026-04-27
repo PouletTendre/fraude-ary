@@ -12,6 +12,7 @@ import { fetchApi } from "@/lib/api";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Badge } from "@/components/ui/Badge";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import {
   LayoutDashboard,
   Wallet,
@@ -304,7 +305,9 @@ export default function DashboardLayout({
             <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
           </div>
         }>
-          {children}
+          <ErrorBoundary>
+            {children}
+          </ErrorBoundary>
         </Suspense>
       </main>
     </div>

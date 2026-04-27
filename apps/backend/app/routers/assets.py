@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status, Request, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update, delete
+from sqlalchemy import select, update, delete, func
 from typing import List, Optional, DefaultDict, Tuple
 from datetime import datetime, timezone, date
 import uuid
@@ -15,6 +15,7 @@ from app.models.user import User
 from app.models.asset import Asset, AssetType, PriceHistory
 from app.models.transaction import Transaction, TransactionType
 from app.schemas.assets import AssetCreate, AssetUpdate, AssetResponse, PriceRefreshResponse, PriceHistoryEnrichedResponse, OHLCData, AssetImportResponse
+from app.schemas.pagination import PaginatedResponse
 from app.routers.auth import get_current_user
 from app.services.price_service import price_service
 
@@ -208,16 +209,33 @@ async def enrich_asset_metadata(
 
     raise HTTPException(status_code=502, detail="Failed to fetch asset metadata")
 
-@router.get("", response_model=List[AssetResponse])
+@router.get("", response_model=PaginatedResponse[AssetResponse])
 async def list_all_assets(
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
+    base_query = select(Asset).where(Asset.user_email == current_user.email)
+
+    # Get total count
+    count_result = await db.execute(
+        select(func.count()).select_from(base_query.subquery())
+    )
+    total = count_result.scalar() or 0
+
+    # Get paginated results ordered by created_at desc
     result = await db.execute(
-        select(Asset).where(Asset.user_email == current_user.email)
+        base_query.order_by(Asset.created_at.desc()).limit(limit).offset(offset)
     )
     assets = result.scalars().all()
-    return [_asset_to_response(a) for a in assets]
+
+    return PaginatedResponse(
+        data=[_asset_to_response(a) for a in assets],
+        total=total,
+        limit=limit,
+        offset=offset,
+    )
 
 @router.get("/{asset_type}", response_model=List[AssetResponse])
 async def get_assets(
