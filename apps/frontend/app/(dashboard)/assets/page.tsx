@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/Input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { PageTransition } from "@/components/ui/PageTransition";
-import { Section } from "@/components/ui/Section";
+import { PageSection } from "@/components/ui/PageSection";
 import { useToast } from "@/components/ui/Toast";
 import { Badge } from "@/components/ui/Badge";
 import { SymbolSearch } from "@/components/SymbolSearch";
@@ -260,7 +260,7 @@ export default function AssetsPage() {
 
     return (
       <PageTransition>
-        <Section variant="hero">
+        <PageSection>
           <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
             <button
               onClick={() => setSelectedAsset(null)}
@@ -282,9 +282,9 @@ export default function AssetsPage() {
           }}>
             Asset Detail
           </p>
-        </Section>
+        </PageSection>
 
-        <Section variant="editorial">
+        <PageSection>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px" }}>
             <Card>
               <CardContent className="pt-6">
@@ -332,9 +332,9 @@ export default function AssetsPage() {
               </CardContent>
             </Card>
           </div>
-        </Section>
+        </PageSection>
 
-        <Section variant="cinematic" paddingY="24px">
+        <PageSection paddingY="24px">
           <Card>
             <CardHeader>
               <CardTitle>Price History</CardTitle>
@@ -370,9 +370,9 @@ export default function AssetsPage() {
               </div>
             </CardContent>
           </Card>
-        </Section>
+        </PageSection>
 
-        <Section variant="editorial">
+        <PageSection>
           <Card>
             <CardHeader>
               <CardTitle>Asset Details</CardTitle>
@@ -403,7 +403,7 @@ export default function AssetsPage() {
               </div>
             </CardContent>
           </Card>
-        </Section>
+        </PageSection>
       </PageTransition>
     );
   }
@@ -428,7 +428,7 @@ export default function AssetsPage() {
 
   return (
     <PageTransition>
-      <Section variant="hero">
+      <PageSection>
         <h1 style={{
           fontSize: "1.625rem", fontWeight: 500,
           letterSpacing: "normal", color: "var(--text-primary)", margin: 0,
@@ -442,9 +442,9 @@ export default function AssetsPage() {
         }}>
           Gérez vos actifs financiers
         </p>
-      </Section>
+      </PageSection>
 
-      <Section variant="editorial">
+      <PageSection>
         <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
           <div style={{ display: "flex", justifyContent: "flex-end" }}>
             <Button onClick={() => setShowForm(!showForm)} disabled={isCreating}>
@@ -822,7 +822,7 @@ export default function AssetsPage() {
             </>
           )}
         </div>
-      </Section>
+      </PageSection>
     </PageTransition>
   );
 }

@@ -5,7 +5,7 @@ import { useTransactions } from "@/hooks/useTransactions";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { PageTransition } from "@/components/ui/PageTransition";
-import { Section } from "@/components/ui/Section";
+import { PageSection } from "@/components/ui/PageSection";
 import { Badge } from "@/components/ui/Badge";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
@@ -141,7 +141,7 @@ export default function JournalPage() {
 
   return (
     <PageTransition>
-      <Section variant="hero">
+      <PageSection>
         <h1 style={{
           fontSize: "1.625rem", fontWeight: 500,
           letterSpacing: "normal", color: "var(--text-primary)", margin: 0,
@@ -155,9 +155,9 @@ export default function JournalPage() {
         }}>
           Historique de vos transactions
         </p>
-      </Section>
+      </PageSection>
 
-      <Section variant="editorial">
+      <PageSection>
         <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
           <div style={{ display: "flex", justifyContent: "flex-end" }}>
             <Button onClick={() => setShowForm(!showForm)} disabled={isCreating}>
@@ -476,7 +476,7 @@ export default function JournalPage() {
                               <div className="flex items-center justify-center gap-2">
                                 <button
                                   onClick={() => startEdit(tx)}
-                                  className="p-1.5 rounded-md text-text-secondary hover:text-primary hover:bg-primary-subtle transition-colors"
+                                  className="p-1.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-surface-raised transition-colors"
                                   title="Edit"
                                 >
                                   <Pencil className="w-4 h-4" />
@@ -507,7 +507,7 @@ export default function JournalPage() {
             </table>
           </div>
         </div>
-      </Section>
+      </PageSection>
     </PageTransition>
   );
 }

@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Badge } from "@/components/ui/Badge";
 import { PageTransition } from "@/components/ui/PageTransition";
-import { Section } from "@/components/ui/Section";
+import { PageSection } from "@/components/ui/PageSection";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useToast } from "@/components/ui/Toast";
 import { Bell, CheckCheck, Clock, AlertTriangle, Info, CheckCircle } from "lucide-react";
@@ -103,24 +103,24 @@ export default function NotificationsPage() {
   if (isLoading) {
     return (
       <PageTransition>
-        <Section variant="hero">
+        <PageSection>
           <Skeleton className="h-8 w-48 mb-2" />
           <Skeleton className="h-4 w-64" />
-        </Section>
-        <Section variant="editorial">
+        </PageSection>
+        <PageSection>
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
               <Skeleton key={i} className="h-24 w-full" />
             ))}
           </div>
-        </Section>
+        </PageSection>
       </PageTransition>
     );
   }
 
   return (
     <PageTransition>
-      <Section variant="hero">
+      <PageSection>
         <h1 style={{
           fontSize: "1.625rem", fontWeight: 500,
           letterSpacing: "normal", color: "var(--text-primary)", margin: 0,
@@ -134,9 +134,9 @@ export default function NotificationsPage() {
         }}>
           Centre de notifications
         </p>
-      </Section>
+      </PageSection>
 
-      <Section variant="editorial">
+      <PageSection>
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <p className="text-text-tertiary">
@@ -168,7 +168,7 @@ export default function NotificationsPage() {
               className={cn(
                 "px-3 py-1.5 text-sm rounded-lg transition-colors font-medium",
                 filter === "all"
-                  ? "bg-primary text-white"
+                  ? "bg-surface-raised text-text-primary"
                   : "text-text-secondary hover:bg-surface-raised bg-surface-sunken text-text-secondary hover:bg-surface-raised"
               )}
             >
@@ -179,7 +179,7 @@ export default function NotificationsPage() {
               className={cn(
                 "px-3 py-1.5 text-sm rounded-lg transition-colors font-medium",
                 filter === "unread"
-                  ? "bg-primary text-white"
+                  ? "bg-surface-raised text-text-primary"
                   : "text-text-secondary hover:bg-surface-raised bg-surface-sunken text-text-secondary hover:bg-surface-raised"
               )}
             >
@@ -213,7 +213,7 @@ export default function NotificationsPage() {
             </Card>
           )}
         </div>
-      </Section>
+      </PageSection>
     </PageTransition>
   );
 }

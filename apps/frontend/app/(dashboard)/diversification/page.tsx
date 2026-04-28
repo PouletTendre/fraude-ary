@@ -8,7 +8,7 @@ import { useSettings } from "@/hooks/useSettings";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { PageTransition } from "@/components/ui/PageTransition";
-import { Section } from "@/components/ui/Section";
+import { PageSection } from "@/components/ui/PageSection";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
 import { Download, Layers, Globe, Building2 } from "lucide-react";
@@ -139,26 +139,26 @@ export default function DiversificationPage() {
   if (error || !data) {
     return (
       <PageTransition>
-        <Section variant="hero">
+        <PageSection>
           <h1 style={{
             fontSize: "1.625rem", fontWeight: 500,
             letterSpacing: "normal", color: "var(--text-primary)", margin: 0,
           }}>
             Diversification
           </h1>
-        </Section>
-        <Section variant="editorial">
+        </PageSection>
+        <PageSection>
           <div className="py-12 text-center">
             <p className="text-text-tertiary">Failed to load diversification data. Please try again later.</p>
           </div>
-        </Section>
+        </PageSection>
       </PageTransition>
     );
   }
 
   return (
     <PageTransition>
-      <Section variant="hero">
+      <PageSection>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "20px" }}>
           <div>
             <h1 style={{
@@ -180,9 +180,9 @@ export default function DiversificationPage() {
             {isEnriching ? "Enriching..." : "Enrich Data"}
           </Button>
         </div>
-      </Section>
+      </PageSection>
 
-      <Section variant="cinematic" paddingY="24px">
+      <PageSection paddingY="24px">
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "20px" }}>
           <ChartSection
             title="By Type"
@@ -203,9 +203,9 @@ export default function DiversificationPage() {
             formatCurrency={formatCurrency}
           />
         </div>
-      </Section>
+      </PageSection>
 
-      <Section variant="editorial">
+      <PageSection>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "20px" }}>
           {[
             { title: "Type Breakdown", entries: data.by_type },
@@ -264,7 +264,7 @@ export default function DiversificationPage() {
             </div>
           ))}
         </div>
-      </Section>
+      </PageSection>
     </PageTransition>
   );
 }

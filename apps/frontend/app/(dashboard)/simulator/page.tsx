@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { PageTransition } from "@/components/ui/PageTransition";
-import { Section } from "@/components/ui/Section";
+import { PageSection } from "@/components/ui/PageSection";
 import { Calculator, TrendingUp, DollarSign, PiggyBank, BarChart3 } from "lucide-react";
 import type { SimulatorRequest } from "@/types";
 
@@ -49,7 +49,7 @@ export default function SimulatorPage() {
 
   return (
     <PageTransition>
-      <Section variant="hero">
+      <PageSection>
         <h1 style={{
           fontSize: "1.625rem", fontWeight: 500,
           letterSpacing: "normal", color: "var(--text-primary)", margin: 0,
@@ -63,9 +63,9 @@ export default function SimulatorPage() {
         }}>
           Simulez vos investissements
         </p>
-      </Section>
+      </PageSection>
 
-      <Section variant="editorial">
+      <PageSection>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-[20px]">
           {/* Form Section */}
           <Card className="lg:col-span-1">
@@ -371,7 +371,7 @@ export default function SimulatorPage() {
             )}
           </div>
         </div>
-      </Section>
+      </PageSection>
     </PageTransition>
   );
 }
@@ -431,7 +431,7 @@ function KpiCard({
 }) {
   const bgMap = {
     gain: "bg-gain-muted",
-    primary: "bg-primary-subtle",
+    primary: "bg-surface-raised",
     secondary: "bg-surface-raised",
   };
 

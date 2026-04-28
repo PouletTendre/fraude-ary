@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Badge } from "@/components/ui/Badge";
 import { PageTransition } from "@/components/ui/PageTransition";
-import { Section } from "@/components/ui/Section";
+import { PageSection } from "@/components/ui/PageSection";
 import { useAlerts, type CreateAlertData } from "@/hooks/useAlerts";
 import { useToast } from "@/components/ui/Toast";
 import { useSettings } from "@/hooks/useSettings";
@@ -72,8 +72,8 @@ function AlertCard({ alert, onToggle, onDelete, isToggling, isDeleting }: {
           onClick={() => onToggle(alert.id, !alert.is_active)}
           disabled={isToggling}
           className={cn(
-            "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50",
-            alert.is_active ? "bg-primary" : "bg-surface-raised"
+            "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-text-secondary focus:ring-offset-2 disabled:opacity-50",
+            alert.is_active ? "bg-surface-raised" : "bg-surface-sunken"
           )}
         >
           <span
@@ -161,24 +161,24 @@ export default function AlertsPage() {
   if (isLoading) {
     return (
       <PageTransition>
-        <Section variant="hero">
+        <PageSection>
           <Skeleton className="h-8 w-48 mb-2" />
           <Skeleton className="h-4 w-64" />
-        </Section>
-        <Section variant="editorial">
+        </PageSection>
+        <PageSection>
           <div className="space-y-3">
             {[...Array(3)].map((_, i) => (
               <Skeleton key={i} className="h-28 w-full" />
             ))}
           </div>
-        </Section>
+        </PageSection>
       </PageTransition>
     );
   }
 
   return (
     <PageTransition>
-      <Section variant="hero">
+      <PageSection>
         <h1 style={{
           fontSize: "1.625rem", fontWeight: 500,
           letterSpacing: "normal", color: "var(--text-primary)", margin: 0,
@@ -192,9 +192,9 @@ export default function AlertsPage() {
         }}>
           Alertes de prix configurées
         </p>
-      </Section>
+      </PageSection>
 
-      <Section variant="editorial">
+      <PageSection>
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <p className="text-text-tertiary">
@@ -319,7 +319,7 @@ export default function AlertsPage() {
             </Card>
           )}
         </div>
-      </Section>
+      </PageSection>
     </PageTransition>
   );
 }

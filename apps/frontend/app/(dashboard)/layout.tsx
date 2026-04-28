@@ -41,7 +41,7 @@ export default function DashboardLayout({
     <>
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary focus:text-white focus:rounded-lg"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-[100] focus:px-4 focus:py-2 focus:bg-accent-teal focus:text-white focus:rounded-lg"
       >
         Skip to content
       </a>

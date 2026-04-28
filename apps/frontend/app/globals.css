@@ -4,9 +4,11 @@
 
 :root {
   --bg:              #000000;
-  --surface:         #0D0D0D;
-  --surface-raised:  #1A1A1A;
-  --surface-sunken:  #050505;
+  --surface:         #FFFFFF;
+  --surface-raised:  #F5F5F5;
+  --surface-sunken:  #EEEEEE;
+  --card-bg:         #FFFFFF;
+  --card-text:       #181818;
   --skeleton:        #1A1A1A;
   --primary:         #DA291C;
   --primary-hover:   #B01E0A;
@@ -48,9 +50,11 @@
 
 html.light {
   --bg:              #FFFFFF;
-  --surface:         #FFFFFF;
-  --surface-raised:  #F5F5F5;
-  --surface-sunken:  #EEEEEE;
+  --surface:         #0D0D0D;
+  --surface-raised:  #1A1A1A;
+  --surface-sunken:  #050505;
+  --card-bg:         #0D0D0D;
+  --card-text:       #F8FAFC;
   --skeleton:        #E0E0E0;
   --text-primary:    #181818;
   --text-secondary:  #666666;

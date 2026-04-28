@@ -34,7 +34,7 @@ export function GoalsWidget() {
         current: totalValue,
         target: Math.max(totalValue * 1.5, 10000),
         color: "bg-blue-600",
-        bgColor: "bg-primary-subtle",
+        bgColor: "bg-surface-raised",
       },
       {
         id: "profit-target",

@@ -13,4 +13,4 @@ export { ChartTooltip } from "./ChartTooltip";
 export { RiskMetricsCard } from "./RiskMetricsCard";
 export { ValuationCard } from "./ValuationCard";
 export { NewsCard } from "./NewsCard";
-export { Section, type SectionProps } from "./Section";
+export { PageSection, type PageSectionProps } from "./PageSection";

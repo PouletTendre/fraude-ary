@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { PageTransition } from "@/components/ui/PageTransition";
-import { Section } from "@/components/ui/Section";
+import { PageSection } from "@/components/ui/PageSection";
 import { NewsCard } from "@/components/ui/NewsCard";
 import { ValuationCard } from "@/components/ui/ValuationCard";
 import { SymbolSearch } from "@/components/SymbolSearch";
@@ -94,7 +94,7 @@ export default function AnalysisPage() {
 
   return (
     <PageTransition>
-      <Section variant="hero">
+      <PageSection>
         <h1 style={{
           fontSize: "1.625rem", fontWeight: 500,
           letterSpacing: "normal", color: "var(--text-primary)", margin: 0,
@@ -108,9 +108,9 @@ export default function AnalysisPage() {
         }}>
           Analyse technique et fondamentale
         </p>
-      </Section>
+      </PageSection>
 
-      <Section variant="editorial">
+      <PageSection>
         <div className="space-y-6">
           <SymbolSearch
             value={symbol}
@@ -307,7 +307,7 @@ export default function AnalysisPage() {
             </>
           ) : null}
         </div>
-      </Section>
+      </PageSection>
     </PageTransition>
   );
 }

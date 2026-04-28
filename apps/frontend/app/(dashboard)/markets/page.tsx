@@ -12,7 +12,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { PageTransition } from "@/components/ui/PageTransition";
-import { Section } from "@/components/ui/Section";
+import { PageSection } from "@/components/ui/PageSection";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import type { OHLCVPoint, OHLCVResponse } from "@/types";
 import {
@@ -183,7 +183,7 @@ export default function MarketsPage() {
 
   return (
     <PageTransition>
-      <Section variant="hero">
+      <PageSection>
         <div>
           <h1 style={{ fontSize: 26, fontWeight: 500, color: "var(--text-primary)", margin: 0 }}>
             Marchés
@@ -202,9 +202,9 @@ export default function MarketsPage() {
             Analyse technique · Graphiques
           </p>
         </div>
-      </Section>
+      </PageSection>
 
-      <Section variant="editorial">
+      <PageSection>
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           {/* Search */}
           <style>{`
@@ -291,7 +291,7 @@ export default function MarketsPage() {
                       className={cn(
                         "px-3 py-1 text-sm rounded-lg transition-colors font-medium",
                         period === p.value
-                          ? "bg-primary text-white"
+                          ? "bg-surface-raised text-text-primary"
                           : "bg-surface-raised text-text-secondary hover:bg-surface"
                       )}
                     >
@@ -310,7 +310,7 @@ export default function MarketsPage() {
                     className={cn(
                       "px-3 py-1.5 flex items-center gap-1.5 text-sm font-medium transition-colors",
                       chartType === "candle"
-                        ? "bg-primary text-white"
+                        ? "bg-surface-raised text-text-primary"
                         : "bg-surface-raised text-text-secondary hover:bg-surface"
                     )}
                   >
@@ -322,7 +322,7 @@ export default function MarketsPage() {
                     className={cn(
                       "px-3 py-1.5 flex items-center gap-1.5 text-sm font-medium transition-colors",
                       chartType === "line"
-                        ? "bg-primary text-white"
+                        ? "bg-surface-raised text-text-primary"
                         : "bg-surface-raised text-text-secondary hover:bg-surface"
                     )}
                   >
@@ -334,7 +334,7 @@ export default function MarketsPage() {
                     className={cn(
                       "px-3 py-1.5 flex items-center gap-1.5 text-sm font-medium transition-colors",
                       chartType === "area"
-                        ? "bg-primary text-white"
+                        ? "bg-surface-raised text-text-primary"
                         : "bg-surface-raised text-text-secondary hover:bg-surface"
                     )}
                   >
@@ -484,11 +484,11 @@ export default function MarketsPage() {
             </>
           )}
         </div>
-      </Section>
+      </PageSection>
 
       {/* Cinematic: Full-width MarketChart */}
       {hasData && !isLoading && (
-        <Section variant="cinematic" paddingY="24px">
+        <PageSection paddingY="24px">
           <ErrorBoundary>
             <MarketChart
               data={mergedData}
@@ -500,7 +500,7 @@ export default function MarketsPage() {
               onLoadMore={handleLoadMore}
             />
           </ErrorBoundary>
-        </Section>
+        </PageSection>
       )}
     </PageTransition>
   );

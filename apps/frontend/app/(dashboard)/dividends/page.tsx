@@ -5,7 +5,7 @@ import { useDividends } from "@/hooks/useDividends";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { PageTransition } from "@/components/ui/PageTransition";
-import { Section } from "@/components/ui/Section";
+import { PageSection } from "@/components/ui/PageSection";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
@@ -99,11 +99,11 @@ export default function DividendsPage() {
   if (isLoading) {
     return (
       <PageTransition>
-        <Section variant="hero">
+        <PageSection>
           <Skeleton className="h-8 w-48 mb-2" />
           <Skeleton className="h-4 w-64" />
-        </Section>
-        <Section variant="editorial">
+        </PageSection>
+        <PageSection>
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-[20px]">
               <Skeleton className="h-32 rounded-xl" />
@@ -114,14 +114,14 @@ export default function DividendsPage() {
             <Skeleton className="h-80 rounded-xl" />
             <Skeleton className="h-96 rounded-xl" />
           </div>
-        </Section>
+        </PageSection>
       </PageTransition>
     );
   }
 
   return (
     <PageTransition>
-      <Section variant="hero">
+      <PageSection>
         <h1 style={{
           fontSize: "1.625rem", fontWeight: 500,
           letterSpacing: "normal", color: "var(--text-primary)", margin: 0,
@@ -135,9 +135,9 @@ export default function DividendsPage() {
         }}>
           Suivi des dividendes
         </p>
-      </Section>
+      </PageSection>
 
-      <Section variant="editorial">
+      <PageSection>
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div />
@@ -157,8 +157,8 @@ export default function DividendsPage() {
                       {formatCurrency(summary?.total_dividends ?? 0)}
                     </p>
                   </div>
-                  <div className="p-3 bg-primary-subtle rounded-full">
-                    <DollarSign className="w-6 h-6 text-primary" />
+                  <div className="p-3 bg-surface-raised rounded-full">
+                    <DollarSign className="w-6 h-6 text-text-secondary" />
                   </div>
                 </div>
               </CardContent>
@@ -187,8 +187,8 @@ export default function DividendsPage() {
                       {summary?.count ?? 0}
                     </p>
                   </div>
-                  <div className="p-3 bg-primary-subtle rounded-full">
-                    <Hash className="w-6 h-6 text-primary" />
+                  <div className="p-3 bg-surface-raised rounded-full">
+                    <Hash className="w-6 h-6 text-text-secondary" />
                   </div>
                 </div>
               </CardContent>
@@ -202,8 +202,8 @@ export default function DividendsPage() {
                       {topSymbol}
                     </p>
                   </div>
-                  <div className="p-3 bg-primary-subtle rounded-full">
-                    <Trophy className="w-6 h-6 text-primary" />
+                  <div className="p-3 bg-surface-raised rounded-full">
+                    <Trophy className="w-6 h-6 text-text-secondary" />
                   </div>
                 </div>
               </CardContent>
@@ -404,7 +404,7 @@ export default function DividendsPage() {
             </CardContent>
           </Card>
         </div>
-      </Section>
+      </PageSection>
     </PageTransition>
   );
 }

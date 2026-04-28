@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/Badge";
 import { AssetAvatar } from "@/components/ui/AssetAvatar";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { PageTransition } from "@/components/ui/PageTransition";
-import { Section } from "@/components/ui/Section";
+import { PageSection } from "@/components/ui/PageSection";
 import { MarketWeatherWidget } from "@/components/MarketWeatherWidget";
 import { RecentTransactionsWidget } from "@/components/RecentTransactionsWidget";
 import { GoalsWidget } from "@/components/GoalsWidget";
@@ -87,24 +87,24 @@ export default function DashboardPage() {
   if (isLoading) {
     return (
       <PageTransition>
-        <Section variant="hero">
+        <PageSection>
           <Skeleton style={{ height: "36px", width: "200px" }} />
           <Skeleton style={{ height: "16px", width: "300px", marginTop: "8px" }} />
-        </Section>
-        <Section variant="editorial">
+        </PageSection>
+        <PageSection>
           <div className="grid grid-cols-4 gap-[20px]">
             {[1, 2, 3, 4].map((i) => (
               <Skeleton key={i} style={{ height: "110px" }} />
             ))}
           </div>
-        </Section>
+        </PageSection>
       </PageTransition>
     );
   }
 
   return (
     <PageTransition>
-      <Section variant="hero">
+      <PageSection>
         <h1
           style={{
             fontSize: "1.625rem",
@@ -128,9 +128,9 @@ export default function DashboardPage() {
         >
           {lastUpdate ? `Mis à jour le ${lastUpdate}` : "Chargement..."}
         </p>
-      </Section>
+      </PageSection>
 
-      <Section variant="editorial">
+      <PageSection>
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           <ErrorBoundary>
             <div
@@ -180,9 +180,9 @@ export default function DashboardPage() {
 
           <TimeFilterChips value={timeFilter} onChange={setTimeFilter} />
         </div>
-      </Section>
+      </PageSection>
 
-      <Section variant="cinematic">
+      <PageSection>
         <ErrorBoundary>
           <div
             className="grid grid-cols-1 lg:grid-cols-3"
@@ -193,9 +193,9 @@ export default function DashboardPage() {
             <GoalsWidget />
           </div>
         </ErrorBoundary>
-      </Section>
+      </PageSection>
 
-      <Section variant="editorial">
+      <PageSection>
         <div style={{ background: "var(--surface)" }}>
           <div
             style={{
@@ -401,7 +401,7 @@ export default function DashboardPage() {
             </tbody>
           </table>
         </div>
-      </Section>
+      </PageSection>
     </PageTransition>
   );
 }

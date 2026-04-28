@@ -3,7 +3,7 @@
 import { useTheme } from "next-themes";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { PageTransition } from "@/components/ui/PageTransition";
-import { Section } from "@/components/ui/Section";
+import { PageSection } from "@/components/ui/PageSection";
 import { useSettings, type Currency, type DateFormat } from "@/hooks/useSettings";
 import { cn } from "@/lib/utils";
 import {
@@ -34,7 +34,7 @@ export default function SettingsPage() {
 
   return (
     <PageTransition>
-      <Section variant="hero">
+      <PageSection>
         <h1 style={{
           fontSize: "1.625rem", fontWeight: 500,
           letterSpacing: "normal", color: "var(--text-primary)", margin: 0,
@@ -48,9 +48,9 @@ export default function SettingsPage() {
         }}>
           Paramètres du compte
         </p>
-      </Section>
+      </PageSection>
 
-      <Section variant="editorial">
+      <PageSection>
         <div className="max-w-3xl mx-auto space-y-6">
           {/* Appearance */}
           <Card>
@@ -69,51 +69,45 @@ export default function SettingsPage() {
                     className={cn(
                       "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all",
                       theme === "light"
-                        ? "border-primary bg-primary-subtle dark:bg-primary-muted/30"
+                        ? "border-border bg-surface-raised"
                         : "border-border hover:border-border-hover"
                     )}
                   >
                     <Sun className="w-6 h-6 text-amber-500" />
                     <span className="text-sm font-medium text-text-secondary">Clair</span>
-                    {theme === "light" && (
-                      <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                        <Check className="w-3 h-3 text-white" />
-                      </div>
-                    )}
+                    <div className="w-5 h-5 rounded-full bg-surface-raised flex items-center justify-center">
+                      {theme === "light" && <div className="w-2.5 h-2.5 rounded-full bg-text-primary" />}
+                    </div>
                   </button>
                   <button
                     onClick={() => setTheme("dark")}
                     className={cn(
                       "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all",
                       theme === "dark"
-                        ? "border-primary bg-primary-subtle dark:bg-primary-muted/30"
+                        ? "border-border bg-surface-raised"
                         : "border-border hover:border-border-hover"
                     )}
                   >
                     <Moon className="w-6 h-6 text-indigo-500" />
                     <span className="text-sm font-medium text-text-secondary">Sombre</span>
-                    {theme === "dark" && (
-                      <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                        <Check className="w-3 h-3 text-white" />
-                      </div>
-                    )}
+                    <div className="w-5 h-5 rounded-full bg-surface-raised flex items-center justify-center">
+                      {theme === "dark" && <div className="w-2.5 h-2.5 rounded-full bg-text-primary" />}
+                    </div>
                   </button>
                   <button
                     onClick={() => setTheme("system")}
                     className={cn(
                       "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all",
                       theme === "system"
-                        ? "border-primary bg-primary-subtle dark:bg-primary-muted/30"
+                        ? "border-border bg-surface-raised"
                         : "border-border hover:border-border-hover"
                     )}
                   >
                     <Monitor className="w-6 h-6 text-text-tertiary" />
                     <span className="text-sm font-medium text-text-secondary">Système</span>
-                    {theme === "system" && (
-                      <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                        <Check className="w-3 h-3 text-white" />
-                      </div>
-                    )}
+                    <div className="w-5 h-5 rounded-full bg-surface-raised flex items-center justify-center">
+                      {theme === "system" && <div className="w-2.5 h-2.5 rounded-full bg-text-primary" />}
+                    </div>
                   </button>
                 </div>
               </div>
@@ -138,7 +132,7 @@ export default function SettingsPage() {
                     className={cn(
                       "flex items-center gap-3 p-4 rounded-xl border-2 transition-all",
                       settings.currency === c.value
-                        ? "border-primary bg-primary-subtle dark:bg-primary-muted/30"
+                        ? "border-border bg-surface-raised"
                         : "border-border hover:border-border-hover"
                     )}
                   >
@@ -149,11 +143,9 @@ export default function SettingsPage() {
                       <p className="text-sm font-medium text-text-primary">{c.label}</p>
                       <p className="text-xs text-text-tertiary">{c.value}</p>
                     </div>
-                    {settings.currency === c.value && (
-                      <div className="ml-auto w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                        <Check className="w-3 h-3 text-white" />
-                      </div>
-                    )}
+                    <div className="ml-auto w-5 h-5 rounded-full bg-surface-raised flex items-center justify-center">
+                      {settings.currency === c.value && <div className="w-2.5 h-2.5 rounded-full bg-text-primary" />}
+                    </div>
                   </button>
                 ))}
               </div>
@@ -178,7 +170,7 @@ export default function SettingsPage() {
                     className={cn(
                       "flex items-center justify-between w-full p-4 rounded-xl border-2 transition-all",
                       settings.dateFormat === df.value
-                        ? "border-primary bg-primary-subtle dark:bg-primary-muted/30"
+                        ? "border-border bg-surface-raised"
                         : "border-border hover:border-border-hover"
                     )}
                   >
@@ -186,18 +178,16 @@ export default function SettingsPage() {
                       <p className="text-sm font-medium text-text-primary">{df.label}</p>
                       <p className="text-xs text-text-tertiary mt-0.5">{df.example}</p>
                     </div>
-                    {settings.dateFormat === df.value && (
-                      <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                        <Check className="w-3 h-3 text-white" />
-                      </div>
-                    )}
+                    <div className="w-5 h-5 rounded-full bg-surface-raised flex items-center justify-center">
+                      {settings.dateFormat === df.value && <div className="w-2.5 h-2.5 rounded-full bg-text-primary" />}
+                    </div>
                   </button>
                 ))}
               </div>
             </CardContent>
           </Card>
         </div>
-      </Section>
+      </PageSection>
     </PageTransition>
   );
 }

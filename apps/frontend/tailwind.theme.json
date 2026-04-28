@@ -5,6 +5,8 @@
     "surface-raised": "var(--surface-raised)",
     "surface-sunken": "var(--surface-sunken)",
     "skeleton": "var(--skeleton)",
+    "card-bg": "var(--card-bg)",
+    "card-text": "var(--card-text)",
     "primary": {
       "DEFAULT": "#DA291C",
       "hover": "#B01E0A",

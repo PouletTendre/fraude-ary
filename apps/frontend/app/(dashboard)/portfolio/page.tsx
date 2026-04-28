@@ -14,7 +14,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { RiskMetricsCard } from "@/components/ui/RiskMetricsCard";
-import { Section } from "@/components/ui/Section";
+import { PageSection } from "@/components/ui/PageSection";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { 
   TrendingUp, TrendingDown, DollarSign, Activity, ArrowUpDown, ArrowUp, ArrowDown 
@@ -140,8 +140,8 @@ export default function PortfolioPage() {
   const SortIcon = ({ column }: { column: SortKey }) => {
     if (sortKey !== column) return <ArrowUpDown className="w-3.5 h-3.5 text-text-muted" />;
     return sortDirection === "asc" 
-      ? <ArrowUp className="w-3.5 h-3.5 text-primary" /> 
-      : <ArrowDown className="w-3.5 h-3.5 text-primary" />;
+      ? <ArrowUp className="w-3.5 h-3.5 text-text-secondary" /> 
+      : <ArrowDown className="w-3.5 h-3.5 text-text-secondary" />;
   };
 
   const tableHeaderStyle: React.CSSProperties = {
@@ -156,11 +156,11 @@ export default function PortfolioPage() {
   if (isLoading) {
     return (
       <PageTransition>
-        <Section variant="hero">
+        <PageSection>
           <Skeleton style={{ height: 36, width: 200 }} />
           <Skeleton style={{ height: 18, width: 180, marginTop: 8 }} />
-        </Section>
-        <Section variant="editorial">
+        </PageSection>
+        <PageSection>
           <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
             <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: "20px" }}>
               <Skeleton style={{ height: 128 }} />
@@ -170,16 +170,16 @@ export default function PortfolioPage() {
             <Skeleton style={{ height: 200 }} />
             <Skeleton style={{ height: 384 }} />
           </div>
-        </Section>
-        <Section variant="cinematic" paddingY="24px">
+        </PageSection>
+        <PageSection paddingY="24px">
           <div className="grid grid-cols-1 lg:grid-cols-2" style={{ gap: "20px" }}>
             <Skeleton style={{ height: 320 }} />
             <Skeleton style={{ height: 320 }} />
           </div>
-        </Section>
-        <Section variant="editorial">
+        </PageSection>
+        <PageSection>
           <Skeleton style={{ height: 384 }} />
-        </Section>
+        </PageSection>
       </PageTransition>
     );
   }
@@ -187,7 +187,7 @@ export default function PortfolioPage() {
   if (error || !portfolio) {
     return (
       <PageTransition>
-        <Section variant="hero">
+        <PageSection>
           <h1 style={{ fontSize: 26, fontWeight: 500, color: "var(--text-primary)", margin: 0 }}>
             Portfolio
           </h1>
@@ -204,21 +204,21 @@ export default function PortfolioPage() {
           >
             Vue d&apos;ensemble
           </p>
-        </Section>
-        <Section variant="editorial">
+        </PageSection>
+        <PageSection>
           <Card>
             <CardContent className="py-12 text-center">
               <p className="text-text-tertiary">Impossible de charger les données du portfolio. Veuillez réessayer plus tard.</p>
             </CardContent>
           </Card>
-        </Section>
+        </PageSection>
       </PageTransition>
     );
   }
 
   return (
     <PageTransition>
-      <Section variant="hero">
+      <PageSection>
         <div>
           <h1 style={{ fontSize: 26, fontWeight: 500, color: "var(--text-primary)", margin: 0 }}>
             Portfolio
@@ -237,9 +237,9 @@ export default function PortfolioPage() {
             Vue d&apos;ensemble
           </p>
         </div>
-      </Section>
+      </PageSection>
 
-      <Section variant="editorial">
+      <PageSection>
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: "20px" }}>
@@ -252,8 +252,8 @@ export default function PortfolioPage() {
                       {formatCurrency(portfolio.total_value, "EUR")}
                     </p>
                   </div>
-                  <div className="p-3 bg-primary-subtle rounded-full">
-                    <DollarSign className="w-6 h-6 text-primary" />
+                  <div className="p-3 bg-surface-raised rounded-full">
+                    <DollarSign className="w-6 h-6 text-text-secondary" />
                   </div>
                 </div>
               </CardContent>
@@ -325,26 +325,26 @@ export default function PortfolioPage() {
                     </div>
                     <div className="flex rounded-[var(--r-md)] overflow-hidden border border-border">
                       <button
-                        onClick={() => setChartView("value")}
-                        className={cn(
-                          "px-3 py-1 text-sm font-medium transition-colors",
-                          chartView === "value"
-                            ? "bg-primary text-white"
-                            : "bg-surface-raised text-text-secondary hover:bg-surface"
-                        )}
-                      >
-                        Valeur
-                      </button>
-                      <button
-                        onClick={() => setChartView("performance")}
-                        className={cn(
-                          "px-3 py-1 text-sm font-medium transition-colors",
-                          chartView === "performance"
-                            ? "bg-primary text-white"
-                            : "bg-surface-raised text-text-secondary hover:bg-surface"
-                        )}
-                      >
-                        Performance
+                      onClick={() => setChartView("value")}
+                      className={cn(
+                        "px-3 py-1 text-sm font-medium transition-colors",
+                        chartView === "value"
+                          ? "bg-surface-raised text-text-primary"
+                          : "bg-surface-raised text-text-secondary hover:bg-surface"
+                      )}
+                    >
+                      Valeur
+                    </button>
+                    <button
+                      onClick={() => setChartView("performance")}
+                      className={cn(
+                        "px-3 py-1 text-sm font-medium transition-colors",
+                        chartView === "performance"
+                          ? "bg-surface-raised text-text-primary"
+                          : "bg-surface-raised text-text-secondary hover:bg-surface"
+                      )}
+                    >
+                      Performance
                       </button>
                     </div>
                     <div className="flex gap-1">
@@ -389,9 +389,9 @@ export default function PortfolioPage() {
             </Card>
           </ErrorBoundary>
         </div>
-      </Section>
+      </PageSection>
 
-      <Section variant="cinematic" paddingY="24px">
+      <PageSection paddingY="24px">
         <ErrorBoundary>
           <div className="grid grid-cols-1 lg:grid-cols-2" style={{ gap: "20px" }}>
             {/* Donut Chart - Allocation */}
@@ -477,9 +477,9 @@ export default function PortfolioPage() {
             </Card>
           </div>
         </ErrorBoundary>
-      </Section>
+      </PageSection>
 
-      <Section variant="editorial">
+      <PageSection>
         {/* Detailed Assets Table */}
         <Card>
           <CardHeader>
@@ -585,7 +585,7 @@ export default function PortfolioPage() {
                               "w-2 h-8 rounded-full",
                               row.type === "crypto" && "bg-secondary",
                               row.type === "stocks" && "bg-gain",
-                              row.type === "real_estate" && "bg-primary"
+                              row.type === "real_estate" && "bg-surface-raised"
                             )} />
                             <span className="font-semibold text-text-primary uppercase">
                               {row.symbol}
@@ -649,7 +649,7 @@ export default function PortfolioPage() {
             </div>
           </CardContent>
         </Card>
-      </Section>
+      </PageSection>
     </PageTransition>
   );
 }
