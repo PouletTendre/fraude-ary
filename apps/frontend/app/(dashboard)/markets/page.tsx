@@ -121,6 +121,8 @@ export default function MarketsPage() {
   const [showSMA20, setShowSMA20] = useState(false);
   const [showSMA50, setShowSMA50] = useState(false);
   const [showBollinger, setShowBollinger] = useState(false);
+  const [showRSI, setShowRSI] = useState(false);
+  const [showMACD, setShowMACD] = useState(false);
 
   const { formatCurrency } = useSettings();
 
@@ -371,6 +373,36 @@ export default function MarketsPage() {
                       BB
                     </Badge>
                   </label>
+                  <label className="flex items-center gap-2 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={showRSI}
+                      onChange={(e) => setShowRSI(e.target.checked)}
+                      className="rounded"
+                    />
+                    <span className="text-sm text-text-secondary font-medium">RSI 14</span>
+                    <Badge
+                      variant="neutral"
+                      style={{ fontSize: "8px", padding: "2px 5px" }}
+                    >
+                      RSI
+                    </Badge>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={showMACD}
+                      onChange={(e) => setShowMACD(e.target.checked)}
+                      className="rounded"
+                    />
+                    <span className="text-sm text-text-secondary font-medium">MACD</span>
+                    <Badge
+                      variant="neutral"
+                      style={{ fontSize: "8px", padding: "2px 5px" }}
+                    >
+                      MACD
+                    </Badge>
+                  </label>
                 </div>
               </div>
 
@@ -473,6 +505,8 @@ export default function MarketsPage() {
               showSMA20={showSMA20}
               showSMA50={showSMA50}
               showBollinger={showBollinger}
+              showRSI={showRSI}
+              showMACD={showMACD}
               onLoadMore={handleLoadMore}
             />
           </ErrorBoundary>
