@@ -17,7 +17,7 @@ const mainLinks: NavLink[] = [
   { href: "/portfolio", label: "Portfolio" },
   { href: "/markets", label: "Marchés" },
   { href: "/assets", label: "Actifs" },
-  { href: "/research", label: "Research" },
+  { href: "/analysis", label: "Analyse" },
   { href: "/simulator", label: "Simulateur" },
 ];
 

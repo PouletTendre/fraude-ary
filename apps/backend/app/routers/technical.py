@@ -1,9 +1,10 @@
 import asyncio
 import logging
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import httpx
 import yfinance
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, Query
 
