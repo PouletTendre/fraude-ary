@@ -268,7 +268,7 @@ export default function DividendsPage() {
                     <Button type="submit" disabled={isCreating}>
                       {isCreating ? "Création..." : "Ajouter Dividende"}
                     </Button>
-                    <Button type="button" variant="secondary" onClick={() => setShowForm(false)}>
+                    <Button type="button" variant="white" onClick={() => setShowForm(false)}>
                       Annuler
                     </Button>
                   </div>

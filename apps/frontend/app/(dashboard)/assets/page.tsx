@@ -569,7 +569,7 @@ export default function AssetsPage() {
                     <Button type="submit" disabled={isUpdating}>
                       {isUpdating ? "Saving..." : "Save"}
                     </Button>
-                    <Button type="button" variant="secondary" onClick={handleEditCancel}>
+                    <Button type="button" variant="white" onClick={handleEditCancel}>
                       Cancel
                     </Button>
                   </div>
@@ -601,7 +601,7 @@ export default function AssetsPage() {
                 ))}
               </select>
               {hasActiveFilters && (
-                <Button variant="secondary" size="sm" onClick={clearFilters}>
+                <Button variant="white" size="sm" onClick={clearFilters}>
                   <X className="w-4 h-4 mr-1" /> Clear
                 </Button>
               )}

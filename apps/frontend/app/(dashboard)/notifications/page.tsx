@@ -150,7 +150,7 @@ export default function NotificationsPage() {
             </p>
             {unreadCount > 0 && (
               <Button
-                variant="secondary"
+                variant="white"
                 size="sm"
                 onClick={handleMarkAllAsRead}
                 disabled={isMarkingAll}

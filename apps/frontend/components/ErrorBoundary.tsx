@@ -72,7 +72,7 @@ export class ErrorBoundary extends React.Component<
             onClick={this.handleReset}
             className={cn(
               "inline-flex items-center gap-[6px] border-none rounded-[var(--r-md)] font-medium font-sans cursor-pointer transition-all duration-150 ease-out whitespace-nowrap",
-              "bg-primary text-text-primary hover:bg-primary-hover hover:shadow-glow",
+              "bg-surface-raised text-text-primary border border-border hover:bg-surface",
               "px-4 py-2 text-[14px]"
             )}
           >

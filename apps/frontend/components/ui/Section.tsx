@@ -3,9 +3,8 @@
 import { cn } from "@/lib/utils";
 import { HTMLAttributes, forwardRef } from "react";
 
-interface SectionProps extends HTMLAttributes<HTMLElement> {
+interface SectionProps extends HTMLAttributes<HTMLDivElement> {
   variant?: "hero" | "editorial" | "cinematic";
-  as?: "section" | "div" | "header" | "footer";
   maxWidth?: string;
   paddingY?: string;
 }
@@ -34,11 +33,10 @@ const variantStyles: Record<string, React.CSSProperties> = {
   },
 };
 
-const Section = forwardRef<HTMLElement, SectionProps>(
+const Section = forwardRef<HTMLDivElement, SectionProps>(
   (
     {
       variant = "hero",
-      as: Component = "section",
       maxWidth = "1920px",
       paddingY,
       className,
@@ -52,7 +50,7 @@ const Section = forwardRef<HTMLElement, SectionProps>(
     const p = variantPadding[variant] ?? variantPadding.hero;
 
     return (
-      <Component
+      <section
         ref={ref}
         className={cn("w-full", p, className)}
         style={{
@@ -66,7 +64,7 @@ const Section = forwardRef<HTMLElement, SectionProps>(
         {...rest}
       >
         <div style={{ maxWidth, margin: "0 auto" }}>{children}</div>
-      </Component>
+      </section>
     );
   },
 );
