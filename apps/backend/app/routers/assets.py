@@ -351,7 +351,6 @@ async def create_asset(
         date=purchase_dt.date()
     )
     db.add(tx)
-    db.add(tx)
     await db.commit()
 
     return _asset_to_response(db_asset)
