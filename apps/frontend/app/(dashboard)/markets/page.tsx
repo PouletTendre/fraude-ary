@@ -488,7 +488,7 @@ export default function MarketsPage() {
 
       {/* Cinematic: Full-width MarketChart */}
       {hasData && !isLoading && (
-        <Section variant="cinematic">
+        <Section variant="cinematic" paddingY="24px">
           <ErrorBoundary>
             <MarketChart
               data={mergedData}

@@ -160,14 +160,16 @@ export function MarketChart({
     chartRef.current = chart;
     earliestTimeRef.current = data.length > 0 ? data[0].time : Infinity;
 
-    // Zoom-back detection
-    chart.timeScale().subscribeVisibleLogicalRangeChange(() => {
+    // Zoom-back detection — uses time range for correct timestamp comparison
+    chart.timeScale().subscribeVisibleTimeRangeChange((range) => {
       if (!onLoadMoreRef.current || loadingMoreRef.current) return;
-
-      const visibleRange = chart.timeScale().getVisibleRange();
-      if (visibleRange && (visibleRange.from as number) < earliestTimeRef.current) {
+      if (!range) return;
+      if ((range.from as number) < earliestTimeRef.current) {
         loadingMoreRef.current = true;
-        onLoadMoreRef.current(earliestTimeRef.current);
+        Promise.resolve(onLoadMoreRef.current(earliestTimeRef.current))
+          .finally(() => {
+            loadingMoreRef.current = false;
+          });
       }
     });
 
@@ -368,7 +370,7 @@ export function MarketChart({
       bollingerLowerRef.current.setData(lowerData);
     }
 
-    loadingMoreRef.current = false;
+    // Data updated, zoom-back guard already reset via .finally() in listener
   }, [data, type, chartData, volumeData, sma20, sma50, bollinger]);
 
   if (data.length === 0) {

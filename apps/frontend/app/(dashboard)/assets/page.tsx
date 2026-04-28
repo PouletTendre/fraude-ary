@@ -334,7 +334,7 @@ export default function AssetsPage() {
           </div>
         </Section>
 
-        <Section variant="cinematic">
+        <Section variant="cinematic" paddingY="24px">
           <Card>
             <CardHeader>
               <CardTitle>Price History</CardTitle>

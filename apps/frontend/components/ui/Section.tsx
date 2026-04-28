@@ -10,9 +10,9 @@ interface SectionProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const variantPadding: Record<string, string> = {
-  hero: "py-10 px-4 md:py-20 md:px-8",
-  editorial: "py-8 px-4 md:py-[60px] md:px-8",
-  cinematic: "py-10 px-4 md:py-20 md:px-8",
+  hero: "py-10 px-4 md:py-14 md:px-8",
+  editorial: "py-6 px-4 md:py-8 md:px-8",
+  cinematic: "py-10 px-4 md:py-14 md:px-8",
 };
 
 const variantStyles: Record<string, React.CSSProperties> = {
@@ -26,10 +26,10 @@ const variantStyles: Record<string, React.CSSProperties> = {
     borderBottom: "1px solid var(--border)",
   },
   cinematic: {
-    background: "#000000",
-    color: "#FFFFFF",
-    borderTop: "1px solid rgba(255,255,255,0.06)",
-    borderBottom: "1px solid rgba(255,255,255,0.06)",
+    background: "var(--surface-sunken)",
+    color: "var(--text-primary)",
+    borderTop: "1px solid var(--border)",
+    borderBottom: "1px solid var(--border)",
   },
 };
 

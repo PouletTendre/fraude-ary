@@ -171,7 +171,7 @@ export default function PortfolioPage() {
             <Skeleton style={{ height: 384 }} />
           </div>
         </Section>
-        <Section variant="cinematic">
+        <Section variant="cinematic" paddingY="24px">
           <div className="grid grid-cols-1 lg:grid-cols-2" style={{ gap: "20px" }}>
             <Skeleton style={{ height: 320 }} />
             <Skeleton style={{ height: 320 }} />
@@ -391,7 +391,7 @@ export default function PortfolioPage() {
         </div>
       </Section>
 
-      <Section variant="cinematic">
+      <Section variant="cinematic" paddingY="24px">
         <ErrorBoundary>
           <div className="grid grid-cols-1 lg:grid-cols-2" style={{ gap: "20px" }}>
             {/* Donut Chart - Allocation */}

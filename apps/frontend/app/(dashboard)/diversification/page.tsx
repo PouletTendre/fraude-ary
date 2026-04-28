@@ -182,7 +182,7 @@ export default function DiversificationPage() {
         </div>
       </Section>
 
-      <Section variant="cinematic">
+      <Section variant="cinematic" paddingY="24px">
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "20px" }}>
           <ChartSection
             title="By Type"
