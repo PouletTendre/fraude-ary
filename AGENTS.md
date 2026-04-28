@@ -207,3 +207,28 @@ ECC skills available at `/root/fraude-ary/.opencode/skills/ecc/`. Load via `skil
 6. Merge only after push: `gh pr create` or `git checkout main && git merge feat/short-desc --no-edit && git push origin main`
 
 **Critical:** Never push directly to `main`. Never let sub-agents write to main.
+
+## Hermes Agent Orchestration
+
+Fraude-Ary is managed by **Hermes**, an autonomous AI orchestrator that coordinates 9 specialized sub-agents:
+
+| Agent | Role | Model |
+|-------|------|-------|
+| **orchestrator** (Hermes) | Central coordinator, CEO interface | `deepseek-v4-pro` |
+| **manager** | Sprint planning, task breakdown, GitHub issues | `MiniMax-M2.5` |
+| **dev-backend** | FastAPI, PostgreSQL, API development | `deepseek-v4-pro` |
+| **dev-frontend** | React, Next.js, TypeScript | `deepseek-v4-pro` |
+| **dev-devops** | CI/CD, Docker, monitoring | `deepseek-v4-pro` |
+| **code-reviewer** | PR review, code quality (ruff, radon) | `deepseek-v4-pro` |
+| **security-expert** | OWASP audit, vulnerability scanning | `deepseek-v4-pro` |
+| **tester** | pytest, Playwright E2E, smoke tests | `MiniMax-M2.5` |
+| **documentation** | Tech docs, API reference | `MiniMax-M2.5` |
+| **communication** | Daily standups, CEO briefings, changelogs | `MiniMax-M2.5` |
+
+**Architecture:** Hermes runs 24/7 on Hermes Agent platform. Sub-agents are invoked via `delegate_task` with dedicated skill prompts. Shared state at `~/fraude-ary-company/shared/state/`.
+
+**Cron schedule:**
+- Daily Standup: Mon-Fri 08:00
+- Weekly CEO Briefing: Friday 17:00
+
+**Setup date:** 2026-04-28
