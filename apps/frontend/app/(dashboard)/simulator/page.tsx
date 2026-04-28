@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { PageTransition } from "@/components/ui/PageTransition";
+import { Section } from "@/components/ui/Section";
 import { Calculator, TrendingUp, DollarSign, PiggyBank, BarChart3 } from "lucide-react";
 import type { SimulatorRequest } from "@/types";
 
@@ -48,15 +49,24 @@ export default function SimulatorPage() {
 
   return (
     <PageTransition>
-      <div className="space-y-6">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-primary-subtle rounded-lg">
-            <Calculator className="w-6 h-6 text-primary" />
-          </div>
-          <h1 className="text-3xl font-bold text-text-primary">Simulateur de patrimoine</h1>
-        </div>
+      <Section variant="hero">
+        <h1 style={{
+          fontSize: "1.625rem", fontWeight: 500,
+          letterSpacing: "normal", color: "var(--text-primary)", margin: 0,
+        }}>
+          Simulateur de patrimoine
+        </h1>
+        <p style={{
+          fontSize: "0.8125rem", color: "var(--text-secondary)",
+          marginTop: "8px", fontFamily: "var(--font-body)",
+          textTransform: "uppercase", letterSpacing: "1px",
+        }}>
+          Simulez vos investissements
+        </p>
+      </Section>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <Section variant="editorial">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-[20px]">
           {/* Form Section */}
           <Card className="lg:col-span-1">
             <CardHeader>
@@ -97,7 +107,7 @@ export default function SimulatorPage() {
                     onChange={(v) => updateField("annual_return_rate", v)}
                   />
                   <SliderField
-                    label="Taux d'inflation"
+                    label="Taux d’inflation"
                     value={form.inflation_rate}
                     min={0}
                     max={10}
@@ -151,7 +161,7 @@ export default function SimulatorPage() {
 
             {isLoading && (
               <div className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-[20px]">
                   <Skeleton className="h-28 rounded-xl" />
                   <Skeleton className="h-28 rounded-xl" />
                   <Skeleton className="h-28 rounded-xl" />
@@ -164,7 +174,7 @@ export default function SimulatorPage() {
             {data && !isLoading && (
               <>
                 {/* KPI Cards */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-[20px]">
                   <KpiCard
                     label="Valeur finale"
                     value={formatCurrency(data.final_value, "EUR")}
@@ -287,12 +297,42 @@ export default function SimulatorPage() {
                       <table className="w-full text-sm">
                         <thead>
                           <tr className="border-b border-border bg-surface-sunken/50">
-                            <th className="text-left px-5 py-3 font-medium text-text-tertiary">Année</th>
-                            <th className="text-right px-5 py-3 font-medium text-text-tertiary">Valeur</th>
-                            <th className="text-right px-5 py-3 font-medium text-text-tertiary">Valeur réelle</th>
-                            <th className="text-right px-5 py-3 font-medium text-text-tertiary">Contributions</th>
-                            <th className="text-right px-5 py-3 font-medium text-text-tertiary">Dividendes</th>
-                            <th className="text-right px-5 py-3 font-medium text-text-tertiary">Gains</th>
+                            <th
+                              className="text-left px-5 py-3 font-normal text-xs text-text-tertiary uppercase tracking-[1px]"
+                              style={{ fontFamily: "var(--font-body)" }}
+                            >
+                              Année
+                            </th>
+                            <th
+                              className="text-right px-5 py-3 font-normal text-xs text-text-tertiary uppercase tracking-[1px]"
+                              style={{ fontFamily: "var(--font-body)" }}
+                            >
+                              Valeur
+                            </th>
+                            <th
+                              className="text-right px-5 py-3 font-normal text-xs text-text-tertiary uppercase tracking-[1px]"
+                              style={{ fontFamily: "var(--font-body)" }}
+                            >
+                              Valeur réelle
+                            </th>
+                            <th
+                              className="text-right px-5 py-3 font-normal text-xs text-text-tertiary uppercase tracking-[1px]"
+                              style={{ fontFamily: "var(--font-body)" }}
+                            >
+                              Contributions
+                            </th>
+                            <th
+                              className="text-right px-5 py-3 font-normal text-xs text-text-tertiary uppercase tracking-[1px]"
+                              style={{ fontFamily: "var(--font-body)" }}
+                            >
+                              Dividendes
+                            </th>
+                            <th
+                              className="text-right px-5 py-3 font-normal text-xs text-text-tertiary uppercase tracking-[1px]"
+                              style={{ fontFamily: "var(--font-body)" }}
+                            >
+                              Gains
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
@@ -331,7 +371,7 @@ export default function SimulatorPage() {
             )}
           </div>
         </div>
-      </div>
+      </Section>
     </PageTransition>
   );
 }

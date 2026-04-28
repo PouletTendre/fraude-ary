@@ -8,6 +8,7 @@ import { useSettings } from "@/hooks/useSettings";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { PageTransition } from "@/components/ui/PageTransition";
+import { Section } from "@/components/ui/Section";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
 import { Download, Layers, Globe, Building2 } from "lucide-react";
@@ -138,36 +139,51 @@ export default function DiversificationPage() {
   if (error || !data) {
     return (
       <PageTransition>
-        <div className="space-y-6">
-          <h1 className="text-3xl font-bold text-text-primary">Diversification</h1>
-          <Card>
-            <CardContent className="py-12 text-center">
-              <p className="text-text-tertiary">Failed to load diversification data. Please try again later.</p>
-            </CardContent>
-          </Card>
-        </div>
+        <Section variant="hero">
+          <h1 style={{
+            fontSize: "1.625rem", fontWeight: 500,
+            letterSpacing: "normal", color: "var(--text-primary)", margin: 0,
+          }}>
+            Diversification
+          </h1>
+        </Section>
+        <Section variant="editorial">
+          <div className="py-12 text-center">
+            <p className="text-text-tertiary">Failed to load diversification data. Please try again later.</p>
+          </div>
+        </Section>
       </PageTransition>
     );
   }
 
   return (
     <PageTransition>
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <Section variant="hero">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "20px" }}>
           <div>
-            <h1 className="text-3xl font-bold text-text-primary">Diversification</h1>
-            <p className="text-sm text-text-tertiary mt-1">
+            <h1 style={{
+              fontSize: "1.625rem", fontWeight: 500,
+              letterSpacing: "normal", color: "var(--text-primary)", margin: 0,
+            }}>
+              Diversification
+            </h1>
+            <p style={{
+              fontSize: "0.8125rem", color: "var(--text-secondary)",
+              marginTop: "8px", fontFamily: "var(--font-body)",
+              textTransform: "uppercase", letterSpacing: "1px",
+            }}>
               Total portfolio value: {formatCurrency(data.total_value, "EUR")}
             </p>
           </div>
           <Button onClick={handleEnrich} disabled={isEnriching}>
-            <Download className="w-4 h-4" />
+            <Download className="w-4 h-4 mr-2" />
             {isEnriching ? "Enriching..." : "Enrich Data"}
           </Button>
         </div>
+      </Section>
 
-        {/* Donut Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <Section variant="cinematic">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "20px" }}>
           <ChartSection
             title="By Type"
             icon={<Layers className="w-5 h-5" />}
@@ -187,50 +203,68 @@ export default function DiversificationPage() {
             formatCurrency={formatCurrency}
           />
         </div>
+      </Section>
 
-        {/* Detail Tables */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <Section variant="editorial">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "20px" }}>
           {[
             { title: "Type Breakdown", entries: data.by_type },
             { title: "Sector Breakdown", entries: data.by_sector },
             { title: "Geography Breakdown", entries: data.by_country },
           ].map((section) => (
-            <Card key={section.title}>
-              <CardHeader>
-                <CardTitle>{section.title}</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-border bg-surface-sunken/50">
-                      <th className="text-left px-4 py-2 font-medium text-text-tertiary">Category</th>
-                      <th className="text-right px-4 py-2 font-medium text-text-tertiary">Value</th>
-                      <th className="text-right px-4 py-2 font-medium text-text-tertiary">%</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {section.entries.length > 0 ? (
-                      section.entries.map((entry) => (
-                        <tr key={entry.label} className="border-b border-border hover:bg-surface-raised/50 transition-colors">
-                          <td className="px-4 py-3 text-text-primary font-medium">{entry.label}</td>
-                          <td className="px-4 py-3 text-right text-text-primary">{formatCurrency(entry.value, "EUR")}</td>
-                          <td className="px-4 py-3 text-right text-text-secondary">{entry.percentage.toFixed(1)}%</td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan={3} className="px-4 py-8 text-center text-text-tertiary">
-                          No data available
-                        </td>
+            <div key={section.title}>
+              <h3 style={{
+                fontFamily: "var(--font-body)", fontWeight: 500,
+                fontSize: "0.9375rem", color: "var(--text-primary)",
+                marginBottom: "12px",
+              }}>
+                {section.title}
+              </h3>
+              <table className="w-full">
+                <thead>
+                  <tr style={{ borderBottom: "1px solid var(--border)", background: "var(--surface-sunken)" }}>
+                    <th
+                      className="text-left px-4 py-2 text-xs font-normal text-text-tertiary uppercase"
+                      style={{ letterSpacing: "1px" }}
+                    >
+                      Category
+                    </th>
+                    <th
+                      className="text-right px-4 py-2 text-xs font-normal text-text-tertiary uppercase"
+                      style={{ letterSpacing: "1px" }}
+                    >
+                      Value
+                    </th>
+                    <th
+                      className="text-right px-4 py-2 text-xs font-normal text-text-tertiary uppercase"
+                      style={{ letterSpacing: "1px" }}
+                    >
+                      %
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {section.entries.length > 0 ? (
+                    section.entries.map((entry) => (
+                      <tr key={entry.label} className="border-b border-border hover:bg-surface-raised/50 transition-colors">
+                        <td className="px-4 py-3 text-text-primary font-medium text-sm">{entry.label}</td>
+                        <td className="px-4 py-3 text-right text-text-primary text-sm">{formatCurrency(entry.value, "EUR")}</td>
+                        <td className="px-4 py-3 text-right text-text-secondary text-sm">{entry.percentage.toFixed(1)}%</td>
                       </tr>
-                    )}
-                  </tbody>
-                </table>
-              </CardContent>
-            </Card>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={3} className="px-4 py-8 text-center text-text-tertiary text-sm">
+                        No data available
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           ))}
         </div>
-      </div>
+      </Section>
     </PageTransition>
   );
 }

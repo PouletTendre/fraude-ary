@@ -12,6 +12,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { PageTransition } from "@/components/ui/PageTransition";
+import { Section } from "@/components/ui/Section";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import type { OHLCVPoint, OHLCVResponse } from "@/types";
 import {
@@ -52,7 +53,7 @@ function SummaryCard({
   const periodLow = Math.min(...data.map((d) => d.low));
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-4" style={{ gap: "20px" }}>
       <Card>
         <CardContent className="pt-6">
           <p className="text-sm text-text-tertiary">Prix actuel</p>
@@ -182,290 +183,325 @@ export default function MarketsPage() {
 
   return (
     <PageTransition>
-      <div className="space-y-6">
-        <h1 className="text-3xl font-bold text-text-primary">Marchés</h1>
-
-        {/* Search */}
-        <div style={{ maxWidth: "420px" }}>
-          <SymbolSearch value={symbol} onChange={setSymbol} />
-        </div>
-
-        {/* Loading */}
-        {isLoading && (
-          <div className="space-y-6">
-            <Skeleton className="h-[500px] w-full rounded-[var(--r-lg)]" />
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Skeleton className="h-24 rounded-[var(--r-lg)]" />
-              <Skeleton className="h-24 rounded-[var(--r-lg)]" />
-              <Skeleton className="h-24 rounded-[var(--r-lg)]" />
-              <Skeleton className="h-24 rounded-[var(--r-lg)]" />
-            </div>
-          </div>
-        )}
-
-        {/* Error */}
-        {error && !isLoading && (
-          <Card>
-            <CardContent className="py-8 text-center">
-              <p className="text-text-tertiary">
-                Erreur lors du chargement des données pour {symbol}.
-              </p>
-              {(error as Error)?.message && (
-                <p className="text-xs text-text-muted mt-1">
-                  {(error as Error).message}
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        {/* No symbol selected */}
-        {!symbol && !isLoading && (
-          <div
-            className="flex flex-col items-center justify-center gap-4 py-16"
+      <Section variant="hero">
+        <div>
+          <h1 style={{ fontSize: 26, fontWeight: 500, color: "var(--text-primary)", margin: 0 }}>
+            Marchés
+          </h1>
+          <p
             style={{
-              background: "var(--surface-raised)",
-              border: "1px solid var(--border)",
-              borderRadius: "var(--r-lg)",
+              fontFamily: "var(--font-body)",
+              textTransform: "uppercase",
+              fontSize: 12,
+              letterSpacing: "1px",
+              color: "var(--text-tertiary)",
+              marginTop: 8,
+              marginBottom: 0,
             }}
           >
-            <BarChart3 className="w-12 h-12 text-text-muted opacity-50" />
-            <p className="text-text-tertiary text-lg">
-              Recherchez un symbole pour afficher le graphique
-            </p>
-            <p className="text-text-muted text-sm">
-              Exemple: AAPL, BTC-USD, AIR.PA, BRK.B
-            </p>
-          </div>
-        )}
+            Analyse technique · Graphiques
+          </p>
+        </div>
+      </Section>
 
-        {/* Chart and details */}
-        {hasData && !isLoading && (
-          <>
-            {/* Controls */}
+      <Section variant="editorial">
+        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+          {/* Search */}
+          <style>{`
+            .ferrari-symbol-search input {
+              background: transparent !important;
+              border-color: var(--border-input) !important;
+            }
+            .ferrari-symbol-search input:focus {
+              border-color: #14b8a6 !important;
+              box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.25) !important;
+            }
+          `}</style>
+          <div className="ferrari-symbol-search" style={{ maxWidth: 420 }}>
+            <SymbolSearch value={symbol} onChange={setSymbol} />
+          </div>
+
+          {/* Loading */}
+          {isLoading && (
+            <>
+              <Skeleton style={{ height: 500 }} />
+              <div className="grid grid-cols-2 md:grid-cols-4" style={{ gap: "20px" }}>
+                <Skeleton style={{ height: 96 }} />
+                <Skeleton style={{ height: 96 }} />
+                <Skeleton style={{ height: 96 }} />
+                <Skeleton style={{ height: 96 }} />
+              </div>
+            </>
+          )}
+
+          {/* Error */}
+          {error && !isLoading && (
+            <Card>
+              <CardContent className="py-8 text-center">
+                <p className="text-text-tertiary">
+                  Erreur lors du chargement des données pour {symbol}.
+                </p>
+                {(error as Error)?.message && (
+                  <p className="text-xs text-text-muted mt-1">
+                    {(error as Error).message}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* No symbol selected */}
+          {!symbol && !isLoading && (
             <div
-              className="flex flex-wrap items-center gap-4 p-4"
+              className="flex flex-col items-center justify-center gap-4 py-16"
               style={{
                 background: "var(--surface-raised)",
                 border: "1px solid var(--border)",
                 borderRadius: "var(--r-lg)",
               }}
             >
-              {/* Timeframe */}
-              <div className="flex gap-1">
-                {PERIODS.map((p) => (
+              <BarChart3 className="w-12 h-12 text-text-muted opacity-50" />
+              <p className="text-text-tertiary text-lg">
+                Recherchez un symbole pour afficher le graphique
+              </p>
+              <p className="text-text-muted text-sm">
+                Exemple: AAPL, BTC-USD, AIR.PA, BRK.B
+              </p>
+            </div>
+          )}
+
+          {/* Chart and details */}
+          {hasData && !isLoading && (
+            <>
+              {/* Controls */}
+              <div
+                className="flex flex-wrap items-center gap-4 p-4"
+                style={{
+                  background: "var(--surface-raised)",
+                  border: "1px solid var(--border)",
+                  borderRadius: "var(--r-lg)",
+                }}
+              >
+                {/* Timeframe */}
+                <div className="flex gap-1">
+                  {PERIODS.map((p) => (
+                    <button
+                      key={p.value}
+                      onClick={() => setPeriod(p.value)}
+                      className={cn(
+                        "px-3 py-1 text-sm rounded-lg transition-colors font-medium",
+                        period === p.value
+                          ? "bg-primary text-white"
+                          : "bg-surface-raised text-text-secondary hover:bg-surface"
+                      )}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Divider */}
+                <div className="w-px h-6" style={{ background: "var(--border)" }} />
+
+                {/* Chart type toggle */}
+                <div className="flex rounded-[var(--r-md)] overflow-hidden border border-border">
                   <button
-                    key={p.value}
-                    onClick={() => setPeriod(p.value)}
+                    onClick={() => setChartType("candle")}
                     className={cn(
-                      "px-3 py-1 text-sm rounded-lg transition-colors font-medium",
-                      period === p.value
+                      "px-3 py-1.5 flex items-center gap-1.5 text-sm font-medium transition-colors",
+                      chartType === "candle"
                         ? "bg-primary text-white"
                         : "bg-surface-raised text-text-secondary hover:bg-surface"
                     )}
                   >
-                    {p.label}
+                    <CandlestickChart className="w-4 h-4" />
+                    <span className="hidden sm:inline">Candle</span>
                   </button>
-                ))}
+                  <button
+                    onClick={() => setChartType("line")}
+                    className={cn(
+                      "px-3 py-1.5 flex items-center gap-1.5 text-sm font-medium transition-colors",
+                      chartType === "line"
+                        ? "bg-primary text-white"
+                        : "bg-surface-raised text-text-secondary hover:bg-surface"
+                    )}
+                  >
+                    <LineChart className="w-4 h-4" />
+                    <span className="hidden sm:inline">Ligne</span>
+                  </button>
+                  <button
+                    onClick={() => setChartType("area")}
+                    className={cn(
+                      "px-3 py-1.5 flex items-center gap-1.5 text-sm font-medium transition-colors",
+                      chartType === "area"
+                        ? "bg-primary text-white"
+                        : "bg-surface-raised text-text-secondary hover:bg-surface"
+                    )}
+                  >
+                    <Activity className="w-4 h-4" />
+                    <span className="hidden sm:inline">Aire</span>
+                  </button>
+                </div>
+
+                {/* Divider */}
+                <div className="w-px h-6" style={{ background: "var(--border)" }} />
+
+                {/* Overlay toggles */}
+                <div className="flex items-center gap-3 flex-wrap">
+                  <label className="flex items-center gap-2 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={showSMA20}
+                      onChange={(e) => setShowSMA20(e.target.checked)}
+                      className="rounded"
+                    />
+                    <span className="text-sm text-text-secondary font-medium">SMA 20</span>
+                    <Badge
+                      variant="warning"
+                      style={{ fontSize: "8px", padding: "2px 5px" }}
+                    >
+                      SMA
+                    </Badge>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={showSMA50}
+                      onChange={(e) => setShowSMA50(e.target.checked)}
+                      className="rounded"
+                    />
+                    <span className="text-sm text-text-secondary font-medium">SMA 50</span>
+                    <Badge
+                      variant="info"
+                      style={{ fontSize: "8px", padding: "2px 5px" }}
+                    >
+                      SMA
+                    </Badge>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={showBollinger}
+                      onChange={(e) => setShowBollinger(e.target.checked)}
+                      className="rounded"
+                    />
+                    <span className="text-sm text-text-secondary font-medium">Bollinger</span>
+                    <Badge
+                      variant="neutral"
+                      style={{ fontSize: "8px", padding: "2px 5px" }}
+                    >
+                      BB
+                    </Badge>
+                  </label>
+                </div>
               </div>
 
-              {/* Divider */}
-              <div className="w-px h-6" style={{ background: "var(--border)" }} />
+              {/* Summary Cards */}
+              <SummaryCard data={summaryData} formatCurrency={formatCurrency} />
 
-              {/* Chart type toggle */}
-              <div className="flex rounded-[var(--r-md)] overflow-hidden border border-border">
-                <button
-                  onClick={() => setChartType("candle")}
-                  className={cn(
-                    "px-3 py-1.5 flex items-center gap-1.5 text-sm font-medium transition-colors",
-                    chartType === "candle"
-                      ? "bg-primary text-white"
-                      : "bg-surface-raised text-text-secondary hover:bg-surface"
-                  )}
-                >
-                  <CandlestickChart className="w-4 h-4" />
-                  <span className="hidden sm:inline">Candle</span>
-                </button>
-                <button
-                  onClick={() => setChartType("line")}
-                  className={cn(
-                    "px-3 py-1.5 flex items-center gap-1.5 text-sm font-medium transition-colors",
-                    chartType === "line"
-                      ? "bg-primary text-white"
-                      : "bg-surface-raised text-text-secondary hover:bg-surface"
-                  )}
-                >
-                  <LineChart className="w-4 h-4" />
-                  <span className="hidden sm:inline">Ligne</span>
-                </button>
-                <button
-                  onClick={() => setChartType("area")}
-                  className={cn(
-                    "px-3 py-1.5 flex items-center gap-1.5 text-sm font-medium transition-colors",
-                    chartType === "area"
-                      ? "bg-primary text-white"
-                      : "bg-surface-raised text-text-secondary hover:bg-surface"
-                  )}
-                >
-                  <Activity className="w-4 h-4" />
-                  <span className="hidden sm:inline">Aire</span>
-                </button>
-              </div>
-
-              {/* Divider */}
-              <div className="w-px h-6" style={{ background: "var(--border)" }} />
-
-              {/* Overlay toggles */}
-              <div className="flex items-center gap-3 flex-wrap">
-                <label className="flex items-center gap-2 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={showSMA20}
-                    onChange={(e) => setShowSMA20(e.target.checked)}
-                    className="rounded"
-                  />
-                  <span className="text-sm text-text-secondary font-medium">SMA 20</span>
-                  <Badge
-                    variant="warning"
-                    style={{ fontSize: "8px", padding: "2px 5px" }}
-                  >
-                    SMA
-                  </Badge>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={showSMA50}
-                    onChange={(e) => setShowSMA50(e.target.checked)}
-                    className="rounded"
-                  />
-                  <span className="text-sm text-text-secondary font-medium">SMA 50</span>
-                  <Badge
-                    variant="info"
-                    style={{ fontSize: "8px", padding: "2px 5px" }}
-                  >
-                    SMA
-                  </Badge>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={showBollinger}
-                    onChange={(e) => setShowBollinger(e.target.checked)}
-                    className="rounded"
-                  />
-                  <span className="text-sm text-text-secondary font-medium">Bollinger</span>
-                  <Badge
-                    variant="neutral"
-                    style={{ fontSize: "8px", padding: "2px 5px" }}
-                  >
-                    BB
-                  </Badge>
-                </label>
-              </div>
-            </div>
-
-            {/* Chart */}
-            <ErrorBoundary>
-              <MarketChart
-                data={mergedData}
-                type={chartType}
-                showVolume={chartType === "candle"}
-                showSMA20={showSMA20}
-                showSMA50={showSMA50}
-                showBollinger={showBollinger}
-                onLoadMore={handleLoadMore}
-              />
-            </ErrorBoundary>
-
-            {/* Summary Cards */}
-            <SummaryCard data={summaryData} formatCurrency={formatCurrency} />
-
-            {/* Technical Indicators */}
-            {technical && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {technical.rsi !== null && (
-                  <Card>
-                    <CardContent className="pt-6">
-                      <p className="text-sm text-text-tertiary">RSI (14)</p>
-                      <p
-                        className={cn(
-                          "text-2xl font-bold mt-1",
-                          (technical.rsi ?? 0) > 70
-                            ? "text-loss"
+              {/* Technical Indicators */}
+              {technical && (
+                <div className="grid grid-cols-2 md:grid-cols-4" style={{ gap: "20px" }}>
+                  {technical.rsi !== null && (
+                    <Card>
+                      <CardContent className="pt-6">
+                        <p className="text-sm text-text-tertiary">RSI (14)</p>
+                        <p
+                          className={cn(
+                            "text-2xl font-bold mt-1",
+                            (technical.rsi ?? 0) > 70
+                              ? "text-loss"
+                              : (technical.rsi ?? 0) < 30
+                              ? "text-gain"
+                              : "text-text-primary"
+                          )}
+                        >
+                          {(technical.rsi ?? 0).toFixed(1)}
+                        </p>
+                        <p className="text-xs text-text-muted mt-1">
+                          {(technical.rsi ?? 0) > 70
+                            ? "Suracheté"
                             : (technical.rsi ?? 0) < 30
-                            ? "text-gain"
-                            : "text-text-primary"
-                        )}
-                      >
-                        {(technical.rsi ?? 0).toFixed(1)}
-                      </p>
-                      <p className="text-xs text-text-muted mt-1">
-                        {(technical.rsi ?? 0) > 70
-                          ? "Suracheté"
-                          : (technical.rsi ?? 0) < 30
-                          ? "Survendu"
-                          : "Neutre"}
-                      </p>
-                    </CardContent>
-                  </Card>
-                )}
-                {technical.sma_20 !== null && (
-                  <Card>
-                    <CardContent className="pt-6">
-                      <p className="text-sm text-text-tertiary">SMA 20</p>
-                      <p className="text-2xl font-bold text-text-primary mt-1">
-                        {formatCurrency(technical.sma_20 ?? 0)}
-                      </p>
-                    </CardContent>
-                  </Card>
-                )}
-                {technical.sma_50 !== null && (
-                  <Card>
-                    <CardContent className="pt-6">
-                      <p className="text-sm text-text-tertiary">SMA 50</p>
-                      <p className="text-2xl font-bold text-text-primary mt-1">
-                        {formatCurrency(technical.sma_50 ?? 0)}
-                      </p>
-                    </CardContent>
-                  </Card>
-                )}
-                {technical.macd && technical.macd.histogram !== null && (
-                  <Card>
-                    <CardContent className="pt-6">
-                      <p className="text-sm text-text-tertiary">MACD</p>
-                      <p
-                        className={cn(
-                          "text-lg font-bold mt-1",
-                          (technical.macd.histogram ?? 0) >= 0
-                            ? "text-gain"
-                            : "text-loss"
-                        )}
-                      >
-                        {(technical.macd.histogram ?? 0).toFixed(4)}
-                      </p>
-                      <p className="text-xs text-text-muted mt-1">
-                        Signal: {(technical.macd.signal_line ?? 0).toFixed(4)}
-                      </p>
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
-            )}
+                            ? "Survendu"
+                            : "Neutre"}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  )}
+                  {technical.sma_20 !== null && (
+                    <Card>
+                      <CardContent className="pt-6">
+                        <p className="text-sm text-text-tertiary">SMA 20</p>
+                        <p className="text-2xl font-bold text-text-primary mt-1">
+                          {formatCurrency(technical.sma_20 ?? 0)}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  )}
+                  {technical.sma_50 !== null && (
+                    <Card>
+                      <CardContent className="pt-6">
+                        <p className="text-sm text-text-tertiary">SMA 50</p>
+                        <p className="text-2xl font-bold text-text-primary mt-1">
+                          {formatCurrency(technical.sma_50 ?? 0)}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  )}
+                  {technical.macd && technical.macd.histogram !== null && (
+                    <Card>
+                      <CardContent className="pt-6">
+                        <p className="text-sm text-text-tertiary">MACD</p>
+                        <p
+                          className={cn(
+                            "text-lg font-bold mt-1",
+                            (technical.macd.histogram ?? 0) >= 0
+                              ? "text-gain"
+                              : "text-loss"
+                          )}
+                        >
+                          {(technical.macd.histogram ?? 0).toFixed(4)}
+                        </p>
+                        <p className="text-xs text-text-muted mt-1">
+                          Signal: {(technical.macd.signal_line ?? 0).toFixed(4)}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+              )}
 
-            {/* Show technical indicators missing state */}
-            {!technical && symbol && (
-              <Card>
-                <CardContent className="py-6 text-center">
-                  <p className="text-sm text-text-tertiary">
-                    Indicateurs techniques non disponibles pour {symbol}
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-          </>
-        )}
-      </div>
+              {/* Show technical indicators missing state */}
+              {!technical && symbol && (
+                <Card>
+                  <CardContent className="py-6 text-center">
+                    <p className="text-sm text-text-tertiary">
+                      Indicateurs techniques non disponibles pour {symbol}
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+            </>
+          )}
+        </div>
+      </Section>
+
+      {/* Cinematic: Full-width MarketChart */}
+      {hasData && !isLoading && (
+        <Section variant="cinematic">
+          <ErrorBoundary>
+            <MarketChart
+              data={mergedData}
+              type={chartType}
+              showVolume={chartType === "candle"}
+              showSMA20={showSMA20}
+              showSMA50={showSMA50}
+              showBollinger={showBollinger}
+              onLoadMore={handleLoadMore}
+            />
+          </ErrorBoundary>
+        </Section>
+      )}
     </PageTransition>
   );
 }

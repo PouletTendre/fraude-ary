@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Badge } from "@/components/ui/Badge";
 import { PageTransition } from "@/components/ui/PageTransition";
+import { Section } from "@/components/ui/Section";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useToast } from "@/components/ui/Toast";
 import { Bell, CheckCheck, Clock, AlertTriangle, Info, CheckCircle } from "lucide-react";
@@ -102,34 +103,43 @@ export default function NotificationsPage() {
   if (isLoading) {
     return (
       <PageTransition>
-        <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <Skeleton className="h-10 w-48" />
-              <Skeleton className="h-4 w-32 mt-2" />
-            </div>
-            <Skeleton className="h-10 w-32" />
-          </div>
+        <Section variant="hero">
+          <Skeleton className="h-8 w-48 mb-2" />
+          <Skeleton className="h-4 w-64" />
+        </Section>
+        <Section variant="editorial">
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
               <Skeleton key={i} className="h-24 w-full" />
             ))}
           </div>
-        </div>
+        </Section>
       </PageTransition>
     );
   }
 
   return (
     <PageTransition>
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-text-primary flex items-center gap-3">
-              <Bell className="w-8 h-8 text-primary" />
-              Notifications
-            </h1>
-            <p className="text-text-tertiary mt-1">
+      <Section variant="hero">
+        <h1 style={{
+          fontSize: "1.625rem", fontWeight: 500,
+          letterSpacing: "normal", color: "var(--text-primary)", margin: 0,
+        }}>
+          Notifications
+        </h1>
+        <p style={{
+          fontSize: "0.8125rem", color: "var(--text-secondary)",
+          marginTop: "8px", fontFamily: "var(--font-body)",
+          textTransform: "uppercase", letterSpacing: "1px",
+        }}>
+          Centre de notifications
+        </p>
+      </Section>
+
+      <Section variant="editorial">
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <p className="text-text-tertiary">
               {unreadCount > 0 ? (
                 <span>
                   Vous avez <span className="font-medium text-primary">{unreadCount}</span> notification{unreadCount > 1 ? "s" : ""} non lue{unreadCount > 1 ? "s" : ""}
@@ -138,72 +148,72 @@ export default function NotificationsPage() {
                 "Tout est lu ! Aucune notification non lue."
               )}
             </p>
+            {unreadCount > 0 && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleMarkAllAsRead}
+                disabled={isMarkingAll}
+                className="flex items-center gap-2"
+              >
+                <CheckCheck className="w-4 h-4" />
+                {isMarkingAll ? "Marquage..." : "Tout marquer comme lu"}
+              </Button>
+            )}
           </div>
-          {unreadCount > 0 && (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={handleMarkAllAsRead}
-              disabled={isMarkingAll}
-              className="flex items-center gap-2"
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setFilter("all")}
+              className={cn(
+                "px-3 py-1.5 text-sm rounded-lg transition-colors font-medium",
+                filter === "all"
+                  ? "bg-primary text-white"
+                  : "text-text-secondary hover:bg-surface-raised bg-surface-sunken text-text-secondary hover:bg-surface-raised"
+              )}
             >
-              <CheckCheck className="w-4 h-4" />
-              {isMarkingAll ? "Marquage..." : "Tout marquer comme lu"}
-            </Button>
+              Toutes ({notifications.length})
+            </button>
+            <button
+              onClick={() => setFilter("unread")}
+              className={cn(
+                "px-3 py-1.5 text-sm rounded-lg transition-colors font-medium",
+                filter === "unread"
+                  ? "bg-primary text-white"
+                  : "text-text-secondary hover:bg-surface-raised bg-surface-sunken text-text-secondary hover:bg-surface-raised"
+              )}
+            >
+              Non lues ({unreadCount})
+            </button>
+          </div>
+
+          {filteredNotifications.length > 0 ? (
+            <div className="space-y-3">
+              {filteredNotifications.map((notification) => (
+                <NotificationItem
+                  key={notification.id}
+                  notification={notification}
+                  onMarkAsRead={handleMarkAsRead}
+                />
+              ))}
+            </div>
+          ) : (
+            <Card>
+              <CardContent className="py-16 text-center">
+                <Bell className="w-12 h-12 text-text-muted dark:text-text-secondary mx-auto mb-4" />
+                <p className="text-text-tertiary text-lg font-medium">
+                  {filter === "unread" ? "Aucune notification non lue" : "Aucune notification pour le moment"}
+                </p>
+                <p className="text-sm text-text-muted dark:text-text-tertiary mt-1">
+                  {filter === "unread"
+                    ? "Vous avez lu toutes vos notifications."
+                    : "Les notifications concernant votre portfolio apparaîtront ici."}
+                </p>
+              </CardContent>
+            </Card>
           )}
         </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setFilter("all")}
-            className={cn(
-              "px-3 py-1.5 text-sm rounded-lg transition-colors font-medium",
-              filter === "all"
-                ? "bg-primary text-white"
-                : "text-text-secondary hover:bg-surface-raised bg-surface-sunken text-text-secondary hover:bg-surface-raised"
-            )}
-          >
-            Toutes ({notifications.length})
-          </button>
-          <button
-            onClick={() => setFilter("unread")}
-            className={cn(
-              "px-3 py-1.5 text-sm rounded-lg transition-colors font-medium",
-              filter === "unread"
-                ? "bg-primary text-white"
-                : "text-text-secondary hover:bg-surface-raised bg-surface-sunken text-text-secondary hover:bg-surface-raised"
-            )}
-          >
-            Non lues ({unreadCount})
-          </button>
-        </div>
-
-        {filteredNotifications.length > 0 ? (
-          <div className="space-y-3">
-            {filteredNotifications.map((notification) => (
-              <NotificationItem
-                key={notification.id}
-                notification={notification}
-                onMarkAsRead={handleMarkAsRead}
-              />
-            ))}
-          </div>
-        ) : (
-          <Card>
-            <CardContent className="py-16 text-center">
-              <Bell className="w-12 h-12 text-text-muted dark:text-text-secondary mx-auto mb-4" />
-              <p className="text-text-tertiary text-lg font-medium">
-                {filter === "unread" ? "Aucune notification non lue" : "Aucune notification pour le moment"}
-              </p>
-              <p className="text-sm text-text-muted dark:text-text-tertiary mt-1">
-                {filter === "unread"
-                  ? "Vous avez lu toutes vos notifications."
-                  : "Les notifications concernant votre portfolio apparaîtront ici."}
-              </p>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+      </Section>
     </PageTransition>
   );
 }

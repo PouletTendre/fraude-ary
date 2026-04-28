@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/Badge";
 import { AssetAvatar } from "@/components/ui/AssetAvatar";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { PageTransition } from "@/components/ui/PageTransition";
+import { Section } from "@/components/ui/Section";
 import { MarketWeatherWidget } from "@/components/MarketWeatherWidget";
 import { RecentTransactionsWidget } from "@/components/RecentTransactionsWidget";
 import { GoalsWidget } from "@/components/GoalsWidget";
@@ -86,175 +87,146 @@ export default function DashboardPage() {
   if (isLoading) {
     return (
       <PageTransition>
-        <div className="flex flex-col gap-[32px]">
-          <div className="flex items-start justify-between gap-4">
-            <div className="space-y-2">
-              <Skeleton style={{ height: "36px", width: "200px" }} />
-              <Skeleton style={{ height: "16px", width: "300px" }} />
-            </div>
-            <Skeleton style={{ height: "36px", width: "120px" }} />
+        <Section variant="hero">
+          <Skeleton style={{ height: "36px", width: "200px" }} />
+          <Skeleton style={{ height: "16px", width: "300px", marginTop: "8px" }} />
+        </Section>
+        <Section variant="editorial">
+          <div className="grid grid-cols-4 gap-[20px]">
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} style={{ height: "110px" }} />
+            ))}
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[12px]">
-            <Skeleton style={{ height: "110px", borderRadius: "var(--r-md)" }} />
-            <Skeleton style={{ height: "110px", borderRadius: "var(--r-md)" }} />
-            <Skeleton style={{ height: "110px", borderRadius: "var(--r-md)" }} />
-            <Skeleton style={{ height: "110px", borderRadius: "var(--r-md)" }} />
-          </div>
-          <Skeleton style={{ height: "300px", borderRadius: "var(--r-md)" }} />
-        </div>
+        </Section>
       </PageTransition>
     );
   }
 
   return (
     <PageTransition>
-      <div className="flex flex-col gap-[32px]">
-        {/* Page header */}
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1
-              style={{
-                fontSize: "1.625rem",
-                fontWeight: 500,
-                letterSpacing: "normal",
-                color: "var(--text-primary)",
-              }}
-            >
-              Dashboard
-            </h1>
-            <p
-              style={{
-                fontSize: "0.8125rem",
-                color: "var(--text-secondary)",
-                marginTop: "4px",
-              }}
-            >
-              {lastUpdate
-                ? `Mis à jour le ${lastUpdate} · Bourse ouverte`
-                : "Chargement..."}
-            </p>
-          </div>
-          <div className="flex items-center gap-[8px]">
-            <button
-              className="inline-flex items-center gap-[6px] text-[14px] font-medium font-sans cursor-pointer transition-all duration-150 ease-out whitespace-nowrap"
-              style={{
-                background: "var(--surface-raised)",
-                color: "var(--text-primary)",
-                border: "1px solid var(--border)",
-                borderRadius: "var(--r-md)",
-                padding: "7px 12px",
-                fontSize: "13px",
-              }}
-            >
-              Exporter CSV
-            </button>
-            <Link
-              href="/assets"
-              className="inline-flex items-center gap-[6px] text-[14px] font-medium font-sans cursor-pointer transition-all duration-150 ease-out whitespace-nowrap no-underline"
-              style={{
-                background: "var(--primary)",
-                color: "var(--text-primary)",
-                borderRadius: "var(--r-md)",
-                padding: "7px 12px",
-                fontSize: "13px",
-              }}
-            >
-              + Ajouter actif
-            </Link>
-          </div>
-        </div>
-
-        {/* KPI Cards */}
-        <ErrorBoundary>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[12px]">
-          <KPICard
-            label="Valeur totale"
-            value={portfolio ? formatCurrency(portfolio.total_value, "EUR") : "—"}
-            delta={
-              portfolio
-                ? `${portfolio.gain_loss_percentage >= 0 ? "+" : ""}${portfolio.gain_loss_percentage.toFixed(2)}% ce mois`
-                : undefined
-            }
-            isPositive={
-              portfolio ? portfolio.gain_loss_percentage >= 0 : null
-            }
-          />
-          <KPICard
-            label="P&L journalier"
-            value={
-              dailyChange
-                ? `${dailyChange.change >= 0 ? "+" : ""}${formatCurrency(dailyChange.change, "EUR")}`
-                : "—"
-            }
-            delta={
-              dailyChange
-                ? `${dailyChange.percent >= 0 ? "+" : ""}${dailyChange.percent.toFixed(2)}%`
-                : undefined
-            }
-            isPositive={dailyChange ? dailyChange.change >= 0 : null}
-          />
-          <KPICard
-            label="Volatilité annualisée"
-            value={analytics?.volatility_annual != null ? `${(analytics.volatility_annual * 100).toFixed(1)}%` : "—"}
-            delta={analytics?.volatility_annual != null ? (analytics.volatility_annual < 0.15 ? "faible" : analytics.volatility_annual < 0.25 ? "modérée" : "élevée") : undefined}
-            isPositive={analytics?.volatility_annual != null ? analytics.volatility_annual < 0.2 : null}
-          />
-          <KPICard
-            label="Ratio de Sharpe"
-            value={analytics?.sharpe_ratio != null ? analytics.sharpe_ratio.toFixed(2) : "—"}
-            delta={analytics?.sharpe_ratio != null ? (analytics.sharpe_ratio > 1 ? "bon" : analytics.sharpe_ratio > 0 ? "moyen" : "négatif") : undefined}
-            isPositive={analytics?.sharpe_ratio != null ? analytics.sharpe_ratio > 0 : null}
-          />
-        </div>
-        </ErrorBoundary>
-
-        {/* Time filter */}
-        <TimeFilterChips value={timeFilter} onChange={setTimeFilter} />
-
-        {/* Widgets */}
-        <ErrorBoundary>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-[24px]">
-          <MarketWeatherWidget />
-          <RecentTransactionsWidget />
-          <GoalsWidget />
-        </div>
-        </ErrorBoundary>
-
-        {/* Asset Table */}
-        <div
-          className="overflow-hidden"
+      <Section variant="hero">
+        <h1
           style={{
-            background: "var(--surface)",
-            border: "1px solid var(--border)",
-            borderRadius: "var(--r-md)",
+            fontSize: "1.625rem",
+            fontWeight: 500,
+            letterSpacing: "normal",
+            color: "var(--text-primary)",
+            margin: 0,
           }}
         >
-          {/* Table header row */}
+          Dashboard
+        </h1>
+        <p
+          style={{
+            fontSize: "0.8125rem",
+            color: "var(--text-secondary)",
+            marginTop: "8px",
+            fontFamily: "var(--font-body)",
+            textTransform: "uppercase",
+            letterSpacing: "1px",
+          }}
+        >
+          {lastUpdate ? `Mis à jour le ${lastUpdate}` : "Chargement..."}
+        </p>
+      </Section>
+
+      <Section variant="editorial">
+        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+          <ErrorBoundary>
+            <div
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
+              style={{ gap: "20px" }}
+            >
+              <KPICard
+                label="Valeur totale"
+                value={portfolio ? formatCurrency(portfolio.total_value, "EUR") : "—"}
+                delta={
+                  portfolio
+                    ? `${portfolio.gain_loss_percentage >= 0 ? "+" : ""}${portfolio.gain_loss_percentage.toFixed(2)}% ce mois`
+                    : undefined
+                }
+                isPositive={
+                  portfolio ? portfolio.gain_loss_percentage >= 0 : null
+                }
+              />
+              <KPICard
+                label="P&L journalier"
+                value={
+                  dailyChange
+                    ? `${dailyChange.change >= 0 ? "+" : ""}${formatCurrency(dailyChange.change, "EUR")}`
+                    : "—"
+                }
+                delta={
+                  dailyChange
+                    ? `${dailyChange.percent >= 0 ? "+" : ""}${dailyChange.percent.toFixed(2)}%`
+                    : undefined
+                }
+                isPositive={dailyChange ? dailyChange.change >= 0 : null}
+              />
+              <KPICard
+                label="Volatilité annualisée"
+                value={analytics?.volatility_annual != null ? `${(analytics.volatility_annual * 100).toFixed(1)}%` : "—"}
+                delta={analytics?.volatility_annual != null ? (analytics.volatility_annual < 0.15 ? "faible" : analytics.volatility_annual < 0.25 ? "modérée" : "élevée") : undefined}
+                isPositive={analytics?.volatility_annual != null ? analytics.volatility_annual < 0.2 : null}
+              />
+              <KPICard
+                label="Ratio de Sharpe"
+                value={analytics?.sharpe_ratio != null ? analytics.sharpe_ratio.toFixed(2) : "—"}
+                delta={analytics?.sharpe_ratio != null ? (analytics.sharpe_ratio > 1 ? "bon" : analytics.sharpe_ratio > 0 ? "moyen" : "négatif") : undefined}
+                isPositive={analytics?.sharpe_ratio != null ? analytics.sharpe_ratio > 0 : null}
+              />
+            </div>
+          </ErrorBoundary>
+
+          <TimeFilterChips value={timeFilter} onChange={setTimeFilter} />
+        </div>
+      </Section>
+
+      <Section variant="cinematic">
+        <ErrorBoundary>
           <div
-            className="flex items-center justify-between"
+            className="grid grid-cols-1 lg:grid-cols-3"
+            style={{ gap: "24px" }}
+          >
+            <MarketWeatherWidget />
+            <RecentTransactionsWidget />
+            <GoalsWidget />
+          </div>
+        </ErrorBoundary>
+      </Section>
+
+      <Section variant="editorial">
+        <div style={{ background: "var(--surface)" }}>
+          <div
             style={{
-              padding: "16px 20px 12px",
-              borderBottom: "1px solid var(--border)",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: "0 0 16px",
             }}
           >
-            <span
+            <h3
               style={{
-                fontSize: "1rem",
-                fontWeight: 600,
+                fontSize: "1.5rem",
+                fontWeight: 400,
                 color: "var(--text-primary)",
+                margin: 0,
               }}
             >
               Mes positions
-            </span>
+            </h3>
             <Link
               href="/portfolio"
-              className="flex items-center gap-1 no-underline"
               style={{
-                fontSize: "0.875rem",
-                color: "var(--primary)",
+                fontSize: "0.8125rem",
+                color: "var(--link-blue)",
+                display: "flex",
+                alignItems: "center",
+                gap: "4px",
+                textDecoration: "none",
               }}
             >
-              Voir détails <ArrowRight style={{ width: "16px", height: "16px" }} />
+              Voir détails <ArrowRight size={16} />
             </Link>
           </div>
 
@@ -270,7 +242,7 @@ export default function DashboardPage() {
                         color: "var(--text-tertiary)",
                         fontFamily: "var(--font-body)",
                         fontSize: "0.75rem",
-                        fontWeight: 500,
+                        fontWeight: 400,
                         letterSpacing: "1px",
                         textTransform: "uppercase",
                         padding: "10px 16px",
@@ -403,9 +375,7 @@ export default function DashboardPage() {
                         </div>
                       </td>
                       <td style={{ padding: "14px 16px" }}>
-                        <Badge
-                          variant={isGain ? "gain" : "loss"}
-                        >
+                        <Badge variant={isGain ? "gain" : "loss"}>
                           {isGain
                             ? "▲ +" + asset.pnlPercent.toFixed(2) + "%"
                             : "▼ " + asset.pnlPercent.toFixed(2) + "%"}
@@ -431,7 +401,7 @@ export default function DashboardPage() {
             </tbody>
           </table>
         </div>
-      </div>
+      </Section>
     </PageTransition>
   );
 }

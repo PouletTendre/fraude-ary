@@ -1,68 +1,11 @@
 "use client";
 
-import { useEffect, useState, Suspense, ForwardRefExoticComponent, RefAttributes } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import { useQueryClient } from "@tanstack/react-query";
-import Link from "next/link";
-import { cn } from "@/lib/utils";
-import { useAuth } from "@/hooks/useAuth";
-import { useNotifications } from "@/hooks/useNotifications";
-import { useAlerts } from "@/hooks/useAlerts";
-import { fetchApi } from "@/lib/api";
-import { Skeleton } from "@/components/ui/Skeleton";
-import { Badge } from "@/components/ui/Badge";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { useEffect, useState, Suspense } from "react";
+import { useRouter } from "next/navigation";
+import TopNav from "@/components/TopNav";
+import { Footer } from "@/components/Footer";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import {
-  LayoutDashboard,
-  Wallet,
-  TrendingUp,
-  BarChart3,
-  Bell,
-  Mail,
-  ArrowLeftRight,
-  DollarSign,
-  Settings,
-  RefreshCw,
-  BookOpen,
-  Menu,
-  X,
-  PieChart,
-  Calculator,
-  LineChart,
-  LucideProps,
-} from "lucide-react";
-
-interface NavItem {
-  href: string;
-  label: string;
-  icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>;
-  badge?: number | string;
-}
-
-const navSections: { label: string; items: NavItem[] }[] = [
-  {
-    label: "Principal",
-    items: [
-      { href: "/", label: "Dashboard", icon: LayoutDashboard },
-      { href: "/portfolio", label: "Portefeuille", icon: Wallet },
-      { href: "/markets", label: "Marchés", icon: TrendingUp },
-      { href: "/assets", label: "Actifs", icon: BarChart3 },
-      { href: "/analysis", label: "Analyse", icon: LineChart },
-      { href: "/simulator", label: "Simulateur", icon: Calculator },
-    ],
-  },
-  {
-    label: "Gestion",
-    items: [
-      { href: "/alerts", label: "Alertes", icon: Bell },
-      { href: "/notifications", label: "Notifications", icon: Mail },
-      { href: "/journal", label: "Transactions", icon: ArrowLeftRight },
-      { href: "/dividends", label: "Dividendes", icon: DollarSign },
-      { href: "/settings", label: "Paramètres", icon: Settings },
-    ],
-  },
-];
+import { Skeleton } from "@/components/ui/Skeleton";
 
 export default function DashboardLayout({
   children,
@@ -70,27 +13,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const pathname = usePathname();
-  const queryClient = useQueryClient();
-  const { user, logout } = useAuth();
-  const { unreadCount } = useNotifications();
-  const { alerts } = useAlerts();
   const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const activeAlertCount = alerts.filter((a) => a.is_active).length;
-
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    try {
-      await fetchApi("/api/v1/prices/refresh", { method: "POST" });
-      await queryClient.invalidateQueries({ queryKey: ["assets"] });
-      await queryClient.invalidateQueries({ queryKey: ["portfolio"] });
-      await queryClient.invalidateQueries({ queryKey: ["diversification"] });
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -104,8 +27,7 @@ export default function DashboardLayout({
   if (isLoading) {
     return (
       <div
-        className="flex items-center justify-center"
-        style={{ minHeight: "100vh", background: "var(--bg)" }}
+        style={{ minHeight: "100vh", background: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center" }}
       >
         <div className="space-y-4 w-full max-w-md px-4">
           <Skeleton className="h-8 w-full" />
@@ -117,202 +39,31 @@ export default function DashboardLayout({
 
   return (
     <>
-      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary focus:text-white focus:rounded-lg">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary focus:text-white focus:rounded-lg"
+      >
         Skip to content
       </a>
-      <div className="flex" style={{ minHeight: "100vh", background: "var(--bg)" }}>
-      {/* Overlay for mobile sidebar */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
 
-      {/* Sidebar */}
-      <aside
-        className={cn(
-          "fixed md:sticky md:top-0 z-50 flex flex-col flex-shrink-0 transition-transform duration-300 ease-in-out",
-          sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-        )}
-        style={{
-          width: "260px",
-          background: "var(--bg)",
-          borderRight: "1px solid var(--border)",
-          padding: "24px 12px",
-          gap: "2px",
-          height: "100vh",
-        }}
-      >
-        {/* Close button for mobile */}
-        <button
-          onClick={() => setSidebarOpen(false)}
-          aria-label="Fermer le menu"
-          className="md:hidden absolute top-4 right-4 p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-raised transition-colors"
-        >
-          <X className="w-5 h-5" />
-        </button>
+      <TopNav />
 
-        {/* Logo */}
-        <div
-          style={{
-            fontSize: "1.125rem",
-            fontWeight: 700,
-            color: "var(--text-primary)",
-            letterSpacing: "-0.01em",
-            padding: "8px 12px 20px",
-            borderBottom: "1px solid var(--border)",
-            marginBottom: "8px",
-          }}
-        >
-          Fraude<span style={{ color: "var(--primary)" }}>·Ary</span>
-        </div>
-
-        {navSections.map((section) => (
-          <div key={section.label}>
+      <main id="main-content">
+        <Suspense
+          fallback={
             <div
-              style={{
-                fontFamily: "var(--font-body)",
-                fontSize: "0.6875rem",
-                fontWeight: 500,
-                letterSpacing: "1px",
-                textTransform: "uppercase",
-                color: "var(--text-muted)",
-                padding: "12px 12px 6px",
-              }}
+              className="flex items-center justify-center"
+              style={{ minHeight: "60vh" }}
             >
-              {section.label}
+              <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
             </div>
-            {section.items.map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setSidebarOpen(false)}
-                  className={cn(
-                    "flex items-center gap-[10px] cursor-pointer transition-all duration-150 ease-out no-underline",
-                    isActive
-                      ? "text-primary-hover"
-                      : "text-text-secondary hover:bg-surface-raised hover:text-text-primary"
-                  )}
-                  style={{
-                    padding: "9px 12px",
-                    borderRadius: "var(--r-md)",
-                    fontSize: "13px",
-                    fontWeight: 600,
-                    borderLeft: isActive ? "2px solid var(--primary)" : "2px solid transparent",
-                    paddingLeft: isActive ? "10px" : "12px",
-                    background: isActive ? "var(--primary-subtle)" : undefined,
-                  }}
-                >
-                  <item.icon
-                    className="flex-shrink-0"
-                    style={{ width: "16px", height: "16px" }}
-                  />
-                  <span>{item.label}</span>
-                  {item.badge !== undefined && (
-                    <span className="ml-auto">
-                      <Badge variant="info" style={{ fontSize: "9px", padding: "2px 6px" }}>
-                        {item.badge}
-                      </Badge>
-                    </span>
-                  )}
-                  {item.href === "/alerts" && activeAlertCount > 0 && (
-                    <span className="ml-auto">
-                      <Badge variant="info" style={{ fontSize: "9px", padding: "2px 6px" }}>
-                        {activeAlertCount > 9 ? "9+" : activeAlertCount}
-                      </Badge>
-                    </span>
-                  )}
-                  {item.href === "/notifications" && unreadCount > 0 && !item.badge && (
-                    <span className="ml-auto">
-                      <Badge variant="info" style={{ fontSize: "9px", padding: "2px 6px" }}>
-                        {unreadCount > 9 ? "9+" : unreadCount}
-                      </Badge>
-                    </span>
-                  )}
-                </Link>
-              );
-            })}
-          </div>
-        ))}
-
-        {/* Refresh button */}
-          <button
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            aria-label="Actualiser les prix"
-            className="flex items-center gap-[10px] cursor-pointer transition-all duration-150 ease-out mt-2 text-text-secondary hover:bg-surface-raised hover:text-text-primary"
-          style={{
-            padding: "9px 12px",
-            borderRadius: "var(--r-md)",
-            fontSize: "13px",
-            fontWeight: 600,
-            borderLeft: "2px solid transparent",
-            background: "transparent",
-            border: "none",
-            width: "100%",
-          }}
+          }
         >
-          <RefreshCw
-            className={cn("flex-shrink-0", isRefreshing && "animate-spin")}
-            style={{ width: "16px", height: "16px" }}
-          />
-          <span>Refresh Prices</span>
-        </button>
-
-        {/* User */}
-        <div className="mt-auto pt-4" style={{ borderTop: "1px solid var(--border)" }}>
-          <ThemeToggle />
-          <div style={{ padding: "8px 12px" }}>
-            <p className="text-[13px] font-medium text-text-primary truncate">
-              {user?.full_name || "User"}
-            </p>
-            <p className="text-[11px] text-text-tertiary truncate">{user?.email}</p>
-          </div>
-          <button
-            onClick={logout}
-            aria-label="Se déconnecter"
-            className="w-full text-left text-[13px] text-text-secondary hover:text-text-primary hover:bg-surface-raised transition-all duration-150 ease-out"
-            style={{
-              padding: "8px 12px",
-              borderRadius: "var(--r-md)",
-              background: "transparent",
-              border: "none",
-            }}
-          >
-            Déconnexion
-          </button>
-        </div>
-      </aside>
-
-      {/* Main content */}
-      <main
-        id="main-content"
-        className="flex-1 flex flex-col"
-        style={{ padding: "32px", gap: "32px", overflow: "auto" }}
-      >
-        <div className="md:hidden flex items-center">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            aria-label="Ouvrir le menu"
-            className="p-2 rounded-lg bg-surface border border-border text-text-primary hover:bg-surface-raised transition-colors"
-          >
-            <Menu className="w-5 h-5" />
-          </button>
-        </div>
-        <Suspense fallback={
-          <div className="flex items-center justify-center min-h-screen">
-            <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
-          </div>
-        }>
-          <ErrorBoundary>
-            {children}
-          </ErrorBoundary>
+          <ErrorBoundary>{children}</ErrorBoundary>
         </Suspense>
       </main>
-    </div>
+
+      <Footer />
     </>
   );
 }

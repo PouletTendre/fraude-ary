@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { PageTransition } from "@/components/ui/PageTransition";
+import { Section } from "@/components/ui/Section";
 import { NewsCard } from "@/components/ui/NewsCard";
 import { ValuationCard } from "@/components/ui/ValuationCard";
 import { SymbolSearch } from "@/components/SymbolSearch";
@@ -93,204 +94,220 @@ export default function AnalysisPage() {
 
   return (
     <PageTransition>
-      <div className="space-y-6">
-        <h1 className="text-3xl font-bold text-text-primary">Analyse Technique</h1>
+      <Section variant="hero">
+        <h1 style={{
+          fontSize: "1.625rem", fontWeight: 500,
+          letterSpacing: "normal", color: "var(--text-primary)", margin: 0,
+        }}>
+          Analyse Technique
+        </h1>
+        <p style={{
+          fontSize: "0.8125rem", color: "var(--text-secondary)",
+          marginTop: "8px", fontFamily: "var(--font-body)",
+          textTransform: "uppercase", letterSpacing: "1px",
+        }}>
+          Analyse technique et fondamentale
+        </p>
+      </Section>
 
-        <SymbolSearch
-          value={symbol}
-          onChange={setSymbol}
-        />
+      <Section variant="editorial">
+        <div className="space-y-6">
+          <SymbolSearch
+            value={symbol}
+            onChange={setSymbol}
+          />
 
-        {!symbol ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <Search className="w-10 h-10 text-text-muted mx-auto mb-3" />
-              <p className="text-text-tertiary">Recherchez un symbole à analyser</p>
-            </CardContent>
-          </Card>
-        ) : isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => (
-              <Card key={i}>
-                <CardHeader>
-                  <Skeleton className="h-5 w-32" />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className="h-20 w-full" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : error ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <p className="text-text-tertiary">
-                Échec du chargement des données techniques pour {symbol}. Veuillez vérifier le symbole.
-              </p>
-            </CardContent>
-          </Card>
-        ) : indicators ? (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {/* RSI */}
-              <IndicatorCard
-                title="RSI"
-                badge={rsiBadge(indicators.rsi)}
-              >
-                <RsiGauge value={indicators.rsi} />
-              </IndicatorCard>
-
-              {/* MACD */}
-              <IndicatorCard
-                title="MACD"
-                badge={macdBadge(indicators.macd?.histogram ?? null)}
-              >
-                {indicators.macd ? (
-                  <div className="space-y-2 font-tnum">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-text-muted">MACD Line</span>
-                      <span className="text-sm text-text-primary">{fmtVal(indicators.macd.macd_line, 4)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-text-muted">Signal</span>
-                      <span className="text-sm text-text-primary">{fmtVal(indicators.macd.signal_line, 4)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-text-muted">Histogram</span>
-                      <span className={cn("text-sm font-medium", indicators.macd.histogram >= 0 ? "text-gain" : "text-loss")}>
-                        {fmtVal(indicators.macd.histogram, 4)}
-                      </span>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-sm text-text-tertiary">No data</p>
-                )}
-              </IndicatorCard>
-
-              {/* Bollinger Bands */}
-              <IndicatorCard title="Bollinger Bands">
-                {indicators.bollinger ? (
-                  <div className="space-y-2 font-tnum">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-text-muted">Upper</span>
-                      <span className="text-sm text-text-primary">{fmtVal(indicators.bollinger.upper)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-text-muted">Middle</span>
-                      <span className="text-sm text-text-primary">{fmtVal(indicators.bollinger.middle)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-text-muted">Lower</span>
-                      <span className="text-sm text-text-primary">{fmtVal(indicators.bollinger.lower)}</span>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-sm text-text-tertiary">No data</p>
-                )}
-              </IndicatorCard>
-
-              {/* Moving Averages */}
-              <IndicatorCard title="Moving Averages">
-                <div className="space-y-2 font-tnum">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-text-muted">SMA 20</span>
-                    <span className="text-sm text-text-primary">{fmtVal(indicators.sma_20)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-text-muted">SMA 50</span>
-                    <span className="text-sm text-text-primary">{fmtVal(indicators.sma_50)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-text-muted">SMA 200</span>
-                    <span className="text-sm text-text-primary">{fmtVal(indicators.sma_200)}</span>
-                  </div>
-                  <div className="border-t border-border pt-2 mt-2">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-text-muted">EMA 12</span>
-                      <span className="text-sm text-text-primary">{fmtVal(indicators.ema_12)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-text-muted">EMA 26</span>
-                      <span className="text-sm text-text-primary">{fmtVal(indicators.ema_26)}</span>
-                    </div>
-                  </div>
-                </div>
-              </IndicatorCard>
-
-              {/* ATR */}
-              <IndicatorCard title="ATR">
-                <div className="flex items-center justify-center py-4">
-                  <span className="text-2xl font-bold font-tnum text-text-primary">
-                    {fmtVal(indicators.atr)}
-                  </span>
-                </div>
-              </IndicatorCard>
-
-              {/* OBV */}
-              <IndicatorCard title="OBV">
-                <div className="flex items-center justify-center py-4">
-                  <span className="text-2xl font-bold font-tnum text-text-primary">
-                    {indicators.obv !== null ? formatObv(indicators.obv) : "--"}
-                  </span>
-                </div>
-              </IndicatorCard>
-
-              {/* Stochastic */}
-              <IndicatorCard title="Stochastic">
-                {indicators.stochastic ? (
-                  <div className="space-y-2 font-tnum">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-text-muted">%K</span>
-                      <span className="text-sm text-text-primary">{fmtVal(indicators.stochastic.stoch_k)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-text-muted">%D</span>
-                      <span className="text-sm text-text-primary">{fmtVal(indicators.stochastic.stoch_d)}</span>
-                    </div>
-                    <div className="flex gap-2 mt-2">
-                      <Badge
-                        variant={indicators.stochastic.stoch_k > 80 ? "loss" : indicators.stochastic.stoch_k < 20 ? "gain" : "warning"}
-                      >
-                        %K: {indicators.stochastic.stoch_k > 80 ? "Overbought" : indicators.stochastic.stoch_k < 20 ? "Oversold" : "Neutral"}
-                      </Badge>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-sm text-text-tertiary">No data</p>
-                )}
-              </IndicatorCard>
-
-              {/* MFI */}
-              <IndicatorCard
-                title="MFI"
-                badge={{
-                  label: indicators.mfi !== null ? (indicators.mfi > 80 ? "Overbought" : indicators.mfi < 20 ? "Oversold" : "Neutral") : "--",
-                  variant: indicators.mfi !== null ? (indicators.mfi > 80 ? "loss" : indicators.mfi < 20 ? "gain" : "warning") : "warning",
-                }}
-              >
-                <div className="flex items-center justify-center py-4">
-                  <span className="text-2xl font-bold font-tnum text-text-primary">
-                    {fmtVal(indicators.mfi)}
-                  </span>
-                </div>
-              </IndicatorCard>
-
-              {/* Symbol Info */}
-              <IndicatorCard title="Symbol Info">
-                <div className="py-4 text-center">
-                  <span className="text-xl font-bold text-text-primary uppercase tracking-wider">
-                    {indicators.symbol}
-                  </span>
-                </div>
-              </IndicatorCard>
+          {!symbol ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <Search className="w-10 h-10 text-text-muted mx-auto mb-3" />
+                <p className="text-text-tertiary">Recherchez un symbole à analyser</p>
+              </CardContent>
+            </Card>
+          ) : isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[20px]">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => (
+                <Card key={i}>
+                  <CardHeader>
+                    <Skeleton className="h-5 w-32" />
+                  </CardHeader>
+                  <CardContent>
+                    <Skeleton className="h-20 w-full" />
+                  </CardContent>
+                </Card>
+              ))}
             </div>
+          ) : error ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <p className="text-text-tertiary">
+                  Échec du chargement des données techniques pour {symbol}. Veuillez vérifier le symbole.
+                </p>
+              </CardContent>
+            </Card>
+          ) : indicators ? (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[20px]">
+                {/* RSI */}
+                <IndicatorCard
+                  title="RSI"
+                  badge={rsiBadge(indicators.rsi)}
+                >
+                  <RsiGauge value={indicators.rsi} />
+                </IndicatorCard>
 
-            <ValuationCard symbol={symbol} />
+                {/* MACD */}
+                <IndicatorCard
+                  title="MACD"
+                  badge={macdBadge(indicators.macd?.histogram ?? null)}
+                >
+                  {indicators.macd ? (
+                    <div className="space-y-2 font-tnum">
+                      <div className="flex justify-between">
+                        <span className="text-sm text-text-muted">MACD Line</span>
+                        <span className="text-sm text-text-primary">{fmtVal(indicators.macd.macd_line, 4)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-text-muted">Signal</span>
+                        <span className="text-sm text-text-primary">{fmtVal(indicators.macd.signal_line, 4)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-text-muted">Histogram</span>
+                        <span className={cn("text-sm font-medium", indicators.macd.histogram >= 0 ? "text-gain" : "text-loss")}>
+                          {fmtVal(indicators.macd.histogram, 4)}
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-text-tertiary">No data</p>
+                  )}
+                </IndicatorCard>
 
-            <NewsCard symbol={symbol} />
-          </>
-        ) : null}
-      </div>
+                {/* Bollinger Bands */}
+                <IndicatorCard title="Bollinger Bands">
+                  {indicators.bollinger ? (
+                    <div className="space-y-2 font-tnum">
+                      <div className="flex justify-between">
+                        <span className="text-sm text-text-muted">Upper</span>
+                        <span className="text-sm text-text-primary">{fmtVal(indicators.bollinger.upper)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-text-muted">Middle</span>
+                        <span className="text-sm text-text-primary">{fmtVal(indicators.bollinger.middle)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-text-muted">Lower</span>
+                        <span className="text-sm text-text-primary">{fmtVal(indicators.bollinger.lower)}</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-text-tertiary">No data</p>
+                  )}
+                </IndicatorCard>
+
+                {/* Moving Averages */}
+                <IndicatorCard title="Moving Averages">
+                  <div className="space-y-2 font-tnum">
+                    <div className="flex justify-between">
+                      <span className="text-sm text-text-muted">SMA 20</span>
+                      <span className="text-sm text-text-primary">{fmtVal(indicators.sma_20)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-text-muted">SMA 50</span>
+                      <span className="text-sm text-text-primary">{fmtVal(indicators.sma_50)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-text-muted">SMA 200</span>
+                      <span className="text-sm text-text-primary">{fmtVal(indicators.sma_200)}</span>
+                    </div>
+                    <div className="border-t border-border pt-2 mt-2">
+                      <div className="flex justify-between">
+                        <span className="text-sm text-text-muted">EMA 12</span>
+                        <span className="text-sm text-text-primary">{fmtVal(indicators.ema_12)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-text-muted">EMA 26</span>
+                        <span className="text-sm text-text-primary">{fmtVal(indicators.ema_26)}</span>
+                      </div>
+                    </div>
+                  </div>
+                </IndicatorCard>
+
+                {/* ATR */}
+                <IndicatorCard title="ATR">
+                  <div className="flex items-center justify-center py-4">
+                    <span className="text-2xl font-bold font-tnum text-text-primary">
+                      {fmtVal(indicators.atr)}
+                    </span>
+                  </div>
+                </IndicatorCard>
+
+                {/* OBV */}
+                <IndicatorCard title="OBV">
+                  <div className="flex items-center justify-center py-4">
+                    <span className="text-2xl font-bold font-tnum text-text-primary">
+                      {indicators.obv !== null ? formatObv(indicators.obv) : "--"}
+                    </span>
+                  </div>
+                </IndicatorCard>
+
+                {/* Stochastic */}
+                <IndicatorCard title="Stochastic">
+                  {indicators.stochastic ? (
+                    <div className="space-y-2 font-tnum">
+                      <div className="flex justify-between">
+                        <span className="text-sm text-text-muted">%K</span>
+                        <span className="text-sm text-text-primary">{fmtVal(indicators.stochastic.stoch_k)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-text-muted">%D</span>
+                        <span className="text-sm text-text-primary">{fmtVal(indicators.stochastic.stoch_d)}</span>
+                      </div>
+                      <div className="flex gap-2 mt-2">
+                        <Badge
+                          variant={indicators.stochastic.stoch_k > 80 ? "loss" : indicators.stochastic.stoch_k < 20 ? "gain" : "warning"}
+                        >
+                          %K: {indicators.stochastic.stoch_k > 80 ? "Overbought" : indicators.stochastic.stoch_k < 20 ? "Oversold" : "Neutral"}
+                        </Badge>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-text-tertiary">No data</p>
+                  )}
+                </IndicatorCard>
+
+                {/* MFI */}
+                <IndicatorCard
+                  title="MFI"
+                  badge={{
+                    label: indicators.mfi !== null ? (indicators.mfi > 80 ? "Overbought" : indicators.mfi < 20 ? "Oversold" : "Neutral") : "--",
+                    variant: indicators.mfi !== null ? (indicators.mfi > 80 ? "loss" : indicators.mfi < 20 ? "gain" : "warning") : "warning",
+                  }}
+                >
+                  <div className="flex items-center justify-center py-4">
+                    <span className="text-2xl font-bold font-tnum text-text-primary">
+                      {fmtVal(indicators.mfi)}
+                    </span>
+                  </div>
+                </IndicatorCard>
+
+                {/* Symbol Info */}
+                <IndicatorCard title="Symbol Info">
+                  <div className="py-4 text-center">
+                    <span className="text-xl font-bold text-text-primary uppercase tracking-wider">
+                      {indicators.symbol}
+                    </span>
+                  </div>
+                </IndicatorCard>
+              </div>
+
+              <ValuationCard symbol={symbol} />
+
+              <NewsCard symbol={symbol} />
+            </>
+          ) : null}
+        </div>
+      </Section>
     </PageTransition>
   );
 }

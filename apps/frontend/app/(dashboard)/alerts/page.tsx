@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Badge } from "@/components/ui/Badge";
 import { PageTransition } from "@/components/ui/PageTransition";
+import { Section } from "@/components/ui/Section";
 import { useAlerts, type CreateAlertData } from "@/hooks/useAlerts";
 import { useToast } from "@/components/ui/Toast";
 import { useSettings } from "@/hooks/useSettings";
@@ -160,34 +161,43 @@ export default function AlertsPage() {
   if (isLoading) {
     return (
       <PageTransition>
-        <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <Skeleton className="h-10 w-48" />
-              <Skeleton className="h-4 w-32 mt-2" />
-            </div>
-            <Skeleton className="h-10 w-32" />
-          </div>
+        <Section variant="hero">
+          <Skeleton className="h-8 w-48 mb-2" />
+          <Skeleton className="h-4 w-64" />
+        </Section>
+        <Section variant="editorial">
           <div className="space-y-3">
             {[...Array(3)].map((_, i) => (
               <Skeleton key={i} className="h-28 w-full" />
             ))}
           </div>
-        </div>
+        </Section>
       </PageTransition>
     );
   }
 
   return (
     <PageTransition>
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-              <h1 className="text-3xl font-bold text-text-primary flex items-center gap-3">
-                <Bell className="w-8 h-8 text-primary" />
-                Alertes de Prix
-              </h1>
-            <p className="text-text-tertiary mt-1">
+      <Section variant="hero">
+        <h1 style={{
+          fontSize: "1.625rem", fontWeight: 500,
+          letterSpacing: "normal", color: "var(--text-primary)", margin: 0,
+        }}>
+          Alertes de Prix
+        </h1>
+        <p style={{
+          fontSize: "0.8125rem", color: "var(--text-secondary)",
+          marginTop: "8px", fontFamily: "var(--font-body)",
+          textTransform: "uppercase", letterSpacing: "1px",
+        }}>
+          Alertes de prix configurées
+        </p>
+      </Section>
+
+      <Section variant="editorial">
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <p className="text-text-tertiary">
               {alerts.length > 0 ? (
                 <span>
                   Vous avez <span className="font-medium text-primary">{alerts.filter(a => a.is_active).length}</span> alerte{alerts.filter(a => a.is_active).length !== 1 ? "s" : ""} active{alerts.filter(a => a.is_active).length !== 1 ? "s" : ""}
@@ -196,120 +206,120 @@ export default function AlertsPage() {
                 "Créez des alertes pour être notifié quand les prix atteignent vos objectifs."
               )}
             </p>
+            <Button onClick={() => setShowForm(!showForm)} disabled={isCreating}>
+              {showForm ? (
+                <>
+                  <X className="w-4 h-4 mr-2" /> Annuler
+                </>
+              ) : (
+                <>
+                  <Plus className="w-4 h-4 mr-2" /> Nouvelle Alerte
+                </>
+              )}
+            </Button>
           </div>
-          <Button onClick={() => setShowForm(!showForm)} disabled={isCreating}>
-            {showForm ? (
-              <>
-                <X className="w-4 h-4 mr-2" /> Annuler
-              </>
-            ) : (
-              <>
-                <Plus className="w-4 h-4 mr-2" /> Nouvelle Alerte
-              </>
-            )}
-          </Button>
-        </div>
 
-        {showForm && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <AlertCircle className="w-5 h-5 text-primary" />
-                Créer une Nouvelle Alerte
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <Input
-                    label="Symbole"
-                    placeholder="ex: BTC, AAPL"
-                    value={formData.symbol}
-                    onChange={(e) => setFormData({ ...formData, symbol: e.target.value })}
-                    error={errors.symbol}
-                  />
-                  <Input
-                    label="Prix Cible"
-                    type="number"
-                    step="any"
-                    placeholder="0.00"
-                    value={formData.target_price || ""}
-                    onChange={(e) => setFormData({ ...formData, target_price: parseFloat(e.target.value) })}
-                    error={errors.target_price}
-                  />
-                  <div>
-                    <label className="block text-sm font-medium text-text-secondary mb-1">
-                      Condition
-                    </label>
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setFormData({ ...formData, condition: "above" })}
-                        className={cn(
-                          "flex-1 flex items-center justify-center gap-2 h-10 px-3 rounded-lg border text-sm font-medium transition-colors",
-                          formData.condition === "above"
-                            ? "border-green-500 bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-gain"
-                            : "border-border text-text-secondary hover:bg-surface-raised"
-                        )}
-                      >
-                        <TrendingUp className="w-4 h-4" />
-                        Au-dessus
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setFormData({ ...formData, condition: "below" })}
-                        className={cn(
-                          "flex-1 flex items-center justify-center gap-2 h-10 px-3 rounded-lg border text-sm font-medium transition-colors",
-                          formData.condition === "below"
-                            ? "border-loss bg-loss-muted text-loss"
-                            : "border-border text-text-secondary hover:bg-surface-raised"
-                        )}
-                      >
-                        <TrendingDown className="w-4 h-4" />
-                        En-dessous
-                      </button>
+          {showForm && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <AlertCircle className="w-5 h-5 text-primary" />
+                  Créer une Nouvelle Alerte
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <Input
+                      label="Symbole"
+                      placeholder="ex: BTC, AAPL"
+                      value={formData.symbol}
+                      onChange={(e) => setFormData({ ...formData, symbol: e.target.value })}
+                      error={errors.symbol}
+                    />
+                    <Input
+                      label="Prix Cible"
+                      type="number"
+                      step="any"
+                      placeholder="0.00"
+                      value={formData.target_price || ""}
+                      onChange={(e) => setFormData({ ...formData, target_price: parseFloat(e.target.value) })}
+                      error={errors.target_price}
+                    />
+                    <div>
+                      <label className="block text-sm font-medium text-text-secondary mb-1">
+                        Condition
+                      </label>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, condition: "above" })}
+                          className={cn(
+                            "flex-1 flex items-center justify-center gap-2 h-10 px-3 rounded-lg border text-sm font-medium transition-colors",
+                            formData.condition === "above"
+                              ? "border-green-500 bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-gain"
+                              : "border-border text-text-secondary hover:bg-surface-raised"
+                          )}
+                        >
+                          <TrendingUp className="w-4 h-4" />
+                          Au-dessus
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, condition: "below" })}
+                          className={cn(
+                            "flex-1 flex items-center justify-center gap-2 h-10 px-3 rounded-lg border text-sm font-medium transition-colors",
+                            formData.condition === "below"
+                              ? "border-loss bg-loss-muted text-loss"
+                              : "border-border text-text-secondary hover:bg-surface-raised"
+                          )}
+                        >
+                          <TrendingDown className="w-4 h-4" />
+                          En-dessous
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="flex justify-end">
-                  <Button type="submit" disabled={isCreating}>
-                    {isCreating ? "Création..." : "Créer l'Alerte"}
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-        )}
+                  <div className="flex justify-end">
+                    <Button type="submit" disabled={isCreating}>
+                      {isCreating ? "Création..." : "Créer l'Alerte"}
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          )}
 
-        {alerts.length > 0 ? (
-          <div className="space-y-3">
-            {alerts.map((alert) => (
-              <AlertCard
-                key={alert.id}
-                alert={alert}
-                onToggle={handleToggle}
-                onDelete={handleDelete}
-                isToggling={isToggling}
-                isDeleting={isDeleting}
-              />
-            ))}
-          </div>
-        ) : (
-          <Card>
-            <CardContent className="py-16 text-center">
-              <Bell className="w-12 h-12 text-text-muted dark:text-text-secondary mx-auto mb-4" />
-              <p className="text-text-tertiary text-lg font-medium">Aucune alerte</p>
-              <p className="text-sm text-text-muted dark:text-text-tertiary mt-1">
-                Créez votre première alerte de prix pour être notifié quand un actif atteint votre prix cible.
-              </p>
-              <Button onClick={() => setShowForm(true)} className="mt-4">
-                <Plus className="w-4 h-4 mr-2" />
-                Créer une Alerte
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+          {alerts.length > 0 ? (
+            <div className="space-y-3">
+              {alerts.map((alert) => (
+                <AlertCard
+                  key={alert.id}
+                  alert={alert}
+                  onToggle={handleToggle}
+                  onDelete={handleDelete}
+                  isToggling={isToggling}
+                  isDeleting={isDeleting}
+                />
+              ))}
+            </div>
+          ) : (
+            <Card>
+              <CardContent className="py-16 text-center">
+                <Bell className="w-12 h-12 text-text-muted dark:text-text-secondary mx-auto mb-4" />
+                <p className="text-text-tertiary text-lg font-medium">Aucune alerte</p>
+                <p className="text-sm text-text-muted dark:text-text-tertiary mt-1">
+                  Créez votre première alerte de prix pour être notifié quand un actif atteint votre prix cible.
+                </p>
+                <Button onClick={() => setShowForm(true)} className="mt-4">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Créer une Alerte
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </Section>
     </PageTransition>
   );
 }
