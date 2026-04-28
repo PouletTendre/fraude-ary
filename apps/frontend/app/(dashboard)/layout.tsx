@@ -27,7 +27,13 @@ export default function DashboardLayout({
   if (isLoading) {
     return (
       <div
-        style={{ minHeight: "100vh", background: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center" }}
+        style={{
+          minHeight: "100vh",
+          background: "var(--bg)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
       >
         <div className="space-y-4 w-full max-w-md px-4">
           <Skeleton className="h-8 w-full" />
@@ -38,17 +44,10 @@ export default function DashboardLayout({
   }
 
   return (
-    <>
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-[100] focus:px-4 focus:py-2 focus:bg-accent-teal focus:text-white focus:rounded-lg"
-      >
-        Skip to content
-      </a>
-
+    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
       <TopNav />
 
-      <main id="main-content">
+      <main>
         <Suspense
           fallback={
             <div
@@ -64,6 +63,6 @@ export default function DashboardLayout({
       </main>
 
       <Footer />
-    </>
+    </div>
   );
 }

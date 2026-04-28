@@ -105,27 +105,10 @@ export default function DashboardPage() {
   return (
     <PageTransition>
       <PageSection>
-        <h1
-          style={{
-            fontSize: "1.625rem",
-            fontWeight: 500,
-            letterSpacing: "normal",
-            color: "var(--text-primary)",
-            margin: 0,
-          }}
-        >
+        <h1 className="text-h1" style={{ margin: 0 }}>
           Dashboard
         </h1>
-        <p
-          style={{
-            fontSize: "0.8125rem",
-            color: "var(--text-secondary)",
-            marginTop: "8px",
-            fontFamily: "var(--font-body)",
-            textTransform: "uppercase",
-            letterSpacing: "1px",
-          }}
-        >
+        <p className="text-small text-text-secondary" style={{ marginTop: "8px" }}>
           {lastUpdate ? `Mis à jour le ${lastUpdate}` : "Chargement..."}
         </p>
       </PageSection>
@@ -205,21 +188,14 @@ export default function DashboardPage() {
               padding: "0 0 16px",
             }}
           >
-            <h3
-              style={{
-                fontSize: "1.5rem",
-                fontWeight: 400,
-                color: "var(--text-primary)",
-                margin: 0,
-              }}
-            >
+            <h3 className="text-h2" style={{ margin: 0 }}>
               Mes positions
             </h3>
             <Link
               href="/portfolio"
+              className="text-caption"
               style={{
-                fontSize: "0.8125rem",
-                color: "var(--link-blue)",
+                color: "var(--primary-hover)",
                 display: "flex",
                 alignItems: "center",
                 gap: "4px",
@@ -237,14 +213,9 @@ export default function DashboardPage() {
                   (h, i) => (
                     <th
                       key={h}
+                      className="text-label-medium text-text-tertiary"
                       style={{
                         background: "var(--surface-sunken)",
-                        color: "var(--text-tertiary)",
-                        fontFamily: "var(--font-body)",
-                        fontSize: "0.75rem",
-                        fontWeight: 400,
-                        letterSpacing: "1px",
-                        textTransform: "uppercase",
                         padding: "10px 16px",
                         textAlign: i > 0 ? "right" : "left",
                         borderBottom: "1px solid var(--border)",
@@ -283,9 +254,9 @@ export default function DashboardPage() {
                           />
                           <div>
                             <div
+                              className="w-510"
                               style={{
                                 fontSize: "13px",
-                                fontWeight: 500,
                                 color: "var(--text-primary)",
                               }}
                             >
@@ -375,7 +346,7 @@ export default function DashboardPage() {
                         </div>
                       </td>
                       <td style={{ padding: "14px 16px" }}>
-                        <Badge variant={isGain ? "gain" : "loss"}>
+                        <Badge variant={isGain ? "success" : "neutral"}>
                           {isGain
                             ? "▲ +" + asset.pnlPercent.toFixed(2) + "%"
                             : "▼ " + asset.pnlPercent.toFixed(2) + "%"}

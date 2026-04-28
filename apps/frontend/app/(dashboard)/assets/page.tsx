@@ -264,22 +264,15 @@ export default function AssetsPage() {
           <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
             <button
               onClick={() => setSelectedAsset(null)}
-              className="p-2 rounded-lg hover:bg-surface-raised text-text-secondary text-text-muted"
+              className="p-2 rounded-lg hover:bg-surface-raised text-text-secondary"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
-            <h1 style={{
-              fontSize: "1.625rem", fontWeight: 500,
-              letterSpacing: "normal", color: "var(--text-primary)", margin: 0,
-            }}>
+            <h1 className="text-h1" style={{ margin: 0 }}>
               {selectedAsset.symbol.toUpperCase()}
             </h1>
           </div>
-          <p style={{
-            fontSize: "0.8125rem", color: "var(--text-secondary)",
-            marginTop: "8px", fontFamily: "var(--font-body)",
-            textTransform: "uppercase", letterSpacing: "1px",
-          }}>
+          <p className="text-small text-text-secondary" style={{ marginTop: "8px" }}>
             Asset Detail
           </p>
         </PageSection>
@@ -290,8 +283,8 @@ export default function AssetsPage() {
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-text-tertiary">Current Price</p>
-                    <p className="text-2xl font-bold text-text-primary mt-1">
+                    <p className="text-caption-lg text-text-tertiary">Current Price</p>
+                    <p className="text-2xl font-tnum text-text-primary mt-1 w-590">
                       {formatCurrency(selectedAsset.current_price, selectedAsset.currency)}
                     </p>
                   </div>
@@ -310,22 +303,22 @@ export default function AssetsPage() {
             <Card>
               <CardContent className="pt-6">
                 <div>
-                  <p className="text-sm text-text-tertiary">Total Value</p>
-                  <p className="text-2xl font-bold text-text-primary mt-1">
+                  <p className="text-caption-lg text-text-tertiary">Total Value</p>
+                  <p className="text-2xl font-tnum text-text-primary mt-1 w-590">
                     {formatCurrency(currentValue, selectedAsset.currency)}
                   </p>
-                  <p className="text-sm text-text-tertiary mt-1">{formatNumber(selectedAsset.quantity)} units</p>
+                  <p className="text-caption-lg text-text-tertiary mt-1">{formatNumber(selectedAsset.quantity)} units</p>
                 </div>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="pt-6">
                 <div>
-                  <p className="text-sm text-text-tertiary">Performance</p>
-                  <p className={cn("text-2xl font-bold mt-1", performance >= 0 ? "text-gain" : "text-loss")}>
+                  <p className="text-caption-lg text-text-tertiary">Performance</p>
+                  <p className={cn("text-2xl font-tnum mt-1 w-590", performance >= 0 ? "text-gain" : "text-loss")}>
                     {performance >= 0 ? "+" : ""}{performance.toFixed(2)}%
                   </p>
-                  <p className={cn("text-sm mt-1", gainLoss >= 0 ? "text-gain" : "text-loss")}>
+                  <p className={cn("text-caption-lg mt-1", gainLoss >= 0 ? "text-gain" : "text-loss")}>
                     {gainLoss >= 0 ? "+" : ""}{formatCurrency(gainLoss, selectedAsset.currency)}
                   </p>
                 </div>
@@ -380,24 +373,24 @@ export default function AssetsPage() {
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-text-tertiary">Type</p>
+                  <p className="text-caption-lg text-text-tertiary">Type</p>
                   <Badge variant={
-                    selectedAsset.type === "crypto" ? "warning" :
-                    selectedAsset.type === "stocks" ? "gain" : "info"
+                    selectedAsset.type === "crypto" ? "neutral" :
+                    selectedAsset.type === "stocks" ? "success" : "subtle"
                   }>
                     {selectedAsset.type.replace("_", " ")}
                   </Badge>
                 </div>
                 <div>
-                  <p className="text-sm text-text-tertiary">Purchase Price</p>
+                  <p className="text-caption-lg text-text-tertiary">Purchase Price</p>
                   <p className="text-text-primary">{formatCurrency(selectedAsset.purchase_price, selectedAsset.currency)}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-text-tertiary">Quantity</p>
+                  <p className="text-caption-lg text-text-tertiary">Quantity</p>
                   <p className="text-text-primary">{formatNumber(selectedAsset.quantity)}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-text-tertiary">Purchase Date</p>
+                  <p className="text-caption-lg text-text-tertiary">Purchase Date</p>
                   <p className="text-text-primary">{new Date(selectedAsset.purchase_date).toLocaleDateString()}</p>
                 </div>
               </div>
@@ -429,17 +422,10 @@ export default function AssetsPage() {
   return (
     <PageTransition>
       <PageSection>
-        <h1 style={{
-          fontSize: "1.625rem", fontWeight: 500,
-          letterSpacing: "normal", color: "var(--text-primary)", margin: 0,
-        }}>
+        <h1 className="text-h1" style={{ margin: 0 }}>
           Actifs
         </h1>
-        <p style={{
-          fontSize: "0.8125rem", color: "var(--text-secondary)",
-          marginTop: "8px", fontFamily: "var(--font-body)",
-          textTransform: "uppercase", letterSpacing: "1px",
-        }}>
+        <p className="text-small text-text-secondary" style={{ marginTop: "8px" }}>
           Gérez vos actifs financiers
         </p>
       </PageSection>
@@ -467,7 +453,7 @@ export default function AssetsPage() {
                       assetType={formData.type}
                     />
                     <div>
-                      <label className="block text-sm font-medium text-text-secondary mb-1">
+                      <label className="block text-caption-lg text-text-secondary mb-1">
                         Type
                       </label>
                       <select
@@ -504,7 +490,7 @@ export default function AssetsPage() {
                       error={errors.purchase_date}
                     />
                     <div>
-                      <label className="block text-sm font-medium text-text-secondary mb-1">
+                      <label className="block text-caption-lg text-text-secondary mb-1">
                         Currency
                       </label>
                       <select
@@ -551,7 +537,7 @@ export default function AssetsPage() {
                       error={editErrors.purchase_price}
                     />
                     <div>
-                      <label className="block text-sm font-medium text-text-secondary mb-1">
+                      <label className="block text-caption-lg text-text-secondary mb-1">
                         Currency
                       </label>
                       <select
@@ -569,7 +555,7 @@ export default function AssetsPage() {
                     <Button type="submit" disabled={isUpdating}>
                       {isUpdating ? "Saving..." : "Save"}
                     </Button>
-                    <Button type="button" variant="white" onClick={handleEditCancel}>
+                    <Button type="button" variant="brand" onClick={handleEditCancel}>
                       Cancel
                     </Button>
                   </div>
@@ -601,7 +587,7 @@ export default function AssetsPage() {
                 ))}
               </select>
               {hasActiveFilters && (
-                <Button variant="white" size="sm" onClick={clearFilters}>
+                <Button variant="brand" size="sm" onClick={clearFilters}>
                   <X className="w-4 h-4 mr-1" /> Clear
                 </Button>
               )}
@@ -615,7 +601,7 @@ export default function AssetsPage() {
               ) : (
                 <>
                   <p className="text-text-tertiary">No assets match your filters.</p>
-                  <button onClick={clearFilters} className="text-primary hover:underline dark:text-primary-hover mt-2">
+                  <button onClick={clearFilters} className="text-primary-hover hover:underline mt-2">
                     Clear filters
                   </button>
                 </>
@@ -625,13 +611,13 @@ export default function AssetsPage() {
             <>
               {selectedAssets.size > 0 && (
                 <div className="flex justify-between items-center" style={{ padding: "12px 16px", borderBottom: "1px solid var(--border)" }}>
-                  <span className="text-sm text-text-secondary text-text-muted">
+                  <span className="text-small text-text-secondary">
                     {selectedAssets.size} selected
                   </span>
                   <button
                     onClick={handleBulkDelete}
                     disabled={isBulkDeleting}
-                    className="text-loss hover:text-red-800 dark:text-loss dark:hover:text-loss text-sm disabled:opacity-50"
+                    className="text-loss hover:text-loss-hover text-sm disabled:opacity-50"
                   >
                     {isBulkDeleting ? "Deleting..." : `Delete ${selectedAssets.size} selected`}
                   </button>
@@ -641,10 +627,7 @@ export default function AssetsPage() {
                 <table className="w-full min-w-[800px]">
                   <thead style={{ background: "var(--surface-sunken)", borderBottom: "1px solid var(--border)" }}>
                     <tr>
-                      <th
-                        className="px-4 py-3 text-left text-xs font-normal text-text-tertiary uppercase"
-                        style={{ letterSpacing: "1px" }}
-                      >
+                      <th className="px-4 py-3 text-left text-label-medium text-text-tertiary">
                         <input
                           type="checkbox"
                           checked={filteredAndSortedAssets.length > 0 && filteredAndSortedAssets.every((a) => selectedAssets.has(a.id))}
@@ -659,8 +642,7 @@ export default function AssetsPage() {
                         />
                       </th>
                       <th
-                        className="px-4 py-3 text-left text-xs font-normal text-text-tertiary uppercase cursor-pointer hover:bg-surface-raised"
-                        style={{ letterSpacing: "1px" }}
+                        className="px-4 py-3 text-left text-label-medium text-text-tertiary cursor-pointer hover:bg-surface-raised"
                         onClick={() => handleSort("symbol")}
                       >
                         <div className="flex items-center gap-1">
@@ -668,33 +650,20 @@ export default function AssetsPage() {
                           <ArrowUpDown className="w-3 h-3" />
                         </div>
                       </th>
-                      <th
-                        className="px-4 py-3 text-left text-xs font-normal text-text-tertiary uppercase"
-                        style={{ letterSpacing: "1px" }}
-                      >
+                      <th className="px-4 py-3 text-left text-label-medium text-text-tertiary">
                         Type
                       </th>
-                      <th
-                        className="px-4 py-3 text-right text-xs font-normal text-text-tertiary uppercase"
-                        style={{ letterSpacing: "1px" }}
-                      >
+                      <th className="px-4 py-3 text-right text-label-medium text-text-tertiary">
                         Quantity
                       </th>
-                      <th
-                        className="px-4 py-3 text-right text-xs font-normal text-text-tertiary uppercase"
-                        style={{ letterSpacing: "1px" }}
-                      >
+                      <th className="px-4 py-3 text-right text-label-medium text-text-tertiary">
                         Purchase Price
                       </th>
-                      <th
-                        className="px-4 py-3 text-right text-xs font-normal text-text-tertiary uppercase"
-                        style={{ letterSpacing: "1px" }}
-                      >
+                      <th className="px-4 py-3 text-right text-label-medium text-text-tertiary">
                         Current Price
                       </th>
                       <th
-                        className="px-4 py-3 text-right text-xs font-normal text-text-tertiary uppercase cursor-pointer hover:bg-surface-raised"
-                        style={{ letterSpacing: "1px" }}
+                        className="px-4 py-3 text-right text-label-medium text-text-tertiary cursor-pointer hover:bg-surface-raised"
                         onClick={() => handleSort("performance")}
                       >
                         <div className="flex items-center justify-end gap-1">
@@ -703,8 +672,7 @@ export default function AssetsPage() {
                         </div>
                       </th>
                       <th
-                        className="px-4 py-3 text-right text-xs font-normal text-text-tertiary uppercase cursor-pointer hover:bg-surface-raised"
-                        style={{ letterSpacing: "1px" }}
+                        className="px-4 py-3 text-right text-label-medium text-text-tertiary cursor-pointer hover:bg-surface-raised"
                         onClick={() => handleSort("value")}
                       >
                         <div className="flex items-center justify-end gap-1">
@@ -712,16 +680,10 @@ export default function AssetsPage() {
                           <ArrowUpDown className="w-3 h-3" />
                         </div>
                       </th>
-                      <th
-                        className="px-4 py-3 text-right text-xs font-normal text-text-tertiary uppercase"
-                        style={{ letterSpacing: "1px" }}
-                      >
+                      <th className="px-4 py-3 text-right text-label-medium text-text-tertiary">
                         Gain/Loss
                       </th>
-                      <th
-                        className="px-4 py-3 text-center text-xs font-normal text-text-tertiary uppercase"
-                        style={{ letterSpacing: "1px" }}
-                      >
+                      <th className="px-4 py-3 text-center text-label-medium text-text-tertiary">
                         Actions
                       </th>
                     </tr>
@@ -759,8 +721,8 @@ export default function AssetsPage() {
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap">
                             <Badge variant={
-                              asset.type === "crypto" ? "warning" :
-                              asset.type === "stocks" ? "gain" : "info"
+                              asset.type === "crypto" ? "neutral" :
+                              asset.type === "stocks" ? "success" : "subtle"
                             }>
                               {asset.type.replace("_", " ")}
                             </Badge>
@@ -776,7 +738,7 @@ export default function AssetsPage() {
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap text-right text-text-primary">
                             {formatCurrency(asset.current_price, asset.currency)}
-                            {lastUpdated && <div className="text-xs text-text-muted">{lastUpdated}</div>}
+                            {lastUpdated && <div className="text-caption text-text-muted">{lastUpdated}</div>}
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap text-right">
                             {gainLossPercent >= 0 ? (
@@ -808,7 +770,7 @@ export default function AssetsPage() {
                               onClick={() => handleDelete(asset.id)}
                               disabled={isDeleting}
                               aria-label={`Supprimer ${asset.symbol}`}
-                              className="text-loss hover:text-red-800 dark:text-loss dark:hover:text-loss text-sm disabled:opacity-50"
+                              className="text-loss hover:text-loss-hover text-sm disabled:opacity-50"
                             >
                               {isDeleting ? "Deleting..." : "Delete"}
                             </button>

@@ -122,17 +122,10 @@ export default function DividendsPage() {
   return (
     <PageTransition>
       <PageSection>
-        <h1 style={{
-          fontSize: "1.625rem", fontWeight: 500,
-          letterSpacing: "normal", color: "var(--text-primary)", margin: 0,
-        }}>
+        <h1 className="text-h1" style={{ margin: 0 }}>
           Dividendes
         </h1>
-        <p style={{
-          fontSize: "0.8125rem", color: "var(--text-secondary)",
-          marginTop: "8px", fontFamily: "var(--font-body)",
-          textTransform: "uppercase", letterSpacing: "1px",
-        }}>
+        <p className="text-small text-text-secondary" style={{ marginTop: "8px" }}>
           Suivi des dividendes
         </p>
       </PageSection>
@@ -152,8 +145,8 @@ export default function DividendsPage() {
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-text-tertiary">Total Dividendes</p>
-                    <p className="text-2xl font-bold text-text-primary mt-1">
+                    <p className="text-caption-lg text-text-tertiary">Total Dividendes</p>
+                    <p className="text-2xl font-tnum text-text-primary mt-1 w-590">
                       {formatCurrency(summary?.total_dividends ?? 0)}
                     </p>
                   </div>
@@ -167,8 +160,8 @@ export default function DividendsPage() {
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-text-tertiary">Rendement sur coût</p>
-                    <p className="text-2xl font-bold text-gain mt-1">
+                    <p className="text-caption-lg text-text-tertiary">Rendement sur coût</p>
+                    <p className="text-2xl font-tnum text-gain mt-1 w-590">
                       {(summary?.yield_on_cost ?? 0).toFixed(2)}%
                     </p>
                   </div>
@@ -182,8 +175,8 @@ export default function DividendsPage() {
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-text-tertiary">Nombre de dividendes</p>
-                    <p className="text-2xl font-bold text-text-primary mt-1">
+                    <p className="text-caption-lg text-text-tertiary">Nombre de dividendes</p>
+                    <p className="text-2xl font-tnum text-text-primary mt-1 w-590">
                       {summary?.count ?? 0}
                     </p>
                   </div>
@@ -197,8 +190,8 @@ export default function DividendsPage() {
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-text-tertiary">Meilleur Symbole</p>
-                    <p className="text-2xl font-bold text-text-primary mt-1">
+                    <p className="text-caption-lg text-text-tertiary">Meilleur Symbole</p>
+                    <p className="text-2xl font-tnum text-text-primary mt-1 w-590">
                       {topSymbol}
                     </p>
                   </div>
@@ -243,7 +236,7 @@ export default function DividendsPage() {
                       error={formErrors.quantity}
                     />
                     <div>
-                      <label className="block text-sm font-medium text-text-secondary mb-1">Currency</label>
+                      <label className="block text-caption-lg text-text-secondary mb-1">Currency</label>
                       <select
                         value={formData.currency}
                         onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
@@ -268,7 +261,7 @@ export default function DividendsPage() {
                     <Button type="submit" disabled={isCreating}>
                       {isCreating ? "Création..." : "Ajouter Dividende"}
                     </Button>
-                    <Button type="button" variant="white" onClick={() => setShowForm(false)}>
+                    <Button type="button" variant="brand" onClick={() => setShowForm(false)}>
                       Annuler
                     </Button>
                   </div>
@@ -313,46 +306,25 @@ export default function DividendsPage() {
                 <table className="w-full min-w-[700px]">
                   <thead className="bg-surface-sunken border-b border-border">
                     <tr>
-                      <th
-                        className="px-4 py-3 text-left font-normal text-xs text-text-tertiary uppercase tracking-[1px]"
-                        style={{ fontFamily: "var(--font-body)" }}
-                      >
+                      <th className="px-4 py-3 text-left text-label-medium text-text-tertiary">
                         Date
                       </th>
-                      <th
-                        className="px-4 py-3 text-left font-normal text-xs text-text-tertiary uppercase tracking-[1px]"
-                        style={{ fontFamily: "var(--font-body)" }}
-                      >
+                      <th className="px-4 py-3 text-left text-label-medium text-text-tertiary">
                         Symbole
                       </th>
-                      <th
-                        className="px-4 py-3 text-right font-normal text-xs text-text-tertiary uppercase tracking-[1px]"
-                        style={{ fontFamily: "var(--font-body)" }}
-                      >
+                      <th className="px-4 py-3 text-right text-label-medium text-text-tertiary">
                         Montant / Action
                       </th>
-                      <th
-                        className="px-4 py-3 text-right font-normal text-xs text-text-tertiary uppercase tracking-[1px]"
-                        style={{ fontFamily: "var(--font-body)" }}
-                      >
+                      <th className="px-4 py-3 text-right text-label-medium text-text-tertiary">
                         Quantité
                       </th>
-                      <th
-                        className="px-4 py-3 text-right font-normal text-xs text-text-tertiary uppercase tracking-[1px]"
-                        style={{ fontFamily: "var(--font-body)" }}
-                      >
+                      <th className="px-4 py-3 text-right text-label-medium text-text-tertiary">
                         Total
                       </th>
-                      <th
-                        className="px-4 py-3 text-left font-normal text-xs text-text-tertiary uppercase tracking-[1px]"
-                        style={{ fontFamily: "var(--font-body)" }}
-                      >
+                      <th className="px-4 py-3 text-left text-label-medium text-text-tertiary">
                         Devise
                       </th>
-                      <th
-                        className="px-4 py-3 text-center font-normal text-xs text-text-tertiary uppercase tracking-[1px]"
-                        style={{ fontFamily: "var(--font-body)" }}
-                      >
+                      <th className="px-4 py-3 text-center text-label-medium text-text-tertiary">
                         Actions
                       </th>
                     </tr>

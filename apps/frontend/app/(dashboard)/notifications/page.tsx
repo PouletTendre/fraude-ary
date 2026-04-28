@@ -44,28 +44,28 @@ function NotificationItem({ notification, onMarkAsRead }: { notification: Notifi
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <p className={cn("font-medium text-sm", !notification.read && "text-text-primary")}>
+            <p className={cn("font-medium text-small", !notification.read && "text-text-primary")}>
               {notification.title}
             </p>
-            <p className="text-sm text-text-tertiary mt-0.5">
+            <p className="text-small text-text-tertiary mt-0.5">
               {notification.message}
             </p>
           </div>
           {!notification.read && (
-              <Badge variant="info" className="flex-shrink-0">
+              <Badge variant="neutral" className="flex-shrink-0">
                 Nouveau
               </Badge>
           )}
         </div>
         <div className="flex items-center gap-3 mt-2">
-          <div className="flex items-center gap-1 text-xs text-text-muted dark:text-text-tertiary">
+          <div className="flex items-center gap-1 text-caption text-text-muted">
             <Clock className="w-3 h-3" />
             <span>{new Date(notification.created_at).toLocaleString("fr-FR")}</span>
           </div>
           {!notification.read && (
             <button
               onClick={() => onMarkAsRead(notification.id)}
-              className="text-xs text-primary hover:text-primary-hover dark:text-primary-hover hover:text-primary-hover font-medium"
+              className="text-caption text-primary hover:text-primary-hover font-medium"
             >
                 Marquer comme lu
             </button>
@@ -121,17 +121,10 @@ export default function NotificationsPage() {
   return (
     <PageTransition>
       <PageSection>
-        <h1 style={{
-          fontSize: "1.625rem", fontWeight: 500,
-          letterSpacing: "normal", color: "var(--text-primary)", margin: 0,
-        }}>
+        <h1 className="text-h1" style={{ margin: 0 }}>
           Notifications
         </h1>
-        <p style={{
-          fontSize: "0.8125rem", color: "var(--text-secondary)",
-          marginTop: "8px", fontFamily: "var(--font-body)",
-          textTransform: "uppercase", letterSpacing: "1px",
-        }}>
+        <p className="text-small text-text-secondary" style={{ marginTop: "8px" }}>
           Centre de notifications
         </p>
       </PageSection>
@@ -150,7 +143,7 @@ export default function NotificationsPage() {
             </p>
             {unreadCount > 0 && (
               <Button
-                variant="white"
+                variant="brand"
                 size="sm"
                 onClick={handleMarkAllAsRead}
                 disabled={isMarkingAll}
@@ -166,10 +159,10 @@ export default function NotificationsPage() {
             <button
               onClick={() => setFilter("all")}
               className={cn(
-                "px-3 py-1.5 text-sm rounded-lg transition-colors font-medium",
+                "px-3 py-1.5 text-caption-lg transition-colors w-510",
                 filter === "all"
                   ? "bg-surface-raised text-text-primary"
-                  : "text-text-secondary hover:bg-surface-raised bg-surface-sunken text-text-secondary hover:bg-surface-raised"
+                  : "text-text-secondary hover:bg-surface-raised"
               )}
             >
               Toutes ({notifications.length})
@@ -177,10 +170,10 @@ export default function NotificationsPage() {
             <button
               onClick={() => setFilter("unread")}
               className={cn(
-                "px-3 py-1.5 text-sm rounded-lg transition-colors font-medium",
+                "px-3 py-1.5 text-caption-lg transition-colors w-510",
                 filter === "unread"
                   ? "bg-surface-raised text-text-primary"
-                  : "text-text-secondary hover:bg-surface-raised bg-surface-sunken text-text-secondary hover:bg-surface-raised"
+                  : "text-text-secondary hover:bg-surface-raised"
               )}
             >
               Non lues ({unreadCount})
@@ -200,11 +193,11 @@ export default function NotificationsPage() {
           ) : (
             <Card>
               <CardContent className="py-16 text-center">
-                <Bell className="w-12 h-12 text-text-muted dark:text-text-secondary mx-auto mb-4" />
+                <Bell className="w-12 h-12 text-text-muted mx-auto mb-4" />
                 <p className="text-text-tertiary text-lg font-medium">
                   {filter === "unread" ? "Aucune notification non lue" : "Aucune notification pour le moment"}
                 </p>
-                <p className="text-sm text-text-muted dark:text-text-tertiary mt-1">
+                <p className="text-caption text-text-muted mt-1">
                   {filter === "unread"
                     ? "Vous avez lu toutes vos notifications."
                     : "Les notifications concernant votre portfolio apparaîtront ici."}

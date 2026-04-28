@@ -144,15 +144,6 @@ export default function PortfolioPage() {
       : <ArrowDown className="w-3.5 h-3.5 text-text-secondary" />;
   };
 
-  const tableHeaderStyle: React.CSSProperties = {
-    fontFamily: "var(--font-body)",
-    textTransform: "uppercase",
-    fontSize: "12px",
-    letterSpacing: "1px",
-    fontWeight: 400,
-    color: "var(--text-tertiary)",
-  };
-
   if (isLoading) {
     return (
       <PageTransition>
@@ -188,20 +179,10 @@ export default function PortfolioPage() {
     return (
       <PageTransition>
         <PageSection>
-          <h1 style={{ fontSize: 26, fontWeight: 500, color: "var(--text-primary)", margin: 0 }}>
+          <h1 className="text-h1" style={{ margin: 0 }}>
             Portfolio
           </h1>
-          <p
-            style={{
-              fontFamily: "var(--font-body)",
-              textTransform: "uppercase",
-              fontSize: 13,
-              letterSpacing: "1px",
-              color: "var(--text-tertiary)",
-              marginTop: 8,
-              marginBottom: 0,
-            }}
-          >
+          <p className="text-small text-text-secondary" style={{ marginTop: "8px" }}>
             Vue d&apos;ensemble
           </p>
         </PageSection>
@@ -220,20 +201,10 @@ export default function PortfolioPage() {
     <PageTransition>
       <PageSection>
         <div>
-          <h1 style={{ fontSize: 26, fontWeight: 500, color: "var(--text-primary)", margin: 0 }}>
+          <h1 className="text-h1" style={{ margin: 0 }}>
             Portfolio
           </h1>
-          <p
-            style={{
-              fontFamily: "var(--font-body)",
-              textTransform: "uppercase",
-              fontSize: 13,
-              letterSpacing: "1px",
-              color: "var(--text-tertiary)",
-              marginTop: 8,
-              marginBottom: 0,
-            }}
-          >
+          <p className="text-small text-text-secondary" style={{ marginTop: "8px" }}>
             Vue d&apos;ensemble
           </p>
         </div>
@@ -247,8 +218,8 @@ export default function PortfolioPage() {
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-text-tertiary">Total Value</p>
-                    <p className="text-2xl font-bold text-text-primary mt-1">
+                    <p className="text-caption-lg text-text-tertiary">Total Value</p>
+                    <p className="text-2xl font-tnum text-text-primary mt-1 w-590">
                       {formatCurrency(portfolio.total_value, "EUR")}
                     </p>
                   </div>
@@ -262,8 +233,8 @@ export default function PortfolioPage() {
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-text-tertiary">Total Gain/Loss</p>
-                    <p className={`text-2xl font-bold mt-1 ${portfolio.total_gain_loss >= 0 ? "text-gain" : "text-loss"}`}>
+                    <p className="text-caption-lg text-text-tertiary">Total Gain/Loss</p>
+                    <p className={`text-2xl font-tnum mt-1 w-590 ${portfolio.total_gain_loss >= 0 ? "text-gain" : "text-loss"}`}>
                       {portfolio.total_gain_loss >= 0 ? "+" : ""}{formatCurrency(portfolio.total_gain_loss, "EUR")}
                     </p>
                     {portfolio.total_gain_loss >= 0 ? (
@@ -271,7 +242,7 @@ export default function PortfolioPage() {
                     ) : (
                       <TrendingDown className="w-4 h-4 text-loss inline mr-1" />
                     )}
-                    <span className="text-sm text-text-tertiary">all time</span>
+                    <span className="text-caption-lg text-text-tertiary">all time</span>
                   </div>
                   <div className={`p-3 rounded-full ${portfolio.total_gain_loss >= 0 ? "bg-gain-muted" : "bg-loss-muted"}`}>
                     {portfolio.total_gain_loss >= 0 ? (
@@ -287,11 +258,11 @@ export default function PortfolioPage() {
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-text-tertiary">Performance</p>
-                    <p className={`text-3xl font-bold mt-1 ${portfolio.gain_loss_percentage >= 0 ? "text-gain" : "text-loss"}`}>
+                    <p className="text-caption-lg text-text-tertiary">Performance</p>
+                    <p className={`text-3xl font-tnum mt-1 w-590 ${portfolio.gain_loss_percentage >= 0 ? "text-gain" : "text-loss"}`}>
                       {portfolio.gain_loss_percentage >= 0 ? "+" : ""}{portfolio.gain_loss_percentage.toFixed(2)}%
                     </p>
-                    <p className={`text-sm mt-1 ${portfolio.gain_loss_percentage >= 0 ? "text-gain" : "text-loss"}`}>
+                    <p className={`text-caption-lg mt-1 ${portfolio.gain_loss_percentage >= 0 ? "text-gain" : "text-loss"}`}>
                       {portfolio.gain_loss_percentage >= 0 ? "↑ En hausse" : "↓ En baisse"}
                     </p>
                   </div>
@@ -319,7 +290,7 @@ export default function PortfolioPage() {
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
                       <Activity className={cn("w-4 h-4", isLive ? "text-gain" : "text-text-muted")} />
-                      <span className={cn("text-xs font-medium", isLive ? "text-gain" : "text-text-tertiary")}>
+                      <span className={cn("text-label-medium", isLive ? "text-gain" : "text-text-tertiary")}>
                         {isLive ? "LIVE" : "DELAYED"}
                       </span>
                     </div>
@@ -327,7 +298,7 @@ export default function PortfolioPage() {
                       <button
                       onClick={() => setChartView("value")}
                       className={cn(
-                        "px-3 py-1 text-sm font-medium transition-colors",
+                        "px-3 py-1 text-caption-lg font-medium transition-colors",
                         chartView === "value"
                           ? "bg-surface-raised text-text-primary"
                           : "bg-surface-raised text-text-secondary hover:bg-surface"
@@ -338,7 +309,7 @@ export default function PortfolioPage() {
                     <button
                       onClick={() => setChartView("performance")}
                       className={cn(
-                        "px-3 py-1 text-sm font-medium transition-colors",
+                        "px-3 py-1 text-caption-lg font-medium transition-colors",
                         chartView === "performance"
                           ? "bg-surface-raised text-text-primary"
                           : "bg-surface-raised text-text-secondary hover:bg-surface"
@@ -353,10 +324,10 @@ export default function PortfolioPage() {
                           key={period.value}
                           onClick={() => setSelectedPeriod(period.value)}
                           className={cn(
-                            "px-3 py-1 text-sm rounded-lg transition-colors",
+                            "px-3 py-1 text-caption-lg rounded-lg transition-colors",
                             selectedPeriod === period.value
-                              ? "bg-blue-600 text-white"
-                              : "text-text-secondary text-text-muted hover:bg-surface-raised"
+                              ? "bg-primary text-text-primary"
+                              : "text-text-secondary hover:bg-surface-raised"
                           )}
                         >
                           {period.label}
@@ -428,8 +399,8 @@ export default function PortfolioPage() {
                   </ResponsiveContainer>
                   {/* Center text */}
                   <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <p className="text-xs text-text-tertiary">Total</p>
-                    <p className="text-lg font-bold text-text-primary">
+                    <p className="text-label-medium text-text-tertiary">Total</p>
+                    <p className="text-h3 font-tnum text-text-primary">
                       {formatCurrency(portfolio.total_value, "EUR")}
                     </p>
                   </div>
@@ -438,8 +409,8 @@ export default function PortfolioPage() {
                   {portfolio.by_type.map((item) => (
                     <div key={item.type} className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full" style={{ backgroundColor: TYPE_COLORS[item.type] }} />
-                      <span className="text-sm text-text-secondary text-text-muted capitalize">{item.type.replace("_", " ")}</span>
-                      <span className="text-sm font-medium text-text-primary">{item.percentage.toFixed(1)}%</span>
+                      <span className="text-small text-text-secondary capitalize">{item.type.replace("_", " ")}</span>
+                      <span className="text-small-medium text-text-primary">{item.percentage.toFixed(1)}%</span>
                     </div>
                   ))}
                 </div>
@@ -491,8 +462,7 @@ export default function PortfolioPage() {
                 <thead>
                   <tr className="border-b border-border bg-surface-sunken/50">
                     <th 
-                      className="text-left px-6 py-3 cursor-pointer hover:text-text-secondary hover:text-text-primary select-none"
-                      style={tableHeaderStyle}
+                      className="text-left px-6 py-3 cursor-pointer hover:text-text-primary select-none text-label-medium text-text-tertiary"
                       onClick={() => handleSort("symbol")}
                     >
                       <div className="flex items-center gap-1">
@@ -501,8 +471,7 @@ export default function PortfolioPage() {
                       </div>
                     </th>
                     <th 
-                      className="text-left px-6 py-3 cursor-pointer hover:text-text-secondary hover:text-text-primary select-none"
-                      style={tableHeaderStyle}
+                      className="text-left px-6 py-3 cursor-pointer hover:text-text-primary select-none text-label-medium text-text-tertiary"
                       onClick={() => handleSort("type")}
                     >
                       <div className="flex items-center gap-1">
@@ -511,8 +480,7 @@ export default function PortfolioPage() {
                       </div>
                     </th>
                     <th 
-                      className="text-right px-6 py-3 cursor-pointer hover:text-text-secondary hover:text-text-primary select-none"
-                      style={tableHeaderStyle}
+                      className="text-right px-6 py-3 cursor-pointer hover:text-text-primary select-none text-label-medium text-text-tertiary"
                       onClick={() => handleSort("quantity")}
                     >
                       <div className="flex items-center justify-end gap-1">
@@ -521,8 +489,7 @@ export default function PortfolioPage() {
                       </div>
                     </th>
                     <th 
-                      className="text-right px-6 py-3 cursor-pointer hover:text-text-secondary hover:text-text-primary select-none"
-                      style={tableHeaderStyle}
+                      className="text-right px-6 py-3 cursor-pointer hover:text-text-primary select-none text-label-medium text-text-tertiary"
                       onClick={() => handleSort("purchase_price")}
                     >
                       <div className="flex items-center justify-end gap-1">
@@ -531,8 +498,7 @@ export default function PortfolioPage() {
                       </div>
                     </th>
                     <th 
-                      className="text-right px-6 py-3 cursor-pointer hover:text-text-secondary hover:text-text-primary select-none"
-                      style={tableHeaderStyle}
+                      className="text-right px-6 py-3 cursor-pointer hover:text-text-primary select-none text-label-medium text-text-tertiary"
                       onClick={() => handleSort("current_price")}
                     >
                       <div className="flex items-center justify-end gap-1">
@@ -541,8 +507,7 @@ export default function PortfolioPage() {
                       </div>
                     </th>
                     <th 
-                      className="text-right px-6 py-3 cursor-pointer hover:text-text-secondary hover:text-text-primary select-none"
-                      style={tableHeaderStyle}
+                      className="text-right px-6 py-3 cursor-pointer hover:text-text-primary select-none text-label-medium text-text-tertiary"
                       onClick={() => handleSort("value")}
                     >
                       <div className="flex items-center justify-end gap-1">
@@ -551,8 +516,7 @@ export default function PortfolioPage() {
                       </div>
                     </th>
                     <th 
-                      className="text-right px-6 py-3 cursor-pointer hover:text-text-secondary hover:text-text-primary select-none"
-                      style={tableHeaderStyle}
+                      className="text-right px-6 py-3 cursor-pointer hover:text-text-primary select-none text-label-medium text-text-tertiary"
                       onClick={() => handleSort("pnl")}
                     >
                       <div className="flex items-center justify-end gap-1">
@@ -561,8 +525,7 @@ export default function PortfolioPage() {
                       </div>
                     </th>
                     <th 
-                      className="text-right px-6 py-3 cursor-pointer hover:text-text-secondary hover:text-text-primary select-none"
-                      style={tableHeaderStyle}
+                      className="text-right px-6 py-3 cursor-pointer hover:text-text-primary select-none text-label-medium text-text-tertiary"
                       onClick={() => handleSort("pnlPercent")}
                     >
                       <div className="flex items-center justify-end gap-1">
@@ -587,20 +550,20 @@ export default function PortfolioPage() {
                               row.type === "stocks" && "bg-gain",
                               row.type === "real_estate" && "bg-surface-raised"
                             )} />
-                            <span className="font-semibold text-text-primary uppercase">
+                            <span className="w-590 text-text-primary">
                               {row.symbol}
                             </span>
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-text-secondary bg-surface-raised text-text-secondary capitalize">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-label-medium text-text-secondary bg-surface-raised capitalize">
                             {row.type.replace("_", " ")}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-right text-text-primary">
                           {formatNumber(row.quantity)}
                         </td>
-                        <td className="px-6 py-4 text-right text-text-secondary text-text-muted">
+                        <td className="px-6 py-4 text-right text-text-secondary">
                           {formatCurrency(row.purchase_price, row.currency)}
                           {row.purchase_price_eur !== undefined && row.currency !== "EUR" && (
                             <div className="text-[11px] text-text-tertiary mt-0.5">

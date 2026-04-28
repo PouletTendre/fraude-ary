@@ -18,8 +18,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             htmlFor={inputId}
             className="block text-text-secondary mb-1.5"
             style={{
-              fontSize: "0.8125rem",
-              fontWeight: 600,
+              fontSize: "12px",
+              fontWeight: 510,
             }}
           >
             {label}
@@ -38,20 +38,21 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             id={inputId}
             aria-describedby={error ? `${inputId}-error` : undefined}
             className={cn(
-              "w-full outline-none transition-all duration-150 ease-out bg-surface-sunken text-text-primary placeholder:text-text-muted",
+              "w-full outline-none transition-all duration-150 ease-out bg-transparent placeholder:text-[var(--text-tertiary)]",
               error
-                ? "focus:ring-2 focus:ring-loss"
-                : "focus:ring-2 focus:ring-accent-teal",
+                ? "border-[var(--loss)] focus:border-[var(--loss)] focus:shadow-[0_0_0_2px_rgba(248,81,73,0.3)]"
+                : "border-[var(--border-input)] focus:border-[var(--primary)] focus:shadow-[var(--shadow-focus)]",
               className
             )}
             style={{
-              border: error
-                ? "1px solid var(--loss)"
-                : "1px solid var(--border-input)",
-              borderRadius: "var(--r-md)",
-              padding: icon ? "10px 14px 10px 36px" : "10px 14px",
-              fontSize: "14px",
+              borderRadius: "var(--r-btn)",
+              padding: icon ? "12px 14px 12px 36px" : "12px 14px",
+              fontSize: "15px",
+              fontWeight: 400,
               fontFamily: "var(--font-sans)",
+              borderStyle: "solid",
+              borderWidth: "1px",
+              color: "var(--text-primary)",
               ...style,
             }}
             ref={ref}

@@ -7,16 +7,16 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Skeleton } from "@/components/ui/Skeleton";
 
-function labelBadge(label: string): { label: string; variant: "gain" | "loss" | "warning" } {
+function labelBadge(label: string): { label: string; variant: "success" | "neutral" | "subtle" } {
   switch (label) {
     case "undervalued":
-      return { label: "Undervalued", variant: "gain" };
+      return { label: "Undervalued", variant: "success" };
     case "overvalued":
-      return { label: "Overvalued", variant: "loss" };
+      return { label: "Overvalued", variant: "subtle" };
     case "fairly_valued":
-      return { label: "Fairly Valued", variant: "warning" };
+      return { label: "Fairly Valued", variant: "neutral" };
     default:
-      return { label, variant: "warning" };
+      return { label, variant: "neutral" };
   }
 }
 
@@ -161,7 +161,7 @@ export function ValuationCard({ symbol }: { symbol: string }) {
             <TrendingUp className="w-5 h-5 text-text-secondary" />
             <CardTitle>Stock Valuation — {data.symbol}</CardTitle>
             {data.is_estimated && (
-              <Badge variant="info">Estimated</Badge>
+              <Badge variant="neutral">Estimated</Badge>
             )}
           </div>
           <Badge variant={badge.variant}>{badge.label}</Badge>

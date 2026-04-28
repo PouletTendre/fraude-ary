@@ -31,29 +31,28 @@ export function KPICard({
     <div
       className={cn("flex flex-col gap-[8px]", className)}
       style={{
-        background: "var(--surface)",
-        borderRadius: 0,
-        padding: "20px 24px",
+        background: "rgba(255,255,255,0.02)",
+        border: "1px solid var(--border)",
+        borderRadius: "var(--r-card)",
+        boxShadow: "var(--shadow-card)",
+        padding: "20px",
       }}
     >
       <span
         style={{
-          fontFamily: "var(--font-body)",
-          textTransform: "uppercase",
-          letterSpacing: "1px",
-          fontSize: "0.75rem",
-          fontWeight: 400,
+          fontSize: "12px",
+          fontWeight: 510,
           color: "var(--text-tertiary)",
         }}
       >
         {label}
       </span>
       <span
+        className="font-tnum"
         style={{
-          fontFamily: "var(--font-sans)",
-          fontSize: "1.5rem",
+          fontSize: "24px",
           fontWeight: 400,
-          letterSpacing: "normal",
+          letterSpacing: "-0.288px",
           color: "var(--text-primary)",
         }}
       >
@@ -62,9 +61,8 @@ export function KPICard({
       {delta && (
         <span
           style={{
-            fontFamily: "var(--font-sans)",
-            fontSize: "0.8125rem",
-            fontWeight: 400,
+            fontSize: "13px",
+            fontWeight: 510,
             color: deltaColorVar,
           }}
         >

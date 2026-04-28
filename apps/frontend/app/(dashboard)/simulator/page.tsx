@@ -50,17 +50,10 @@ export default function SimulatorPage() {
   return (
     <PageTransition>
       <PageSection>
-        <h1 style={{
-          fontSize: "1.625rem", fontWeight: 500,
-          letterSpacing: "normal", color: "var(--text-primary)", margin: 0,
-        }}>
+        <h1 className="text-h1" style={{ margin: 0 }}>
           Simulateur de patrimoine
         </h1>
-        <p style={{
-          fontSize: "0.8125rem", color: "var(--text-secondary)",
-          marginTop: "8px", fontFamily: "var(--font-body)",
-          textTransform: "uppercase", letterSpacing: "1px",
-        }}>
+        <p className="text-small text-text-secondary" style={{ marginTop: "8px" }}>
           Simulez vos investissements
         </p>
       </PageSection>
@@ -107,7 +100,7 @@ export default function SimulatorPage() {
                     onChange={(v) => updateField("annual_return_rate", v)}
                   />
                   <SliderField
-                    label="Taux d’inflation"
+                    label="Taux d'inflation"
                     value={form.inflation_rate}
                     min={0}
                     max={10}
@@ -140,7 +133,7 @@ export default function SimulatorPage() {
                 </Button>
 
                 {error && (
-                  <p className="text-sm text-loss">{error}</p>
+                  <p className="text-small text-loss">{error}</p>
                 )}
               </form>
             </CardContent>
@@ -185,13 +178,13 @@ export default function SimulatorPage() {
                     label="Valeur réelle (inflation)"
                     value={formatCurrency(data.final_value_real, "EUR")}
                     icon={<DollarSign className="w-5 h-5 text-primary" />}
-                    variant="primary"
+                    variant="brand"
                   />
                   <KpiCard
                     label="Total contributions"
                     value={formatCurrency(data.total_contributions, "EUR")}
                     icon={<PiggyBank className="w-5 h-5 text-secondary" />}
-                    variant="secondary"
+                    variant="subtle"
                   />
                   <KpiCard
                     label="Gains totaux"
@@ -297,40 +290,22 @@ export default function SimulatorPage() {
                       <table className="w-full text-sm">
                         <thead>
                           <tr className="border-b border-border bg-surface-sunken/50">
-                            <th
-                              className="text-left px-5 py-3 font-normal text-xs text-text-tertiary uppercase tracking-[1px]"
-                              style={{ fontFamily: "var(--font-body)" }}
-                            >
+                            <th className="text-left px-5 py-3 text-label-medium text-text-tertiary">
                               Année
                             </th>
-                            <th
-                              className="text-right px-5 py-3 font-normal text-xs text-text-tertiary uppercase tracking-[1px]"
-                              style={{ fontFamily: "var(--font-body)" }}
-                            >
+                            <th className="text-right px-5 py-3 text-label-medium text-text-tertiary">
                               Valeur
                             </th>
-                            <th
-                              className="text-right px-5 py-3 font-normal text-xs text-text-tertiary uppercase tracking-[1px]"
-                              style={{ fontFamily: "var(--font-body)" }}
-                            >
+                            <th className="text-right px-5 py-3 text-label-medium text-text-tertiary">
                               Valeur réelle
                             </th>
-                            <th
-                              className="text-right px-5 py-3 font-normal text-xs text-text-tertiary uppercase tracking-[1px]"
-                              style={{ fontFamily: "var(--font-body)" }}
-                            >
+                            <th className="text-right px-5 py-3 text-label-medium text-text-tertiary">
                               Contributions
                             </th>
-                            <th
-                              className="text-right px-5 py-3 font-normal text-xs text-text-tertiary uppercase tracking-[1px]"
-                              style={{ fontFamily: "var(--font-body)" }}
-                            >
+                            <th className="text-right px-5 py-3 text-label-medium text-text-tertiary">
                               Dividendes
                             </th>
-                            <th
-                              className="text-right px-5 py-3 font-normal text-xs text-text-tertiary uppercase tracking-[1px]"
-                              style={{ fontFamily: "var(--font-body)" }}
-                            >
+                            <th className="text-right px-5 py-3 text-label-medium text-text-tertiary">
                               Gains
                             </th>
                           </tr>
@@ -396,8 +371,8 @@ function SliderField({
   return (
     <div>
       <div className="flex items-center justify-between mb-1.5">
-        <label className="text-sm font-medium text-text-secondary">{label}</label>
-        <span className="text-sm font-semibold text-text-primary tabular-nums">
+        <label className="text-caption-lg text-text-secondary">{label}</label>
+        <span className="text-small-medium text-text-primary font-tnum">
           {formatNumber(value, step < 1 ? 2 : 0)}{unit}
         </span>
       </div>
@@ -411,8 +386,8 @@ function SliderField({
         className="w-full h-2 rounded-full appearance-none cursor-pointer bg-surface-sunken accent-primary"
       />
       <div className="flex justify-between mt-1">
-        <span className="text-xs text-text-muted">{min}{unit}</span>
-        <span className="text-xs text-text-muted">{max}{unit}</span>
+        <span className="text-caption text-text-muted">{min}{unit}</span>
+        <span className="text-caption text-text-muted">{max}{unit}</span>
       </div>
     </div>
   );
@@ -427,12 +402,12 @@ function KpiCard({
   label: string;
   value: string;
   icon: React.ReactNode;
-  variant: "gain" | "primary" | "secondary";
+  variant: "gain" | "brand" | "subtle";
 }) {
   const bgMap = {
     gain: "bg-gain-muted",
-    primary: "bg-surface-raised",
-    secondary: "bg-surface-raised",
+    brand: "bg-primary-muted",
+    subtle: "bg-surface-raised",
   };
 
   return (
@@ -440,8 +415,8 @@ function KpiCard({
       <CardContent className="pt-5">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-text-tertiary">{label}</p>
-            <p className="text-xl font-bold text-text-primary mt-1">{value}</p>
+            <p className="text-caption-lg text-text-tertiary">{label}</p>
+            <p className="text-h3 font-tnum text-text-primary mt-1">{value}</p>
           </div>
           <div className={cn("p-2.5 rounded-full", bgMap[variant])}>
             {icon}
@@ -470,7 +445,7 @@ function LegendItem({
           borderTop: dashed ? `2px dashed ${color}` : undefined,
         }}
       />
-      <span className="text-xs text-text-muted">{label}</span>
+      <span className="text-caption text-text-muted">{label}</span>
     </div>
   );
 }

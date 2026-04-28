@@ -12,7 +12,7 @@ interface PageSectionProps extends HTMLAttributes<HTMLDivElement> {
 const PageSection = forwardRef<HTMLDivElement, PageSectionProps>(
   (
     {
-      paddingY = "40px",
+      paddingY = "80px",
       maxWidth = "1920px",
       fullWidth = false,
       className,

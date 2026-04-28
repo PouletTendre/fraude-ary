@@ -39,17 +39,17 @@ function AlertCard({ alert, onToggle, onDelete, isToggling, isDeleting }: {
         <div className="flex items-start justify-between gap-2">
           <div>
             <div className="flex items-center gap-2">
-              <p className="font-semibold text-text-primary uppercase">
+              <p className="w-590 text-text-primary">
                 {alert.symbol}
               </p>
-              <Badge variant={alert.is_active ? "gain" : "neutral"}>
+              <Badge variant={alert.is_active ? "success" : "neutral"}>
                 {alert.is_active ? "Active" : "Inactive"}
               </Badge>
               {alert.triggered_at && (
-                <Badge variant="warning">Déclenchée</Badge>
+                <Badge variant="neutral">Déclenchée</Badge>
               )}
             </div>
-            <p className="text-sm text-text-tertiary mt-1">
+            <p className="text-small text-text-tertiary mt-1">
               Alerte quand le prix passe{" "}
               <span className={cn(
                 "font-medium",
@@ -62,7 +62,7 @@ function AlertCard({ alert, onToggle, onDelete, isToggling, isDeleting }: {
           </div>
         </div>
         <div className="flex items-center gap-3 mt-3">
-          <p className="text-xs text-text-muted dark:text-text-tertiary">
+          <p className="text-caption text-text-muted">
             Créée le {new Date(alert.created_at).toLocaleDateString("fr-FR")}
           </p>
         </div>
@@ -179,17 +179,10 @@ export default function AlertsPage() {
   return (
     <PageTransition>
       <PageSection>
-        <h1 style={{
-          fontSize: "1.625rem", fontWeight: 500,
-          letterSpacing: "normal", color: "var(--text-primary)", margin: 0,
-        }}>
+        <h1 className="text-h1" style={{ margin: 0 }}>
           Alertes de Prix
         </h1>
-        <p style={{
-          fontSize: "0.8125rem", color: "var(--text-secondary)",
-          marginTop: "8px", fontFamily: "var(--font-body)",
-          textTransform: "uppercase", letterSpacing: "1px",
-        }}>
+        <p className="text-small text-text-secondary" style={{ marginTop: "8px" }}>
           Alertes de prix configurées
         </p>
       </PageSection>
@@ -247,7 +240,7 @@ export default function AlertsPage() {
                       error={errors.target_price}
                     />
                     <div>
-                      <label className="block text-sm font-medium text-text-secondary mb-1">
+                      <label className="block text-caption-lg text-text-secondary mb-1">
                         Condition
                       </label>
                       <div className="flex gap-2">
@@ -255,9 +248,9 @@ export default function AlertsPage() {
                           type="button"
                           onClick={() => setFormData({ ...formData, condition: "above" })}
                           className={cn(
-                            "flex-1 flex items-center justify-center gap-2 h-10 px-3 rounded-lg border text-sm font-medium transition-colors",
+                            "flex-1 flex items-center justify-center gap-2 h-10 px-3 rounded-lg border text-caption-lg font-medium transition-colors",
                             formData.condition === "above"
-                              ? "border-green-500 bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-gain"
+                              ? "border-green-500 bg-gain-muted text-gain"
                               : "border-border text-text-secondary hover:bg-surface-raised"
                           )}
                         >
@@ -268,7 +261,7 @@ export default function AlertsPage() {
                           type="button"
                           onClick={() => setFormData({ ...formData, condition: "below" })}
                           className={cn(
-                            "flex-1 flex items-center justify-center gap-2 h-10 px-3 rounded-lg border text-sm font-medium transition-colors",
+                            "flex-1 flex items-center justify-center gap-2 h-10 px-3 rounded-lg border text-caption-lg font-medium transition-colors",
                             formData.condition === "below"
                               ? "border-loss bg-loss-muted text-loss"
                               : "border-border text-text-secondary hover:bg-surface-raised"
@@ -306,9 +299,9 @@ export default function AlertsPage() {
           ) : (
             <Card>
               <CardContent className="py-16 text-center">
-                <Bell className="w-12 h-12 text-text-muted dark:text-text-secondary mx-auto mb-4" />
+                <Bell className="w-12 h-12 text-text-muted mx-auto mb-4" />
                 <p className="text-text-tertiary text-lg font-medium">Aucune alerte</p>
-                <p className="text-sm text-text-muted dark:text-text-tertiary mt-1">
+                <p className="text-caption text-text-muted mt-1">
                   Créez votre première alerte de prix pour être notifié quand un actif atteint votre prix cible.
                 </p>
                 <Button onClick={() => setShowForm(true)} className="mt-4">

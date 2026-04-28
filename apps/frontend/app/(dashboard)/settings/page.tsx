@@ -35,17 +35,10 @@ export default function SettingsPage() {
   return (
     <PageTransition>
       <PageSection>
-        <h1 style={{
-          fontSize: "1.625rem", fontWeight: 500,
-          letterSpacing: "normal", color: "var(--text-primary)", margin: 0,
-        }}>
+        <h1 className="text-h1" style={{ margin: 0 }}>
           Paramètres
         </h1>
-        <p style={{
-          fontSize: "0.8125rem", color: "var(--text-secondary)",
-          marginTop: "8px", fontFamily: "var(--font-body)",
-          textTransform: "uppercase", letterSpacing: "1px",
-        }}>
+        <p className="text-small text-text-secondary" style={{ marginTop: "8px" }}>
           Paramètres du compte
         </p>
       </PageSection>
@@ -60,7 +53,7 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-text-secondary mb-3 block">
+                <label className="text-caption-lg text-text-secondary mb-3 block">
                   Theme
                 </label>
                 <div className="grid grid-cols-3 gap-3">
@@ -74,7 +67,7 @@ export default function SettingsPage() {
                     )}
                   >
                     <Sun className="w-6 h-6 text-amber-500" />
-                    <span className="text-sm font-medium text-text-secondary">Clair</span>
+                    <span className="text-caption-lg text-text-secondary">Clair</span>
                     <div className="w-5 h-5 rounded-full bg-surface-raised flex items-center justify-center">
                       {theme === "light" && <div className="w-2.5 h-2.5 rounded-full bg-text-primary" />}
                     </div>
@@ -89,7 +82,7 @@ export default function SettingsPage() {
                     )}
                   >
                     <Moon className="w-6 h-6 text-indigo-500" />
-                    <span className="text-sm font-medium text-text-secondary">Sombre</span>
+                    <span className="text-caption-lg text-text-secondary">Sombre</span>
                     <div className="w-5 h-5 rounded-full bg-surface-raised flex items-center justify-center">
                       {theme === "dark" && <div className="w-2.5 h-2.5 rounded-full bg-text-primary" />}
                     </div>
@@ -104,7 +97,7 @@ export default function SettingsPage() {
                     )}
                   >
                     <Monitor className="w-6 h-6 text-text-tertiary" />
-                    <span className="text-sm font-medium text-text-secondary">Système</span>
+                    <span className="text-caption-lg text-text-secondary">Système</span>
                     <div className="w-5 h-5 rounded-full bg-surface-raised flex items-center justify-center">
                       {theme === "system" && <div className="w-2.5 h-2.5 rounded-full bg-text-primary" />}
                     </div>
@@ -121,7 +114,7 @@ export default function SettingsPage() {
               <CardTitle className="text-base">Devise</CardTitle>
             </CardHeader>
             <CardContent>
-              <label className="text-sm font-medium text-text-secondary mb-3 block">
+              <label className="text-caption-lg text-text-secondary mb-3 block">
                 Devise d&apos;affichage
               </label>
               <div className="grid grid-cols-2 gap-3">
@@ -140,8 +133,8 @@ export default function SettingsPage() {
                       {c.icon}
                     </div>
                     <div className="text-left">
-                      <p className="text-sm font-medium text-text-primary">{c.label}</p>
-                      <p className="text-xs text-text-tertiary">{c.value}</p>
+                      <p className="text-small-medium text-text-primary">{c.label}</p>
+                      <p className="text-caption text-text-tertiary">{c.value}</p>
                     </div>
                     <div className="ml-auto w-5 h-5 rounded-full bg-surface-raised flex items-center justify-center">
                       {settings.currency === c.value && <div className="w-2.5 h-2.5 rounded-full bg-text-primary" />}
@@ -159,7 +152,7 @@ export default function SettingsPage() {
               <CardTitle className="text-base">Format de date</CardTitle>
             </CardHeader>
             <CardContent>
-              <label className="text-sm font-medium text-text-secondary mb-3 block">
+              <label className="text-caption-lg text-text-secondary mb-3 block">
                 Format préféré
               </label>
               <div className="space-y-2">
@@ -175,8 +168,8 @@ export default function SettingsPage() {
                     )}
                   >
                     <div className="text-left">
-                      <p className="text-sm font-medium text-text-primary">{df.label}</p>
-                      <p className="text-xs text-text-tertiary mt-0.5">{df.example}</p>
+                      <p className="text-small-medium text-text-primary">{df.label}</p>
+                      <p className="text-caption text-text-tertiary mt-0.5">{df.example}</p>
                     </div>
                     <div className="w-5 h-5 rounded-full bg-surface-raised flex items-center justify-center">
                       {settings.dateFormat === df.value && <div className="w-2.5 h-2.5 rounded-full bg-text-primary" />}

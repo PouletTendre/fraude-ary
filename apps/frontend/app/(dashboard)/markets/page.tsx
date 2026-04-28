@@ -56,19 +56,19 @@ function SummaryCard({
     <div className="grid grid-cols-2 md:grid-cols-4" style={{ gap: "20px" }}>
       <Card>
         <CardContent className="pt-6">
-          <p className="text-sm text-text-tertiary">Prix actuel</p>
-          <p className="text-2xl font-bold text-text-primary mt-1">
+          <p className="text-caption-lg text-text-tertiary">Prix actuel</p>
+          <p className="text-2xl font-tnum text-text-primary mt-1 w-590">
             {formatCurrency(latest.close)}
           </p>
         </CardContent>
       </Card>
       <Card>
         <CardContent className="pt-6">
-          <p className="text-sm text-text-tertiary">Variation période</p>
+          <p className="text-caption-lg text-text-tertiary">Variation période</p>
           <div className="flex items-center gap-2 mt-1">
             <p
               className={cn(
-                "text-2xl font-bold",
+                "text-2xl font-tnum w-590",
                 periodChange >= 0 ? "text-gain" : "text-loss"
               )}
             >
@@ -84,7 +84,7 @@ function SummaryCard({
             )}
             <span
               className={cn(
-                "text-sm font-medium",
+                "text-caption-lg",
                 periodChange >= 0 ? "text-gain" : "text-loss"
               )}
             >
@@ -96,16 +96,16 @@ function SummaryCard({
       </Card>
       <Card>
         <CardContent className="pt-6">
-          <p className="text-sm text-text-tertiary">Plus haut (période)</p>
-          <p className="text-2xl font-bold text-text-primary mt-1">
+          <p className="text-caption-lg text-text-tertiary">Plus haut (période)</p>
+          <p className="text-2xl font-tnum text-text-primary mt-1 w-590">
             {formatCurrency(periodHigh)}
           </p>
         </CardContent>
       </Card>
       <Card>
         <CardContent className="pt-6">
-          <p className="text-sm text-text-tertiary">Plus bas (période)</p>
-          <p className="text-2xl font-bold text-text-primary mt-1">
+          <p className="text-caption-lg text-text-tertiary">Plus bas (période)</p>
+          <p className="text-2xl font-tnum text-text-primary mt-1 w-590">
             {formatCurrency(periodLow)}
           </p>
         </CardContent>
@@ -185,20 +185,10 @@ export default function MarketsPage() {
     <PageTransition>
       <PageSection>
         <div>
-          <h1 style={{ fontSize: 26, fontWeight: 500, color: "var(--text-primary)", margin: 0 }}>
+          <h1 className="text-h1" style={{ margin: 0 }}>
             Marchés
           </h1>
-          <p
-            style={{
-              fontFamily: "var(--font-body)",
-              textTransform: "uppercase",
-              fontSize: 12,
-              letterSpacing: "1px",
-              color: "var(--text-tertiary)",
-              marginTop: 8,
-              marginBottom: 0,
-            }}
-          >
+          <p className="text-small text-text-secondary" style={{ marginTop: "8px" }}>
             Analyse technique · Graphiques
           </p>
         </div>
@@ -207,17 +197,7 @@ export default function MarketsPage() {
       <PageSection>
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           {/* Search */}
-          <style>{`
-            .ferrari-symbol-search input {
-              background: transparent !important;
-              border-color: var(--border-input) !important;
-            }
-            .ferrari-symbol-search input:focus {
-              border-color: #14b8a6 !important;
-              box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.25) !important;
-            }
-          `}</style>
-          <div className="ferrari-symbol-search" style={{ maxWidth: 420 }}>
+          <div style={{ maxWidth: 420 }}>
             <SymbolSearch value={symbol} onChange={setSymbol} />
           </div>
 
@@ -242,7 +222,7 @@ export default function MarketsPage() {
                   Erreur lors du chargement des données pour {symbol}.
                 </p>
                 {(error as Error)?.message && (
-                  <p className="text-xs text-text-muted mt-1">
+                  <p className="text-caption text-text-muted mt-1">
                     {(error as Error).message}
                   </p>
                 )}
@@ -289,7 +269,7 @@ export default function MarketsPage() {
                       key={p.value}
                       onClick={() => setPeriod(p.value)}
                       className={cn(
-                        "px-3 py-1 text-sm rounded-lg transition-colors font-medium",
+                        "px-3 py-1 text-caption-lg transition-colors w-510",
                         period === p.value
                           ? "bg-surface-raised text-text-primary"
                           : "bg-surface-raised text-text-secondary hover:bg-surface"
@@ -308,7 +288,7 @@ export default function MarketsPage() {
                   <button
                     onClick={() => setChartType("candle")}
                     className={cn(
-                      "px-3 py-1.5 flex items-center gap-1.5 text-sm font-medium transition-colors",
+                      "px-3 py-1.5 flex items-center gap-1.5 text-caption-lg transition-colors w-510",
                       chartType === "candle"
                         ? "bg-surface-raised text-text-primary"
                         : "bg-surface-raised text-text-secondary hover:bg-surface"
@@ -320,7 +300,7 @@ export default function MarketsPage() {
                   <button
                     onClick={() => setChartType("line")}
                     className={cn(
-                      "px-3 py-1.5 flex items-center gap-1.5 text-sm font-medium transition-colors",
+                      "px-3 py-1.5 flex items-center gap-1.5 text-caption-lg transition-colors w-510",
                       chartType === "line"
                         ? "bg-surface-raised text-text-primary"
                         : "bg-surface-raised text-text-secondary hover:bg-surface"
@@ -332,7 +312,7 @@ export default function MarketsPage() {
                   <button
                     onClick={() => setChartType("area")}
                     className={cn(
-                      "px-3 py-1.5 flex items-center gap-1.5 text-sm font-medium transition-colors",
+                      "px-3 py-1.5 flex items-center gap-1.5 text-caption-lg transition-colors w-510",
                       chartType === "area"
                         ? "bg-surface-raised text-text-primary"
                         : "bg-surface-raised text-text-secondary hover:bg-surface"
@@ -355,9 +335,9 @@ export default function MarketsPage() {
                       onChange={(e) => setShowSMA20(e.target.checked)}
                       className="rounded"
                     />
-                    <span className="text-sm text-text-secondary font-medium">SMA 20</span>
+                    <span className="text-caption-lg text-text-secondary w-510">SMA 20</span>
                     <Badge
-                      variant="warning"
+                      variant="neutral"
                       style={{ fontSize: "8px", padding: "2px 5px" }}
                     >
                       SMA
@@ -370,9 +350,9 @@ export default function MarketsPage() {
                       onChange={(e) => setShowSMA50(e.target.checked)}
                       className="rounded"
                     />
-                    <span className="text-sm text-text-secondary font-medium">SMA 50</span>
+                    <span className="text-caption-lg text-text-secondary w-510">SMA 50</span>
                     <Badge
-                      variant="info"
+                      variant="neutral"
                       style={{ fontSize: "8px", padding: "2px 5px" }}
                     >
                       SMA
@@ -385,7 +365,7 @@ export default function MarketsPage() {
                       onChange={(e) => setShowBollinger(e.target.checked)}
                       className="rounded"
                     />
-                    <span className="text-sm text-text-secondary font-medium">Bollinger</span>
+                    <span className="text-caption-lg text-text-secondary w-510">Bollinger</span>
                     <Badge
                       variant="neutral"
                       style={{ fontSize: "8px", padding: "2px 5px" }}
@@ -405,10 +385,10 @@ export default function MarketsPage() {
                   {technical.rsi !== null && (
                     <Card>
                       <CardContent className="pt-6">
-                        <p className="text-sm text-text-tertiary">RSI (14)</p>
+                        <p className="text-caption-lg text-text-tertiary">RSI (14)</p>
                         <p
                           className={cn(
-                            "text-2xl font-bold mt-1",
+                            "text-2xl font-tnum mt-1 w-590",
                             (technical.rsi ?? 0) > 70
                               ? "text-loss"
                               : (technical.rsi ?? 0) < 30
@@ -418,7 +398,7 @@ export default function MarketsPage() {
                         >
                           {(technical.rsi ?? 0).toFixed(1)}
                         </p>
-                        <p className="text-xs text-text-muted mt-1">
+                        <p className="text-caption text-text-muted mt-1">
                           {(technical.rsi ?? 0) > 70
                             ? "Suracheté"
                             : (technical.rsi ?? 0) < 30
@@ -431,8 +411,8 @@ export default function MarketsPage() {
                   {technical.sma_20 !== null && (
                     <Card>
                       <CardContent className="pt-6">
-                        <p className="text-sm text-text-tertiary">SMA 20</p>
-                        <p className="text-2xl font-bold text-text-primary mt-1">
+                        <p className="text-caption-lg text-text-tertiary">SMA 20</p>
+                        <p className="text-2xl font-tnum text-text-primary mt-1 w-590">
                           {formatCurrency(technical.sma_20 ?? 0)}
                         </p>
                       </CardContent>
@@ -441,8 +421,8 @@ export default function MarketsPage() {
                   {technical.sma_50 !== null && (
                     <Card>
                       <CardContent className="pt-6">
-                        <p className="text-sm text-text-tertiary">SMA 50</p>
-                        <p className="text-2xl font-bold text-text-primary mt-1">
+                        <p className="text-caption-lg text-text-tertiary">SMA 50</p>
+                        <p className="text-2xl font-tnum text-text-primary mt-1 w-590">
                           {formatCurrency(technical.sma_50 ?? 0)}
                         </p>
                       </CardContent>
@@ -451,10 +431,10 @@ export default function MarketsPage() {
                   {technical.macd && technical.macd.histogram !== null && (
                     <Card>
                       <CardContent className="pt-6">
-                        <p className="text-sm text-text-tertiary">MACD</p>
+                        <p className="text-caption-lg text-text-tertiary">MACD</p>
                         <p
                           className={cn(
-                            "text-lg font-bold mt-1",
+                            "text-h3 font-tnum mt-1 w-590",
                             (technical.macd.histogram ?? 0) >= 0
                               ? "text-gain"
                               : "text-loss"
@@ -462,7 +442,7 @@ export default function MarketsPage() {
                         >
                           {(technical.macd.histogram ?? 0).toFixed(4)}
                         </p>
-                        <p className="text-xs text-text-muted mt-1">
+                        <p className="text-caption text-text-muted mt-1">
                           Signal: {(technical.macd.signal_line ?? 0).toFixed(4)}
                         </p>
                       </CardContent>
@@ -475,7 +455,7 @@ export default function MarketsPage() {
               {!technical && symbol && (
                 <Card>
                   <CardContent className="py-6 text-center">
-                    <p className="text-sm text-text-tertiary">
+                    <p className="text-small text-text-tertiary">
                       Indicateurs techniques non disponibles pour {symbol}
                     </p>
                   </CardContent>
@@ -486,7 +466,7 @@ export default function MarketsPage() {
         </div>
       </PageSection>
 
-      {/* Cinematic: Full-width MarketChart */}
+      {/* Full-width MarketChart */}
       {hasData && !isLoading && (
         <PageSection paddingY="24px">
           <ErrorBoundary>

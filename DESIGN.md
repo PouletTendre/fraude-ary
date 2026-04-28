@@ -1,314 +1,367 @@
-# Design System Inspired by Ferrari
+# Design System Inspired by Linear
 
 ## 1. Visual Theme & Atmosphere
 
-Ferrari's website is a digital editorial — a curated magazine where the Prancing Horse brand is presented with the gravitas of an art institution and the precision of Italian coachwork. The page opens onto an expanse of absolute black, broken only by the iconic Prancing Horse emblem floating alone in its own atmosphere. Below, the content unfolds in dramatic alternations between inky-dark cinematic sections and crisp white editorial panels. This chiaroscuro rhythm — darkness yielding to light, machinery yielding to human story — feels more like paging through a Ferrari yearbook than scrolling a commercial website. Every section is a curated vignette: a concept car dissolving from shadow, two F1 drivers posed with sculptural stillness, a lineup of production models arranged in a jewel-toned parade.
+Linear's website is a masterclass in dark-mode-first product design — a near-black canvas (`#08090a`) where content emerges from darkness like starlight. The overall impression is one of extreme precision engineering: every element exists in a carefully calibrated hierarchy of luminance, from barely-visible borders (`rgba(255,255,255,0.05)`) to soft, luminous text (`#f7f8f8`). This is not a dark theme applied to a light design — it is darkness as the native medium, where information density is managed through subtle gradations of white opacity rather than color variation.
 
-The color language is monastically restrained for a brand built on speed and emotion. Ferrari Red (`#DA291C`) appears with almost surgical sparseness — reserved for the Subscribe CTA and accent moments that need to command immediate attention. The vast majority of the interface lives in black, white, and a carefully calibrated gray scale (from `#303030` dark surfaces through `#8F8F8F` mid-tones to `#D2D2D2` light borders). Two yellows — Racing Yellow (`#FFF200`) and the deeper Modena Yellow (`#F6E500`) — exist in the token system as heritage accents for special contexts, honoring Ferrari's racing provenance. The restraint means that when red does appear, it carries the weight of the entire brand.
+The typography system is built entirely on Inter Variable with OpenType features `"cv01"` and `"ss03"` enabled globally, giving the typeface a cleaner, more geometric character. Inter is used at a remarkable range of weights — from 300 (light body) through 510 (medium, Linear's signature weight) to 590 (semibold emphasis). The 510 weight is particularly distinctive: it sits between regular and medium, creating a subtle emphasis that doesn't shout. At display sizes (72px, 64px, 48px), Inter uses aggressive negative letter-spacing (-1.584px to -1.056px), creating compressed, authoritative headlines that feel engineered rather than designed. Berkeley Mono serves as the monospace companion for code and technical labels, with fallbacks to ui-monospace, SF Mono, and Menlo.
 
-Typography relies on FerrariSans — a proprietary sans-serif family with medium-weight headings (500–700) and compact proportions. Display text runs at 24–26px for section titles, while the UI chrome lives at 12–16px in weights ranging from regular to bold. A secondary "Body-Font" custom typeface handles captions and utility text, rendered in uppercase with wide letter-spacing (1px) to create a label-like editorial quality. This two-font system — FerrariSans for narrative authority, Body-Font for structural annotation — gives the site a print-magazine hierarchy. No text decoration is gratuitous. Letter-spacing is tight for headlines and deliberately expanded for labels, creating a visual rhythm that alternates between urgency and composure.
+The color system is almost entirely achromatic — dark backgrounds with white/gray text — punctuated by a single brand accent: Linear's signature indigo-violet (`#5e6ad2` for backgrounds, `#7170ff` for interactive accents). This accent color is used sparingly and intentionally, appearing only on CTAs, active states, and brand elements. The border system uses ultra-thin, semi-transparent white borders (`rgba(255,255,255,0.05)` to `rgba(255,255,255,0.08)`) that create structure without visual noise, like wireframes drawn in moonlight.
 
 **Key Characteristics:**
-- Chiaroscuro layout alternating between deep black sections and clean white editorial panels
-- Ferrari Red (`#DA291C`) used with extreme sparseness — accent, not atmosphere
-- Prancing Horse emblem as isolated hero element on a void-black field
-- FerrariSans proprietary typeface with compact proportions and medium weights
-- Photo-journalism imagery: concept renders, driver portraits, lineup parades — each section is a story
-- Uppercase Body-Font labels with wide letter-spacing (1px) for editorial annotation
-- Nearly zero border-radius (2px default) reflecting precision engineering aesthetics
-- Dual-framework architecture (PrimeReact + Element Plus) powering 32+ interactive components
-- Carousel-driven hero with editorial slides and arrow/dot navigation
+- Dark-mode-native: `#08090a` marketing background, `#0f1011` panel background, `#191a1b` elevated surfaces
+- Inter Variable with `"cv01", "ss03"` globally — geometric alternates for a cleaner aesthetic
+- Signature weight 510 (between regular and medium) for most UI text
+- Aggressive negative letter-spacing at display sizes (-1.584px at 72px, -1.056px at 48px)
+- Brand indigo-violet: `#5e6ad2` (bg) / `#7170ff` (accent) / `#828fff` (hover) — the only chromatic color in the system
+- Semi-transparent white borders throughout: `rgba(255,255,255,0.05)` to `rgba(255,255,255,0.08)`
+- Button backgrounds at near-zero opacity: `rgba(255,255,255,0.02)` to `rgba(255,255,255,0.05)`
+- Multi-layered shadows with inset variants for depth on dark surfaces
+- Radix UI primitives as the component foundation (6 detected primitives)
+- Success green (`#27a644`, `#10b981`) used only for status indicators
 
 ## 2. Color Palette & Roles
 
-### Primary
-- **Ferrari Red** (`#DA291C`): The iconic Rosso Corsa — primary accent and CTA color. Used for the Subscribe button, key action triggers, and brand moments where maximum visual authority is needed. The single most important color in the system (--f-color-accent-100)
-- **Pure White** (`#FFFFFF`): Primary surface for editorial content panels, navigation text on dark backgrounds, and button fills. The canvas that provides breathing room between dark cinematic sections (--f-color-ui-0)
+### Background Surfaces
+- **Marketing Black** (`#010102` / `#08090a`): The deepest background — the canvas for hero sections and marketing pages. Near-pure black with an imperceptible blue-cool undertone.
+- **Panel Dark** (`#0f1011`): Sidebar and panel backgrounds. One step up from the marketing black.
+- **Level 3 Surface** (`#191a1b`): Elevated surface areas, card backgrounds, dropdowns.
+- **Secondary Surface** (`#28282c`): The lightest dark surface — used for hover states and slightly elevated components.
 
-### Secondary & Accent
-- **Dark Red** (`#B01E0A`): Deeper variant of Ferrari Red for hover/pressed states and high-contrast contexts — adds dimensionality to the brand color without introducing a new hue (--f-color-accent-90)
-- **Deep Red** (`#9D2211`): The most saturated dark red — used for active states and extra emphasis where even Dark Red needs more weight (--f-color-accent-80)
-- **Racing Yellow** (`#FFF200`): Heritage accent from Ferrari's racing livery — reserved for special highlights and motorsport-related contexts (--f-color-yellow-hypersail)
-- **Modena Yellow** (`#F6E500`): Slightly warmer and more golden than Racing Yellow — used for secondary heritage accents and category markers (--f-color-yellow)
+### Text & Content
+- **Primary Text** (`#f7f8f8`): Near-white with a barely-warm cast. The default text color — not pure white, preventing eye strain on dark backgrounds.
+- **Secondary Text** (`#d0d6e0`): Cool silver-gray for body text, descriptions, and secondary content.
+- **Tertiary Text** (`#8a8f98`): Muted gray for placeholders, metadata, and de-emphasized content.
+- **Quaternary Text** (`#62666d`): The most subdued text — timestamps, disabled states, subtle labels.
 
-### Surface & Background
-- **Absolute Black** (`#000000`): Hero sections, cinematic backgrounds, and the dominant dark surface — the void that makes imagery and the Prancing Horse emblem float
-- **Dark Surface** (`#303030`): Secondary dark surface for footer regions, newsletter sections, and layered dark panels — slightly lifted from pure black for depth differentiation (--f-color-ui-90)
-- **Light Gray Surface** (`#D2D2D2`): Subtle alternate surface for dividers and border treatments on white panels (--f-color-ui-20)
-- **Overlay Dark** (`hsla(0, 0%, 7%, 0.8)`): Semi-transparent near-black for modal overlays and image caption backgrounds (--f-color-overlay-darker)
+### Brand & Accent
+- **Brand Indigo** (`#5e6ad2`): Primary brand color — used for CTA button backgrounds, brand marks, and key interactive surfaces.
+- **Accent Violet** (`#7170ff`): Brighter variant for interactive elements — links, active states, selected items.
+- **Accent Hover** (`#828fff`): Lighter, more saturated variant for hover states on accent elements.
+- **Security Lavender** (`#7a7fad`): Muted indigo used specifically for security-related UI elements.
 
-### Neutrals & Text
-- **Near Black** (`#181818`): Primary body text color on light surfaces — slightly softened from absolute black for better readability (link default color)
-- **Dark Gray** (`#666666`): Secondary text and subdued UI labels — used where text needs to recede from the primary hierarchy (--f-color-black-60)
-- **Mid Gray** (`#8F8F8F`): Tertiary text for metadata, timestamps, and supportive content (--f-color-black-50)
-- **Silver Gray** (`#969696`): Placeholder text and disabled state indicators (--f-color-black-55)
+### Status Colors
+- **Green** (`#27a644`): Primary success/active status. Used for "in progress" indicators.
+- **Emerald** (`#10b981`): Secondary success — pill badges, completion states.
 
-### Semantic & Accent
-- **Warning Red** (`#F13A2C`): Accessible warning state — brighter and more orange-shifted than Ferrari Red to differentiate semantic alerts from brand expression (--f-color-accessible-warning)
-- **Success Green** (`#03904A`): Confirmation and positive status indicators (--f-color-accessible-success)
-- **Info Blue** (`#4C98B9`): Informational callouts, tooltips, and neutral status messaging (--f-color-accessible-info)
-- **Link Hover Blue** (`#3860BE`): Interactive hover state for text links — a dignified navy-blue that signals interactivity without competing with Ferrari Red
+### Border & Divider
+- **Border Primary** (`#23252a`): Solid dark border for prominent separations.
+- **Border Secondary** (`#34343a`): Slightly lighter solid border.
+- **Border Tertiary** (`#3e3e44`): Lightest solid border variant.
+- **Border Subtle** (`rgba(255,255,255,0.05)`): Ultra-subtle semi-transparent border — the default.
+- **Border Standard** (`rgba(255,255,255,0.08)`): Standard semi-transparent border for cards, inputs, code blocks.
+- **Line Tint** (`#141516`): Nearly invisible line for the subtlest divisions.
+- **Line Tertiary** (`#18191a`): Slightly more visible divider line.
 
-### Gradient System
-- No explicit gradients in the token system
-- Depth is achieved through photography and the binary contrast between black and white surfaces
-- The overlay darker color (`hsla(0, 0%, 7%, 0.8)`) creates depth through transparency layering over imagery
-- Occasional photographic gradients (light falloff in studio shots) provide atmospheric depth within image content
+### Light Mode Neutrals (for light theme contexts)
+- **Light Background** (`#f7f8f8`): Page background in light mode.
+- **Light Surface** (`#f3f4f5` / `#f5f6f7`): Subtle surface tinting.
+- **Light Border** (`#d0d6e0`): Visible border in light contexts.
+- **Light Border Alt** (`#e6e6e6`): Alternative lighter border.
+- **Pure White** (`#ffffff`): Card surfaces, highlights.
+
+### Overlay
+- **Overlay Primary** (`rgba(0,0,0,0.85)`): Modal/dialog backdrop — extremely dark for focus isolation.
 
 ## 3. Typography Rules
 
 ### Font Family
-- **FerrariSans**: Primary typeface for headings, navigation, buttons, and editorial content. A proprietary sans-serif with medium weight as the default (500), compact x-height, and precise letter-spacing control. Fallbacks: Arial, Helvetica, sans-serif
-- **Body-Font**: Secondary typeface for captions, labels, and utility text. Frequently rendered in uppercase with expanded letter-spacing (1px) for an editorial label aesthetic. Used for category tags and small annotation text
-- **Arial / Helvetica**: System fallback fonts used in cookie consent modals, form elements, and third-party component frameworks
+- **Primary**: `Inter Variable`, with fallbacks: `SF Pro Display, -apple-system, system-ui, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Open Sans, Helvetica Neue`
+- **Monospace**: `Berkeley Mono`, with fallbacks: `ui-monospace, SF Mono, Menlo`
+- **OpenType Features**: `"cv01", "ss03"` enabled globally — cv01 provides an alternate lowercase 'a' (single-story), ss03 adjusts specific letterforms for a cleaner geometric appearance.
 
 ### Hierarchy
 
-| Role | Size | Weight | Line Height | Letter Spacing | Notes |
-|------|------|--------|-------------|----------------|-------|
-| Section Title | 26px (1.63rem) | 500 | 1.20 | normal | FerrariSans, primary editorial headings on white backgrounds |
-| Card Heading | 24px (1.50rem) | 400 | normal | normal | FerrariSans, content card titles |
-| Subheading | 18px (1.13rem) | 700 | 1.20 (tight) | normal | FerrariSans, bold subsection labels |
-| UI Heading | 16px (1.00rem) | 500 | 1.40 | 0.08px | FerrariSans, component headings and nav items |
-| Body Bold | 16px (1.00rem) | 700 | 1.30 (tight) | normal | FerrariSans, emphasized inline text |
-| Button Label | 16px (1.00rem) | 400 | normal | 1.28px | FerrariSans, primary button text with wide tracking |
-| Small Button | 14.4px (0.90rem) | 700 | 1.00 (tight) | normal | FerrariSans, compact action buttons |
-| Nav Link | 13px (0.81rem) | 600 | 1.20 (tight) | 0.13px | FerrariSans, navigation and footer links |
-| Caption | 13px (0.81rem) | 400 | 1.50 | 0.195px | FerrariSans/Body-Font, metadata and descriptions |
-| Micro Button | 12px (0.75rem) | 700 | 1.00 (tight) | 0.96px | FerrariSans, small CTA with wide tracking |
-| Label Upper | 12px (0.75rem) | 400 | 1.27 (tight) | 1px | Body-Font, uppercase labels and category tags |
-| Micro Label | 11px (0.69rem) | 400 | 1.27 (tight) | 1px | Body-Font, uppercase smallest annotation text |
-| Cookie Text | 45px (2.81rem) | 400 | 1.50 | 0.195px | Arial, consent dialog oversized button text |
+| Role | Font | Size | Weight | Line Height | Letter Spacing | Notes |
+|------|------|------|--------|-------------|----------------|-------|
+| Display XL | Inter Variable | 72px (4.50rem) | 510 | 1.00 (tight) | -1.584px | Hero headlines, maximum impact |
+| Display Large | Inter Variable | 64px (4.00rem) | 510 | 1.00 (tight) | -1.408px | Secondary hero text |
+| Display | Inter Variable | 48px (3.00rem) | 510 | 1.00 (tight) | -1.056px | Section headlines |
+| Heading 1 | Inter Variable | 32px (2.00rem) | 400 | 1.13 (tight) | -0.704px | Major section titles |
+| Heading 2 | Inter Variable | 24px (1.50rem) | 400 | 1.33 | -0.288px | Sub-section headings |
+| Heading 3 | Inter Variable | 20px (1.25rem) | 590 | 1.33 | -0.24px | Feature titles, card headers |
+| Body Large | Inter Variable | 18px (1.13rem) | 400 | 1.60 (relaxed) | -0.165px | Introduction text, feature descriptions |
+| Body Emphasis | Inter Variable | 17px (1.06rem) | 590 | 1.60 (relaxed) | normal | Emphasized body, sub-headings in content |
+| Body | Inter Variable | 16px (1.00rem) | 400 | 1.50 | normal | Standard reading text |
+| Body Medium | Inter Variable | 16px (1.00rem) | 510 | 1.50 | normal | Navigation, labels |
+| Body Semibold | Inter Variable | 16px (1.00rem) | 590 | 1.50 | normal | Strong emphasis |
+| Small | Inter Variable | 15px (0.94rem) | 400 | 1.60 (relaxed) | -0.165px | Secondary body text |
+| Small Medium | Inter Variable | 15px (0.94rem) | 510 | 1.60 (relaxed) | -0.165px | Emphasized small text |
+| Small Semibold | Inter Variable | 15px (0.94rem) | 590 | 1.60 (relaxed) | -0.165px | Strong small text |
+| Small Light | Inter Variable | 15px (0.94rem) | 300 | 1.47 | -0.165px | De-emphasized body |
+| Caption Large | Inter Variable | 14px (0.88rem) | 510–590 | 1.50 | -0.182px | Sub-labels, category headers |
+| Caption | Inter Variable | 13px (0.81rem) | 400–510 | 1.50 | -0.13px | Metadata, timestamps |
+| Label | Inter Variable | 12px (0.75rem) | 400–590 | 1.40 | normal | Button text, small labels |
+| Micro | Inter Variable | 11px (0.69rem) | 510 | 1.40 | normal | Tiny labels |
+| Tiny | Inter Variable | 10px (0.63rem) | 400–510 | 1.50 | -0.15px | Overline text, sometimes uppercase |
+| Link Large | Inter Variable | 16px (1.00rem) | 400 | 1.50 | normal | Standard links |
+| Link Medium | Inter Variable | 15px (0.94rem) | 510 | 2.67 | normal | Spaced navigation links |
+| Link Small | Inter Variable | 14px (0.88rem) | 510 | 1.50 | normal | Compact links |
+| Link Caption | Inter Variable | 13px (0.81rem) | 400–510 | 1.50 | -0.13px | Footer, metadata links |
+| Mono Body | Berkeley Mono | 14px (0.88rem) | 400 | 1.50 | normal | Code blocks |
+| Mono Caption | Berkeley Mono | 13px (0.81rem) | 400 | 1.50 | normal | Code labels |
+| Mono Label | Berkeley Mono | 12px (0.75rem) | 400 | 1.40 | normal | Code metadata, sometimes uppercase |
 
 ### Principles
-- **Proprietary identity**: FerrariSans is exclusive to Ferrari — it cannot be substituted without losing brand recognition. The font's compact proportions and medium weight default (500) convey engineering precision
-- **Two-register system**: FerrariSans handles narrative voice (headings, content, buttons) while Body-Font handles structural annotation (labels, tags, micro-captions) — this mirrors print magazine conventions of editorial text vs. technical labels
-- **Uppercase as emphasis tool**: Body-Font captions use `text-transform: uppercase` with expanded letter-spacing (1px) to create a visually distinct label layer that reads as "informational overlay" rather than primary content
-- **Compact line-heights**: Headlines use tight line-heights (1.00–1.30) creating dense, impactful text blocks, while body text opens to 1.50 for comfortable reading — the contrast between compressed headers and relaxed body text creates visual tension
-- **Weight range 400–700**: Four weights active in the system (400, 500, 600, 700) — significantly more range than Tesla but still controlled. 500 is the default "voice," 700 is for emphasis, 400 for body, 600 for navigation
+- **510 is the signature weight**: Linear uses Inter Variable's 510 weight (between regular 400 and medium 500) as its default emphasis weight. This creates a subtly bolded feel without the heaviness of traditional medium or semibold.
+- **Compression at scale**: Display sizes use progressively tighter letter-spacing — -1.584px at 72px, -1.408px at 64px, -1.056px at 48px, -0.704px at 32px. Below 24px, spacing relaxes toward normal.
+- **OpenType as identity**: `"cv01", "ss03"` aren't decorative — they transform Inter into Linear's distinctive typeface, giving it a more geometric, purposeful character.
+- **Three-tier weight system**: 400 (reading), 510 (emphasis/UI), 590 (strong emphasis). The 300 weight appears only in deliberately de-emphasized contexts.
 
 ## 4. Component Stylings
 
 ### Buttons
-Ferrari's buttons are minimal white rectangles with near-zero radius — the CTA philosophy is "architecture, not decoration."
 
-**Primary CTA (White)** — The default action button:
-- Default: bg `#FFFFFF`, text `#000000`, fontSize 16px (FerrariSans), letterSpacing 1.28px, padding 12px 10px, borderRadius 2px, border 1px solid `#000000`
-- Hover: bg `#1EAEDB` (Teal), text `#FFFFFF`, opacity 0.9
-- Focus: bg `#1EAEDB`, text `#FFFFFF`, border 1px solid `#FFFFFF`, outline 2px solid `#000000`, opacity 0.9
-- Used for: "Configure" actions, secondary calls to action on light backgrounds
+**Ghost Button (Default)**
+- Background: `rgba(255,255,255,0.02)`
+- Text: `#e2e4e7` (near-white)
+- Padding: comfortable
+- Radius: 6px
+- Border: `1px solid rgb(36, 40, 44)`
+- Outline: none
+- Focus shadow: `rgba(0,0,0,0.1) 0px 4px 12px`
+- Use: Standard actions, secondary CTAs
 
-**Subscribe CTA (Red)** — The high-emphasis action button:
-- Default: bg `#DA291C` (Ferrari Red), text `#FFFFFF`, borderRadius 2px, padding 12px 10px
-- Used for: Newsletter subscribe, primary conversion actions on dark backgrounds
-- The only button that uses Ferrari Red — reserved for maximum visual priority
+**Subtle Button**
+- Background: `rgba(255,255,255,0.04)`
+- Text: `#d0d6e0` (silver-gray)
+- Padding: 0px 6px
+- Radius: 6px
+- Use: Toolbar actions, contextual buttons
 
-**Ghost Button (White Border)** — For dark backgrounds:
-- Default: bg transparent, text `#FFFFFF`, border 1px solid `#FFFFFF`, borderRadius 2px, padding 12px 10px
-- Hover: bg `#1EAEDB` (Teal), text `#FFFFFF`, opacity 0.9
-- Focus: same as Primary CTA focus state
-- Used for: Actions overlaid on dark imagery and cinematic sections
+**Primary Brand Button (Inferred)**
+- Background: `#5e6ad2` (brand indigo)
+- Text: `#ffffff`
+- Padding: 8px 16px
+- Radius: 6px
+- Hover: `#828fff` shift
+- Use: Primary CTAs ("Start building", "Sign up")
 
-**Text Link** — Inline navigation:
-- Default: text `#181818` (on light surfaces) or `#FFFFFF` (on dark), no border, no background
-- Hover: color shifts to `#3860BE` (Link Hover Blue), decoration removes underline
-- White variant on dark surfaces uses underline decoration by default
-- FerrariSans or Body-Font depending on context (Body-Font for uppercase label links)
+**Icon Button (Circle)**
+- Background: `rgba(255,255,255,0.03)` or `rgba(255,255,255,0.05)`
+- Text: `#f7f8f8` or `#ffffff`
+- Radius: 50%
+- Border: `1px solid rgba(255,255,255,0.08)`
+- Use: Close, menu toggle, icon-only actions
+
+**Pill Button**
+- Background: transparent
+- Text: `#d0d6e0`
+- Padding: 0px 10px 0px 5px
+- Radius: 9999px
+- Border: `1px solid rgb(35, 37, 42)`
+- Use: Filter chips, tags, status indicators
+
+**Small Toolbar Button**
+- Background: `rgba(255,255,255,0.05)`
+- Text: `#62666d` (muted)
+- Radius: 2px
+- Border: `1px solid rgba(255,255,255,0.05)`
+- Shadow: `rgba(0,0,0,0.03) 0px 1.2px 0px 0px`
+- Font: 12px weight 510
+- Use: Toolbar actions, quick-access controls
 
 ### Cards & Containers
-
-**Editorial Card** (Content sections):
-- Background: white
-- Border: none
-- Shadow: none
-- Layout: image above, heading + caption below
-- Image treatment: full-width within card, no rounded corners on image
-- Text: FerrariSans heading (16–24px) + Body-Font caption (12–13px uppercase)
-
-**Dark Cinematic Card** (Hero/feature sections):
-- Background: `#000000` (Absolute Black)
-- Full-bleed imagery with text overlay
-- No border, no shadow — the darkness IS the container
-- Text: white, positioned with careful negative space
-
-**Vehicle Lineup** (Model carousel):
-- Horizontal scrollable row of vehicle thumbnails
-- Each vehicle on a neutral/white background
-- Navigation: arrow buttons + dot indicators
-- Background shifts to showcase the selected model's color context
+- Background: `rgba(255,255,255,0.02)` to `rgba(255,255,255,0.05)` (never solid — always translucent)
+- Border: `1px solid rgba(255,255,255,0.08)` (standard) or `1px solid rgba(255,255,255,0.05)` (subtle)
+- Radius: 8px (standard), 12px (featured), 22px (large panels)
+- Shadow: `rgba(0,0,0,0.2) 0px 0px 0px 1px` or layered multi-shadow stacks
+- Hover: subtle background opacity increase
 
 ### Inputs & Forms
 
-**Newsletter Input** (Footer section):
-- Background: transparent on dark surface
-- Text: white
-- Border: 1px solid `#CCCCCC`
-- Placeholder: `#969696` (Silver Gray)
-- Focus: border color transitions (standard browser focus ring)
-- Label: Body-Font uppercase, 12px, 1px letter-spacing
+**Text Area**
+- Background: `rgba(255,255,255,0.02)`
+- Text: `#d0d6e0`
+- Border: `1px solid rgba(255,255,255,0.08)`
+- Padding: 12px 14px
+- Radius: 6px
 
-**Cookie Consent** (Modal):
-- Background: white
-- Border radius: 8px (dialog)
-- Shadow: `rgb(153, 153, 153) 1px 1px 1px 0px`
-- Buttons: oversized (45px Arial), white bg with black border
-- Uses standard PrimeReact/Element Plus modal framework
+**Search Input**
+- Background: transparent
+- Text: `#f7f8f8`
+- Padding: 1px 32px (icon-aware)
+
+**Button-style Input**
+- Text: `#8a8f98`
+- Padding: 1px 6px
+- Radius: 5px
+- Focus shadow: multi-layer stack
+
+### Badges & Pills
+
+**Success Pill**
+- Background: `#10b981`
+- Text: `#f7f8f8`
+- Radius: 50% (circular)
+- Font: 10px weight 510
+- Use: Status dots, completion indicators
+
+**Neutral Pill**
+- Background: transparent
+- Text: `#d0d6e0`
+- Padding: 0px 10px 0px 5px
+- Radius: 9999px
+- Border: `1px solid rgb(35, 37, 42)`
+- Font: 12px weight 510
+- Use: Tags, filter chips, category labels
+
+**Subtle Badge**
+- Background: `rgba(255,255,255,0.05)`
+- Text: `#f7f8f8`
+- Padding: 0px 8px 0px 2px
+- Radius: 2px
+- Border: `1px solid rgba(255,255,255,0.05)`
+- Font: 10px weight 510
+- Use: Inline labels, version tags
 
 ### Navigation
-- **Desktop**: Prancing Horse logo centered at top of page, primary navigation below — not a traditional horizontal nav bar but a full-width header block on black background
-- **Logo**: Centered Prancing Horse emblem (44×42px) on absolute black — the single most prominent UI element
-- **Links**: FerrariSans, 13px, weight 600, white text on dark backgrounds
-- **Mobile**: Hamburger collapse to vertical navigation drawer
-- **Footer**: Multi-column layout on `#303030` (Dark Surface) with category links in Body-Font uppercase
-- **No sticky nav behavior** observed — the page scrolls naturally with the header moving off-screen
+- Dark sticky header on near-black background
+- Linear logomark left-aligned (SVG icon)
+- Links: Inter Variable 13–14px weight 510, `#d0d6e0` text
+- Active/hover: text lightens to `#f7f8f8`
+- CTA: Brand indigo button or ghost button
+- Mobile: hamburger collapse
+- Search: command palette trigger (`/` or `Cmd+K`)
 
 ### Image Treatment
-- **Hero**: Full-width editorial photography on black backgrounds — concept cars in atmospheric studio lighting, editorial portraits with cinematic composition
-- **Aspect ratios**: Mixed — landscape (16:9) for hero sections, near-square for portrait/driver imagery, wide panoramic for vehicle lineups
-- **Full-bleed vs padded**: Hero images are full-bleed edge-to-edge; editorial content images are padded within white containers
-- **Lazy loading**: Below-fold sections use progressive loading (PrimeReact framework handles this)
-- **Image quality**: High-resolution photography with studio lighting — no user-generated or lifestyle imagery. Every image is art-directed
-
-### Carousel Component
-- Editorial carousel with multiple slides
-- Dot indicators for slide position
-- Arrow navigation (left/right) at slide edges
-- Auto-advancing with manual override
-- Content: mixed editorial — event recaps, model launches, racing highlights
+- Product screenshots on dark backgrounds with subtle border (`rgba(255,255,255,0.08)`)
+- Top-rounded images: `12px 12px 0px 0px` radius
+- Dashboard/issue previews dominate feature sections
+- Subtle shadow beneath screenshots: `rgba(0,0,0,0.4) 0px 2px 4px`
 
 ## 5. Layout Principles
 
 ### Spacing System
-- **Base unit**: 8px (detected system base)
-- **Scale**: 1px, 2px, 4px, 5px, 6px, 9px, 10px, 11.2px, 12px, 13px, 15px, 16px, 19px, 20px, 25px
-- **Button padding**: 12px vertical, 10px horizontal — compact and precise
-- **Section padding**: Generous vertical spacing (40–80px estimated) between major content blocks
-- **Card gaps**: 16–20px between grid items
-- **Footer padding**: 25px horizontal sections within the dark footer block
+- Base unit: 8px
+- Scale: 1px, 4px, 7px, 8px, 11px, 12px, 16px, 19px, 20px, 22px, 24px, 28px, 32px, 35px
+- The 7px and 11px values suggest micro-adjustments for optical alignment
+- Primary rhythm: 8px, 16px, 24px, 32px (standard 8px grid)
 
 ### Grid & Container
-- **Max width**: 1920px (largest breakpoint) with content constraining at narrower widths
-- **Hero**: Full-bleed on black, content centered
-- **Editorial sections**: 2-column layouts with image + text, alternating sides
-- **Vehicle lineup**: Horizontal scroll/carousel, 5–6 models visible at desktop width
-- **Footer**: 4-column grid for link categories
+- Max content width: approximately 1200px
+- Hero: centered single-column with generous vertical padding
+- Feature sections: 2–3 column grids for feature cards
+- Full-width dark sections with internal max-width constraints
+- Changelog: single-column timeline layout
 
 ### Whitespace Philosophy
-Ferrari treats white space as a gallery wall. Each section — whether a concept car render on black void or a pair of F1 drivers on neutral gray — is given its own "room" of breathing space. The alternating black/white sections create a pacing rhythm: dark = immersive moment, white = editorial content, dark = immersive moment. This cadence makes scrolling feel like turning pages in a luxury publication. White space between editorial cards is moderate (not Tesla-extreme) because Ferrari is telling stories, not exhibiting single objects.
+- **Darkness as space**: On Linear's dark canvas, empty space isn't white — it's absence. The near-black background IS the whitespace, and content emerges from it.
+- **Compressed headlines, expanded surroundings**: Display text at 72px with -1.584px tracking is dense and compressed, but sits within vast dark padding. The contrast between typographic density and spatial generosity creates tension.
+- **Section isolation**: Each feature section is separated by generous vertical padding (80px+) with no visible dividers — the dark background provides natural separation.
 
 ### Border Radius Scale
-| Value | Context |
-|-------|---------|
-| 1px | Subtle softening on small inline elements (spans) |
-| 2px | Default for buttons, inputs, and interactive elements — barely perceptible, razor-precision |
-| 8px | Modal dialogs and overlay containers — the "softest" structural radius |
-| 50% | Circular elements: carousel dots, avatar thumbnails, slider handles |
+- Micro (2px): Inline badges, toolbar buttons, subtle tags
+- Standard (4px): Small containers, list items
+- Comfortable (6px): Buttons, inputs, functional elements
+- Card (8px): Cards, dropdowns, popovers
+- Panel (12px): Panels, featured cards, section containers
+- Large (22px): Large panel elements
+- Full Pill (9999px): Chips, filter pills, status tags
+- Circle (50%): Icon buttons, avatars, status dots
 
 ## 6. Depth & Elevation
 
 | Level | Treatment | Use |
 |-------|-----------|-----|
-| Level 0 (Flat) | No shadow, no border | Default state for all content sections and cards |
-| Level 1 (Subtle) | `rgb(153, 153, 153) 1px 1px 1px 0px` | Rare — cookie consent dialogs and dropdown menus |
-| Level 2 (Overlay) | `hsla(0, 0%, 7%, 0.8)` backdrop | Modal overlays and image caption backgrounds |
-| Level 3 (Border) | `1px solid #CCCCCC` | Input fields, form containers — depth through delineation not shadow |
+| Flat (Level 0) | No shadow, `#010102` bg | Page background, deepest canvas |
+| Subtle (Level 1) | `rgba(0,0,0,0.03) 0px 1.2px 0px` | Toolbar buttons, micro-elevation |
+| Surface (Level 2) | `rgba(255,255,255,0.05)` bg + `1px solid rgba(255,255,255,0.08)` border | Cards, input fields, containers |
+| Inset (Level 2b) | `rgba(0,0,0,0.2) 0px 0px 12px 0px inset` | Recessed panels, inner shadows |
+| Ring (Level 3) | `rgba(0,0,0,0.2) 0px 0px 0px 1px` | Border-as-shadow technique |
+| Elevated (Level 4) | `rgba(0,0,0,0.4) 0px 2px 4px` | Floating elements, dropdowns |
+| Dialog (Level 5) | Multi-layer stack: `rgba(0,0,0,0) 0px 8px 2px, rgba(0,0,0,0.01) 0px 5px 2px, rgba(0,0,0,0.04) 0px 3px 2px, rgba(0,0,0,0.07) 0px 1px 1px, rgba(0,0,0,0.08) 0px 0px 1px` | Popovers, command palette, modals |
+| Focus | `rgba(0,0,0,0.1) 0px 4px 12px` + additional layers | Keyboard focus on interactive elements |
 
-### Shadow Philosophy
-Ferrari's approach to elevation is nearly as flat as Tesla's, but with a different rationale. Where Tesla avoids shadows for minimalism, Ferrari avoids them because the editorial photography provides all the visual depth needed. The single shadow token (`rgb(153, 153, 153) 1px 1px 1px 0px`) is extremely subtle — a 1-pixel whisper used only in utilitarian contexts like consent dialogs. The site communicates hierarchy through three strategies:
-1. **Surface color contrast**: Black sections vs. white sections create unmistakable layering
-2. **Overlay transparency**: The `--f-color-overlay-darker` at 80% opacity creates depth without shadow
-3. **Photographic depth**: Studio-lit car imagery with reflections, ground shadows, and atmospheric haze provides all the visual dimensionality
-
-### Decorative Depth
-- No UI gradients, no glows, no blur effects on interface elements
-- The Prancing Horse logo on black creates a "floating in void" effect through pure contrast — no glow or shadow needed
-- Dark-to-light section transitions are hard cuts, not gradient blends — reinforcing the editorial page-turn metaphor
+**Shadow Philosophy**: On dark surfaces, traditional shadows (dark on dark) are nearly invisible. Linear solves this by using semi-transparent white borders as the primary depth indicator. Elevation isn't communicated through shadow darkness but through background luminance steps — each level slightly increases the white opacity of the surface background (`0.02` → `0.04` → `0.05`), creating a subtle stacking effect. The inset shadow technique (`rgba(0,0,0,0.2) 0px 0px 12px 0px inset`) creates a unique "sunken" effect for recessed panels, adding dimensional depth that traditional dark themes lack.
 
 ## 7. Do's and Don'ts
 
 ### Do
-- Use Ferrari Red (`#DA291C`) sparingly — only for primary CTAs and brand-critical moments. Its power comes from restraint
-- Alternate between black cinematic sections and white editorial sections to create the signature chiaroscuro rhythm
-- Use FerrariSans at weight 500 as the default heading voice — it's the typographic equivalent of the engine note
-- Apply Body-Font in uppercase with 1px letter-spacing for all labels, category tags, and structural annotations
-- Keep border-radius at 2px for all interactive elements — razor precision, not rounded friendliness
-- Let photography carry the emotional weight — every image should be art-directed studio quality
-- Use the Prancing Horse emblem as a standalone hero element on black — never crowd it with adjacent content
-- Maintain the 12px/10px button padding ratio — compact, purposeful, no excess
-- Use `#181818` (Near Black) for body text instead of pure `#000000` — the subtle warmth improves readability
-- Reserve the yellow accents (`#FFF200`, `#F6E500`) strictly for motorsport and racing heritage contexts
+- Use Inter Variable with `"cv01", "ss03"` on ALL text — these features are fundamental to Linear's typeface identity
+- Use weight 510 as your default emphasis weight — it's Linear's signature between-weight
+- Apply aggressive negative letter-spacing at display sizes (-1.584px at 72px, -1.056px at 48px)
+- Build on near-black backgrounds: `#08090a` for marketing, `#0f1011` for panels, `#191a1b` for elevated surfaces
+- Use semi-transparent white borders (`rgba(255,255,255,0.05)` to `rgba(255,255,255,0.08)`) instead of solid dark borders
+- Keep button backgrounds nearly transparent: `rgba(255,255,255,0.02)` to `rgba(255,255,255,0.05)`
+- Reserve brand indigo (`#5e6ad2` / `#7170ff`) for primary CTAs and interactive accents only
+- Use `#f7f8f8` for primary text — not pure `#ffffff`, which would be too harsh
+- Apply the luminance stacking model: deeper = darker bg, elevated = slightly lighter bg
 
 ### Don't
-- Scatter Ferrari Red across the interface as decoration — it's a CTA signal, not a theme color
-- Use rounded-pill buttons or large border-radii — the 2px precision is non-negotiable
-- Add box-shadows to cards or content containers — depth comes from surface color contrast and photography
-- Mix FerrariSans and Body-Font within the same text block — they serve separate hierarchical functions
-- Use colorful backgrounds (blue, green, etc.) for sections — the palette is exclusively black/white/gray with red and yellow accents
-- Apply text transforms to FerrariSans headings — uppercase is reserved for Body-Font labels only
-- Display low-quality or user-generated imagery — every photograph must meet editorial standards
-- Use the Link Hover Blue (`#3860BE`) for anything other than interactive hover states — it's not a brand color
-- Create busy layouts with multiple competing focal points — each section should have one clear story
-- Override the semantic color system (warning, success, info) with brand colors — `#F13A2C` warning is deliberately different from `#DA291C` brand red
+- Don't use pure white (`#ffffff`) as primary text — `#f7f8f8` prevents eye strain
+- Don't use solid colored backgrounds for buttons — transparency is the system (rgba white at 0.02–0.05)
+- Don't apply the brand indigo decoratively — it's reserved for interactive/CTA elements only
+- Don't use positive letter-spacing on display text — Inter at large sizes always runs negative
+- Don't use visible/opaque borders on dark backgrounds — borders should be whisper-thin semi-transparent white
+- Don't skip the OpenType features (`"cv01", "ss03"`) — without them, it's generic Inter, not Linear's Inter
+- Don't use weight 700 (bold) — Linear's maximum weight is 590, with 510 as the workhorse
+- Don't introduce warm colors into the UI chrome — the palette is cool gray with blue-violet accent only
+- Don't use drop shadows for elevation on dark surfaces — use background luminance stepping instead
 
 ## 8. Responsive Behavior
 
 ### Breakpoints
 | Name | Width | Key Changes |
 |------|-------|-------------|
-| Mobile Small | ≤375px | Single-column, minimal padding (12px), stacked navigation, hero text scales to ~18px, full-width CTAs |
-| Mobile | 376–600px | Single-column, slightly larger padding (16px), hamburger nav, body text at 13px |
-| Tablet Small | 601–768px | 2-column editorial grid begins, hero images maintain full-width, footer switches to 2-column |
-| Tablet | 769–960px | Full 2-column layout, carousel shows 3 vehicles, padding increases to 20px |
-| Desktop | 961–1280px | Full navigation, 2-column editorial with larger imagery, vehicle lineup shows 5 models |
-| Large Desktop | 1281–1920px | Maximum content width, generous whitespace, hero photography at full cinematic scale |
+| Mobile Small | <600px | Single column, compact padding |
+| Mobile | 600–640px | Standard mobile layout |
+| Tablet | 640–768px | Two-column grids begin |
+| Desktop Small | 768–1024px | Full card grids, expanded padding |
+| Desktop | 1024–1280px | Standard desktop, full navigation |
+| Large Desktop | >1280px | Full layout, generous margins |
 
 ### Touch Targets
-- Primary CTA buttons: minimum 44px height with 12px vertical padding (meets WCAG AAA 44×44px target)
-- Navigation links: 13px text with 1.50 line-height and adequate spacing between items
-- Carousel arrows: 44px+ touch targets at viewport edges
-- Footer links: grouped with sufficient vertical spacing (16–20px) for touch accuracy
+- Buttons use comfortable padding with 6px radius minimum
+- Navigation links at 13–14px with adequate spacing
+- Pill tags have 10px horizontal padding for touch accessibility
+- Icon buttons at 50% radius ensure circular, easy-to-tap targets
+- Search trigger is prominently placed with generous hit area
 
 ### Collapsing Strategy
-- **Navigation**: Full horizontal nav collapses to centered Prancing Horse logo + hamburger menu on mobile
-- **Editorial sections**: 2-column image+text layouts collapse to single-column with image stacking above text
-- **Vehicle lineup**: Horizontal carousel maintains scroll behavior but reduces visible models from 5 to 2–3
-- **Footer**: 4-column link grid collapses to 2-column on tablet, single-column accordion on mobile
-- **Hero carousel**: Full-width at all breakpoints, dot indicators and arrows scale proportionally
-- **Spacing reduction**: Section padding reduces from 40–80px (desktop) to 20–40px (mobile), maintaining proportional breathing room
+- Hero: 72px → 48px → 32px display text, tracking adjusts proportionally
+- Navigation: horizontal links + CTAs → hamburger menu at 768px
+- Feature cards: 3-column → 2-column → single column stacked
+- Product screenshots: maintain aspect ratio, may reduce padding
+- Changelog: timeline maintains single-column through all sizes
+- Footer: multi-column → stacked single column
+- Section spacing: 80px+ → 48px on mobile
 
 ### Image Behavior
-- Hero images: full-bleed at all breakpoints, using `object-fit: cover` to maintain cinematic composition
-- Editorial images: responsive within their containers, maintaining aspect ratio
-- Vehicle lineup: thumbnail size scales but maintains consistent car-to-frame proportions
-- Art direction: mobile crops may tighten on vehicle subjects, reducing environmental context
-- Lazy loading: PrimeReact handles progressive image loading for below-fold content
+- Dashboard screenshots maintain border treatment at all sizes
+- Hero visuals simplify on mobile (fewer floating UI elements)
+- Product screenshots use responsive sizing with consistent radius
+- Dark background ensures screenshots blend naturally at any viewport
 
 ## 9. Agent Prompt Guide
 
 ### Quick Color Reference
-- Primary CTA: "Ferrari Red (#DA291C)"
-- Background Light: "Pure White (#FFFFFF)"
-- Background Dark: "Absolute Black (#000000)"
-- Secondary Dark Surface: "Dark Surface (#303030)"
-- Heading text (light bg): "Near Black (#181818)"
-- Body text: "Dark Gray (#666666)"
-- Tertiary text: "Mid Gray (#8F8F8F)"
-- Border: "Border Gray (#CCCCCC)"
-- Button Hover: "Teal (#1EAEDB)"
-- Link Hover: "Link Blue (#3860BE)"
+- Primary CTA: Brand Indigo (`#5e6ad2`)
+- Page Background: Marketing Black (`#08090a`)
+- Panel Background: Panel Dark (`#0f1011`)
+- Surface: Level 3 (`#191a1b`)
+- Heading text: Primary White (`#f7f8f8`)
+- Body text: Silver Gray (`#d0d6e0`)
+- Muted text: Tertiary Gray (`#8a8f98`)
+- Subtle text: Quaternary Gray (`#62666d`)
+- Accent: Violet (`#7170ff`)
+- Accent Hover: Light Violet (`#828fff`)
+- Border (default): `rgba(255,255,255,0.08)`
+- Border (subtle): `rgba(255,255,255,0.05)`
+- Focus ring: Multi-layer shadow stack
 
 ### Example Component Prompts
-- "Create a hero section on Absolute Black (#000000) background with a centered logo emblem at the top, generous vertical spacing (80px+), and a single editorial headline in FerrariSans at 26px weight 500 in white, with a small Body-Font uppercase caption (12px, 1px letter-spacing) in Silver Gray (#969696) below"
-- "Design a Subscribe section on Dark Surface (#303030) with a left-aligned headline in white FerrariSans (24px/500), a subtitle in Mid Gray (#8F8F8F, 13px), an email input with transparent background and 1px #CCCCCC border, and a Ferrari Red (#DA291C) Subscribe button with white text, 2px border-radius, and 12px 10px padding"
-- "Build an editorial card on white background with a full-width image (16:9 ratio) above, a FerrariSans heading (16px/700, Near Black #181818) below, and a Body-Font uppercase label (11px, 1px letter-spacing, Mid Gray #8F8F8F) as the category tag — no border, no shadow, no border-radius"
-- "Create a vehicle lineup carousel showing 5 car thumbnails in a horizontal scroll on white background, with left/right arrow navigation, dot indicators below, and a FerrariSans model name (16px/500) beneath each vehicle"
-- "Design a dark cinematic section with full-bleed studio photography of a concept car on Absolute Black, a white FerrariSans headline (26px/500) positioned in the lower-left with generous padding (40px), and a Ghost Button (transparent bg, 1px white border, white text, 2px radius) as the CTA"
+- "Create a hero section on `#08090a` background. Headline at 48px Inter Variable weight 510, line-height 1.00, letter-spacing -1.056px, color `#f7f8f8`, font-feature-settings `'cv01', 'ss03'`. Subtitle at 18px weight 400, line-height 1.60, color `#8a8f98`. Brand CTA button (`#5e6ad2`, 6px radius, 8px 16px padding) and ghost button (`rgba(255,255,255,0.02)` bg, `1px solid rgba(255,255,255,0.08)` border, 6px radius)."
+- "Design a card on dark background: `rgba(255,255,255,0.02)` background, `1px solid rgba(255,255,255,0.08)` border, 8px radius. Title at 20px Inter Variable weight 590, letter-spacing -0.24px, color `#f7f8f8`. Body at 15px weight 400, color `#8a8f98`, letter-spacing -0.165px."
+- "Build a pill badge: transparent background, `#d0d6e0` text, 9999px radius, 0px 10px padding, `1px solid #23252a` border, 12px Inter Variable weight 510."
+- "Create navigation: dark sticky header on `#0f1011`. Inter Variable 13px weight 510 for links, `#d0d6e0` text. Brand indigo CTA `#5e6ad2` right-aligned with 6px radius. Bottom border: `1px solid rgba(255,255,255,0.05)`."
+- "Design a command palette: `#191a1b` background, `1px solid rgba(255,255,255,0.08)` border, 12px radius, multi-layer shadow stack. Input at 16px Inter Variable weight 400, `#f7f8f8` text. Results list with 13px weight 510 labels in `#d0d6e0` and 12px metadata in `#62666d`."
 
 ### Iteration Guide
-When refining existing screens generated with this design system:
-1. Focus on ONE component at a time — Ferrari's editorial rhythm means each section is a self-contained vignette
-2. Reference specific color names and hex codes from this document — the palette is small but each color has a precise role
-3. Use natural language descriptions, not CSS values — "razor-sharp 2px corners" conveys intent better than "border-radius: 2px"
-4. Describe the desired "feel" alongside specific measurements — "editorial magazine page-turn between sections" communicates the layout philosophy better than "margin-bottom: 80px"
-5. Always maintain the chiaroscuro contrast — if a section feels flat, check whether it needs to be on black or white to maintain the alternating rhythm
-6. Reserve Ferrari Red for ONE element per screen — if red appears in more than one place, it loses its authority
+1. Always set font-feature-settings `"cv01", "ss03"` on all Inter text — this is non-negotiable for Linear's look
+2. Letter-spacing scales with font size: -1.584px at 72px, -1.056px at 48px, -0.704px at 32px, normal below 16px
+3. Three weights: 400 (read), 510 (emphasize/navigate), 590 (announce)
+4. Surface elevation via background opacity: `rgba(255,255,255, 0.02 → 0.04 → 0.05)` — never solid backgrounds on dark
+5. Brand indigo (`#5e6ad2` / `#7170ff`) is the only chromatic color — everything else is grayscale
+6. Borders are always semi-transparent white, never solid dark colors on dark backgrounds
+7. Berkeley Mono for any code or technical content, Inter Variable for everything else

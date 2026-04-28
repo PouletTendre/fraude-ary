@@ -2,69 +2,57 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --bg:              #000000;
-  --surface:         #FFFFFF;
-  --surface-raised:  #F5F5F5;
-  --surface-sunken:  #EEEEEE;
-  --card-bg:         #FFFFFF;
-  --card-text:       #181818;
-  --skeleton:        #1A1A1A;
-  --primary:         #DA291C;
-  --primary-hover:   #B01E0A;
-  --primary-muted:   #9D2211;
-  --primary-subtle:  rgba(218,41,28,0.08);
-  --primary-ring:    rgba(218,41,28,0.25);
-  --accent-teal:       #1EAEDB;
-  --accent-teal-hover: #1A9CC5;
-  --link-blue:         #3860BE;
-  --yellow:            #FFF200;
-  --yellow-modena:     #F6E500;
-  --gain:            #03904A;
-  --gain-muted:      rgba(3,144,74,0.12);
-  --loss:            #F13A2C;
-  --loss-muted:      rgba(241,58,44,0.12);
-  --loss-hover:      #D63025;
-  --warning:         #F13A2C;
-  --warning-muted:   rgba(241,58,44,0.12);
-  --info:            #4C98B9;
-  --info-muted:      rgba(76,152,185,0.12);
-  --text-primary:    #F8FAFC;
-  --text-secondary:  #666666;
-  --text-tertiary:   #8F8F8F;
-  --text-muted:      #8F8F8F;
-  --text-disabled:   #505050;
-  --border:          #333333;
-  --border-hover:    #505050;
-  --border-input:    #555555;
-  --overlay:         hsla(0, 0%, 7%, 0.8);
-  --font-sans: 'Inter', Arial, Helvetica, sans-serif;
-  --font-body: var(--font-rajdhani), 'Rajdhani', Arial, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-  --r-sm:   1px;
-  --r-md:   2px;
-  --r-lg:   2px;
-  --r-xl:   8px;
-  --r-full: 9999px;
+* {
+  font-feature-settings: "cv01", "ss03";
 }
 
-html.light {
-  --bg:              #FFFFFF;
-  --surface:         #0D0D0D;
-  --surface-raised:  #1A1A1A;
-  --surface-sunken:  #050505;
-  --card-bg:         #0D0D0D;
-  --card-text:       #F8FAFC;
-  --skeleton:        #E0E0E0;
-  --text-primary:    #181818;
-  --text-secondary:  #666666;
-  --text-tertiary:   #8F8F8F;
-  --text-muted:      #969696;
-  --text-disabled:   #D2D2D2;
-  --border:          #D2D2D2;
-  --border-hover:    #AAAAAA;
-  --border-input:    #CCCCCC;
-  --overlay:         hsla(0, 0%, 7%, 0.8);
+:root {
+  --bg:              #08090a;
+  --surface:         #0f1011;
+  --surface-raised:  #191a1b;
+  --surface-sunken:  #010102;
+  --surface-hover:   #28282c;
+  --skeleton:        rgba(255,255,255,0.04);
+  --primary:         #5e6ad2;
+  --primary-hover:   #7170ff;
+  --primary-muted:   rgba(94,106,210,0.12);
+  --primary-subtle:  rgba(94,106,210,0.06);
+  --primary-ring:    rgba(94,106,210,0.25);
+  --accent:          #7170ff;
+  --accent-hover:    #828fff;
+  --gain:            #10b981;
+  --gain-muted:      rgba(16,185,129,0.12);
+  --loss:            #f85149;
+  --loss-muted:      rgba(248,81,73,0.12);
+  --loss-hover:      #da3633;
+  --warning:         #d29922;
+  --warning-muted:   rgba(210,153,34,0.12);
+  --info:            #58a6ff;
+  --info-muted:      rgba(88,166,255,0.12);
+  --text-primary:    #f7f8f8;
+  --text-secondary:  #d0d6e0;
+  --text-tertiary:   #8a8f98;
+  --text-muted:      #62666d;
+  --text-disabled:   #3d4045;
+  --border:          rgba(255,255,255,0.08);
+  --border-hover:    rgba(255,255,255,0.12);
+  --border-input:    rgba(255,255,255,0.08);
+  --border-subtle:   rgba(255,255,255,0.05);
+  --border-solid:    #23252a;
+  --overlay:         rgba(0,0,0,0.85);
+  --font-sans: 'InterVariable', 'Inter', -apple-system, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --r-sm:   2px;
+  --r-md:   4px;
+  --r-btn:  6px;
+  --r-card: 8px;
+  --r-panel:12px;
+  --r-lg:   12px;
+  --r-xl:   22px;
+  --r-full: 9999px;
+  --shadow-card:   0 0 0 1px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.2);
+  --shadow-elevated:0 0 0 1px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.3);
+  --shadow-focus:   0 0 0 2px rgba(94,106,210,0.3);
 }
 
 html, body {
@@ -79,23 +67,24 @@ html, body {
 
 @layer base {
   @keyframes skeleton-pulse {
-    0%, 100% { opacity: 0.4; }
-    50% { opacity: 1; }
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.6; }
   }
 
   .font-tnum {
-    font-feature-settings: "tnum";
-  }
-
-  .font-body-label {
-    font-family: var(--font-body);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: 500;
+    font-feature-settings: "cv01", "ss03", "tnum";
   }
 
   .animate-skeleton {
-    animation: skeleton-pulse 1.4s ease-in-out infinite;
+    animation: skeleton-pulse 1.6s ease-in-out infinite;
+  }
+
+  .w-510 {
+    font-weight: 510;
+  }
+
+  .w-590 {
+    font-weight: 590;
   }
 
   @media (prefers-reduced-motion: reduce) {

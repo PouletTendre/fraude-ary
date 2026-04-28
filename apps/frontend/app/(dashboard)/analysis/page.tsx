@@ -12,11 +12,11 @@ import { NewsCard } from "@/components/ui/NewsCard";
 import { ValuationCard } from "@/components/ui/ValuationCard";
 import { SymbolSearch } from "@/components/SymbolSearch";
 
-function rsiBadge(rsi: number | null): { label: string; variant: "gain" | "loss" | "warning" } {
-  if (rsi === null) return { label: "--", variant: "warning" };
-  if (rsi > 70) return { label: "Overbought", variant: "loss" };
-  if (rsi < 30) return { label: "Oversold", variant: "gain" };
-  return { label: "Neutral", variant: "warning" };
+function rsiBadge(rsi: number | null): { label: string; variant: "success" | "neutral" | "subtle" } {
+  if (rsi === null) return { label: "--", variant: "neutral" };
+  if (rsi > 70) return { label: "Overbought", variant: "subtle" };
+  if (rsi < 30) return { label: "Oversold", variant: "success" };
+  return { label: "Neutral", variant: "neutral" };
 }
 
 function RsiGauge({ value }: { value: number | null }) {
@@ -30,8 +30,8 @@ function RsiGauge({ value }: { value: number | null }) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <span className="text-sm text-text-secondary">RSI (14)</span>
-        <span className="text-lg font-bold font-tnum" style={{ color }}>
+        <span className="text-small text-text-secondary">RSI (14)</span>
+        <span className="text-h3 font-tnum" style={{ color }}>
           {value !== null ? value.toFixed(1) : "--"}
         </span>
       </div>
@@ -43,9 +43,9 @@ function RsiGauge({ value }: { value: number | null }) {
       </div>
       <div className="flex justify-between text-[10px] text-text-muted">
         <span>0</span>
-        <span className={value !== null && value < 30 ? "text-gain font-bold" : ""}>30</span>
-        <span className={value !== null && value >= 30 && value <= 70 ? "text-warning font-bold" : ""}>50</span>
-        <span className={value !== null && value > 70 ? "text-loss font-bold" : ""}>70</span>
+        <span className={value !== null && value < 30 ? "text-gain w-590" : ""}>30</span>
+        <span className={value !== null && value >= 30 && value <= 70 ? "text-warning w-590" : ""}>50</span>
+        <span className={value !== null && value > 70 ? "text-loss w-590" : ""}>70</span>
         <span>100</span>
       </div>
     </div>
@@ -59,7 +59,7 @@ function IndicatorCard({
 }: {
   title: string;
   children: React.ReactNode;
-  badge?: { label: string; variant: "gain" | "loss" | "warning" | "info" | "neutral" };
+  badge?: { label: string; variant: "success" | "neutral" | "subtle" };
 }) {
   return (
     <Card>
@@ -79,11 +79,11 @@ function fmtVal(val: number | null, decimals: number = 2): string {
   return val.toFixed(decimals);
 }
 
-function macdBadge(histogram: number | null): { label: string; variant: "gain" | "loss" | "warning" } {
-  if (histogram === null) return { label: "--", variant: "warning" };
-  if (histogram > 0) return { label: "Bullish", variant: "gain" };
-  if (histogram < 0) return { label: "Bearish", variant: "loss" };
-  return { label: "Neutral", variant: "warning" };
+function macdBadge(histogram: number | null): { label: string; variant: "success" | "neutral" | "subtle" } {
+  if (histogram === null) return { label: "--", variant: "neutral" };
+  if (histogram > 0) return { label: "Bullish", variant: "success" };
+  if (histogram < 0) return { label: "Bearish", variant: "subtle" };
+  return { label: "Neutral", variant: "neutral" };
 }
 
 export default function AnalysisPage() {
@@ -95,17 +95,10 @@ export default function AnalysisPage() {
   return (
     <PageTransition>
       <PageSection>
-        <h1 style={{
-          fontSize: "1.625rem", fontWeight: 500,
-          letterSpacing: "normal", color: "var(--text-primary)", margin: 0,
-        }}>
+        <h1 className="text-h1" style={{ margin: 0 }}>
           Analyse Technique
         </h1>
-        <p style={{
-          fontSize: "0.8125rem", color: "var(--text-secondary)",
-          marginTop: "8px", fontFamily: "var(--font-body)",
-          textTransform: "uppercase", letterSpacing: "1px",
-        }}>
+        <p className="text-small text-text-secondary" style={{ marginTop: "8px" }}>
           Analyse technique et fondamentale
         </p>
       </PageSection>
@@ -164,22 +157,22 @@ export default function AnalysisPage() {
                   {indicators.macd ? (
                     <div className="space-y-2 font-tnum">
                       <div className="flex justify-between">
-                        <span className="text-sm text-text-muted">MACD Line</span>
-                        <span className="text-sm text-text-primary">{fmtVal(indicators.macd.macd_line, 4)}</span>
+                        <span className="text-small text-text-muted">MACD Line</span>
+                        <span className="text-small text-text-primary">{fmtVal(indicators.macd.macd_line, 4)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-text-muted">Signal</span>
-                        <span className="text-sm text-text-primary">{fmtVal(indicators.macd.signal_line, 4)}</span>
+                        <span className="text-small text-text-muted">Signal</span>
+                        <span className="text-small text-text-primary">{fmtVal(indicators.macd.signal_line, 4)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-text-muted">Histogram</span>
-                        <span className={cn("text-sm font-medium", indicators.macd.histogram >= 0 ? "text-gain" : "text-loss")}>
+                        <span className="text-small text-text-muted">Histogram</span>
+                        <span className={cn("text-small-medium", indicators.macd.histogram >= 0 ? "text-gain" : "text-loss")}>
                           {fmtVal(indicators.macd.histogram, 4)}
                         </span>
                       </div>
                     </div>
                   ) : (
-                    <p className="text-sm text-text-tertiary">No data</p>
+                    <p className="text-small text-text-tertiary">No data</p>
                   )}
                 </IndicatorCard>
 
@@ -188,20 +181,20 @@ export default function AnalysisPage() {
                   {indicators.bollinger ? (
                     <div className="space-y-2 font-tnum">
                       <div className="flex justify-between">
-                        <span className="text-sm text-text-muted">Upper</span>
-                        <span className="text-sm text-text-primary">{fmtVal(indicators.bollinger.upper)}</span>
+                        <span className="text-small text-text-muted">Upper</span>
+                        <span className="text-small text-text-primary">{fmtVal(indicators.bollinger.upper)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-text-muted">Middle</span>
-                        <span className="text-sm text-text-primary">{fmtVal(indicators.bollinger.middle)}</span>
+                        <span className="text-small text-text-muted">Middle</span>
+                        <span className="text-small text-text-primary">{fmtVal(indicators.bollinger.middle)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-text-muted">Lower</span>
-                        <span className="text-sm text-text-primary">{fmtVal(indicators.bollinger.lower)}</span>
+                        <span className="text-small text-text-muted">Lower</span>
+                        <span className="text-small text-text-primary">{fmtVal(indicators.bollinger.lower)}</span>
                       </div>
                     </div>
                   ) : (
-                    <p className="text-sm text-text-tertiary">No data</p>
+                    <p className="text-small text-text-tertiary">No data</p>
                   )}
                 </IndicatorCard>
 
@@ -209,25 +202,25 @@ export default function AnalysisPage() {
                 <IndicatorCard title="Moving Averages">
                   <div className="space-y-2 font-tnum">
                     <div className="flex justify-between">
-                      <span className="text-sm text-text-muted">SMA 20</span>
-                      <span className="text-sm text-text-primary">{fmtVal(indicators.sma_20)}</span>
+                      <span className="text-small text-text-muted">SMA 20</span>
+                      <span className="text-small text-text-primary">{fmtVal(indicators.sma_20)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm text-text-muted">SMA 50</span>
-                      <span className="text-sm text-text-primary">{fmtVal(indicators.sma_50)}</span>
+                      <span className="text-small text-text-muted">SMA 50</span>
+                      <span className="text-small text-text-primary">{fmtVal(indicators.sma_50)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm text-text-muted">SMA 200</span>
-                      <span className="text-sm text-text-primary">{fmtVal(indicators.sma_200)}</span>
+                      <span className="text-small text-text-muted">SMA 200</span>
+                      <span className="text-small text-text-primary">{fmtVal(indicators.sma_200)}</span>
                     </div>
                     <div className="border-t border-border pt-2 mt-2">
                       <div className="flex justify-between">
-                        <span className="text-sm text-text-muted">EMA 12</span>
-                        <span className="text-sm text-text-primary">{fmtVal(indicators.ema_12)}</span>
+                        <span className="text-small text-text-muted">EMA 12</span>
+                        <span className="text-small text-text-primary">{fmtVal(indicators.ema_12)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-text-muted">EMA 26</span>
-                        <span className="text-sm text-text-primary">{fmtVal(indicators.ema_26)}</span>
+                        <span className="text-small text-text-muted">EMA 26</span>
+                        <span className="text-small text-text-primary">{fmtVal(indicators.ema_26)}</span>
                       </div>
                     </div>
                   </div>
@@ -236,7 +229,7 @@ export default function AnalysisPage() {
                 {/* ATR */}
                 <IndicatorCard title="ATR">
                   <div className="flex items-center justify-center py-4">
-                    <span className="text-2xl font-bold font-tnum text-text-primary">
+                    <span className="text-h3 font-tnum text-text-primary">
                       {fmtVal(indicators.atr)}
                     </span>
                   </div>
@@ -245,7 +238,7 @@ export default function AnalysisPage() {
                 {/* OBV */}
                 <IndicatorCard title="OBV">
                   <div className="flex items-center justify-center py-4">
-                    <span className="text-2xl font-bold font-tnum text-text-primary">
+                    <span className="text-h3 font-tnum text-text-primary">
                       {indicators.obv !== null ? formatObv(indicators.obv) : "--"}
                     </span>
                   </div>
@@ -256,36 +249,36 @@ export default function AnalysisPage() {
                   {indicators.stochastic ? (
                     <div className="space-y-2 font-tnum">
                       <div className="flex justify-between">
-                        <span className="text-sm text-text-muted">%K</span>
-                        <span className="text-sm text-text-primary">{fmtVal(indicators.stochastic.stoch_k)}</span>
+                        <span className="text-small text-text-muted">%K</span>
+                        <span className="text-small text-text-primary">{fmtVal(indicators.stochastic.stoch_k)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-text-muted">%D</span>
-                        <span className="text-sm text-text-primary">{fmtVal(indicators.stochastic.stoch_d)}</span>
+                        <span className="text-small text-text-muted">%D</span>
+                        <span className="text-small text-text-primary">{fmtVal(indicators.stochastic.stoch_d)}</span>
                       </div>
                       <div className="flex gap-2 mt-2">
                         <Badge
-                          variant={indicators.stochastic.stoch_k > 80 ? "loss" : indicators.stochastic.stoch_k < 20 ? "gain" : "warning"}
+                          variant={indicators.stochastic.stoch_k > 80 ? "subtle" : indicators.stochastic.stoch_k < 20 ? "success" : "neutral"}
                         >
                           %K: {indicators.stochastic.stoch_k > 80 ? "Overbought" : indicators.stochastic.stoch_k < 20 ? "Oversold" : "Neutral"}
                         </Badge>
                       </div>
                     </div>
                   ) : (
-                    <p className="text-sm text-text-tertiary">No data</p>
+                    <p className="text-small text-text-tertiary">No data</p>
                   )}
                 </IndicatorCard>
 
                 {/* MFI */}
                 <IndicatorCard
                   title="MFI"
-                  badge={{
-                    label: indicators.mfi !== null ? (indicators.mfi > 80 ? "Overbought" : indicators.mfi < 20 ? "Oversold" : "Neutral") : "--",
-                    variant: indicators.mfi !== null ? (indicators.mfi > 80 ? "loss" : indicators.mfi < 20 ? "gain" : "warning") : "warning",
-                  }}
+                    badge={{
+                      label: indicators.mfi !== null ? (indicators.mfi > 80 ? "Overbought" : indicators.mfi < 20 ? "Oversold" : "Neutral") : "--",
+                      variant: indicators.mfi !== null ? (indicators.mfi > 80 ? "subtle" : indicators.mfi < 20 ? "success" : "neutral") : "neutral",
+                    }}
                 >
                   <div className="flex items-center justify-center py-4">
-                    <span className="text-2xl font-bold font-tnum text-text-primary">
+                    <span className="text-h3 font-tnum text-text-primary">
                       {fmtVal(indicators.mfi)}
                     </span>
                   </div>
@@ -294,7 +287,7 @@ export default function AnalysisPage() {
                 {/* Symbol Info */}
                 <IndicatorCard title="Symbol Info">
                   <div className="py-4 text-center">
-                    <span className="text-xl font-bold text-text-primary uppercase tracking-wider">
+                    <span className="text-h3 text-text-primary w-590">
                       {indicators.symbol}
                     </span>
                   </div>

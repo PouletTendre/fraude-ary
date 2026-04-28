@@ -3,18 +3,20 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { ButtonHTMLAttributes, forwardRef, useLayoutEffect, useState } from "react";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-[6px] cursor-pointer transition-all duration-150 ease-out whitespace-nowrap no-underline font-sans focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2",
+  "inline-flex items-center justify-center gap-[6px] cursor-pointer transition-all duration-150 ease-out whitespace-nowrap no-underline font-[510] select-none",
   {
     variants: {
       variant: {
-        white:
-          "bg-white text-black border border-black hover:bg-accent-teal hover:text-white hover:border-accent-teal hover:opacity-90 focus-visible:bg-accent-teal focus-visible:text-white focus-visible:border-white focus-visible:outline-black focus-visible:opacity-90",
-        subscribe:
-          "bg-primary text-white hover:bg-primary-hover focus-visible:bg-primary-hover focus-visible:outline-black",
         ghost:
-          "bg-transparent hover:bg-accent-teal hover:text-white hover:border-accent-teal hover:opacity-90 focus-visible:bg-accent-teal focus-visible:text-white focus-visible:border-white focus-visible:outline-black focus-visible:opacity-90",
-        danger:
-          "bg-loss text-white hover:bg-[#D63025] focus-visible:outline-black",
+          "bg-[rgba(255,255,255,0.02)] text-[#e2e4e7] border border-solid border-[var(--border-solid)] hover:bg-[rgba(255,255,255,0.05)] focus-visible:shadow-[var(--shadow-card)]",
+        subtle:
+          "bg-[rgba(255,255,255,0.04)] text-[#d0d6e0] focus-visible:shadow-[var(--shadow-card)]",
+        brand:
+          "bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] focus-visible:shadow-[var(--shadow-focus)]",
+        pill:
+          "bg-transparent text-[#d0d6e0] border border-solid border-[var(--border-solid)]",
+        toolbar:
+          "bg-[rgba(255,255,255,0.05)] text-[#62666d] border border-solid border-[var(--border-subtle)] shadow-[rgba(0,0,0,0.03)_0px_1.2px_0px_0px]",
       },
       size: {
         default: "",
@@ -22,7 +24,7 @@ const buttonVariants = cva(
       },
     },
     defaultVariants: {
-      variant: "white",
+      variant: "ghost",
       size: "default",
     },
   }
@@ -48,24 +50,33 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const sizeStyle =
       size === "sm"
-        ? { padding: "7px 10px", fontSize: "0.875rem", letterSpacing: "0.96px" }
-        : { padding: "12px 10px", fontSize: "1rem", letterSpacing: "1.28px" };
+        ? { fontSize: "12px", padding: "4px 8px" }
+        : { fontSize: "15px", padding: "8px 16px" };
 
-    const ghostLightStyle =
-      variant === "ghost" && isLight
-        ? { color: "#000000", borderColor: "#000000" }
-        : variant === "ghost"
-        ? { color: "#FFFFFF", borderColor: "#FFFFFF" }
-        : {};
+    const variantRadius: Record<string, string> = {
+      ghost: "var(--r-btn)",
+      subtle: "6px",
+      brand: "6px",
+      pill: "9999px",
+      toolbar: "2px",
+    };
+
+    const variantPadding: Record<string, string | undefined> = {
+      subtle: "0px 6px",
+      pill: "0px 10px 0px 5px",
+    };
 
     return (
       <button
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         style={{
-          borderRadius: "var(--r-md)",
+          borderRadius:
+            (variant && variantRadius[variant]) || "var(--r-btn)",
           ...sizeStyle,
-          ...ghostLightStyle,
+          ...(variant && variantPadding[variant]
+            ? { padding: variantPadding[variant] }
+            : {}),
           ...style,
         }}
         {...props}

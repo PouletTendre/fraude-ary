@@ -58,6 +58,12 @@ function ToastContainer({
   toasts: Toast[];
   removeToast: (id: string) => void;
 }) {
+  const typeStyles: Record<string, React.CSSProperties> = {
+    success: { background: "var(--gain)" },
+    error: { background: "var(--loss)" },
+    info: { background: "var(--info)" },
+  };
+
   return (
     <div
       className="fixed bottom-4 right-4 z-50 flex flex-col gap-2"
@@ -69,12 +75,13 @@ function ToastContainer({
         <div
           key={toast.id}
           className={cn(
-            "animate-in slide-in-from-bottom-5 fade-in duration-300 px-4 py-3 text-white flex items-center gap-3 min-w-[300px]",
-            toast.type === "success" && "bg-gain",
-            toast.type === "error" && "bg-loss",
-            toast.type === "info" && "bg-info"
+            "animate-in slide-in-from-bottom-5 fade-in duration-300 px-4 py-3 text-white flex items-center gap-3 min-w-[300px]"
           )}
-          style={{ borderRadius: "var(--r-xl)" }}
+          style={{
+            borderRadius: "var(--r-card)",
+            boxShadow: "var(--shadow-elevated)",
+            ...typeStyles[toast.type],
+          }}
         >
           <span className="flex-1">{toast.message}</span>
           <button

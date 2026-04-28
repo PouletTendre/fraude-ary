@@ -142,17 +142,10 @@ export default function JournalPage() {
   return (
     <PageTransition>
       <PageSection>
-        <h1 style={{
-          fontSize: "1.625rem", fontWeight: 500,
-          letterSpacing: "normal", color: "var(--text-primary)", margin: 0,
-        }}>
+        <h1 className="text-h1" style={{ margin: 0 }}>
           Journal
         </h1>
-        <p style={{
-          fontSize: "0.8125rem", color: "var(--text-secondary)",
-          marginTop: "8px", fontFamily: "var(--font-body)",
-          textTransform: "uppercase", letterSpacing: "1px",
-        }}>
+        <p className="text-small text-text-secondary" style={{ marginTop: "8px" }}>
           Historique de vos transactions
         </p>
       </PageSection>
@@ -174,7 +167,7 @@ export default function JournalPage() {
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5">
                     <div>
-                      <label className="block text-sm font-medium text-text-secondary mb-1">Type</label>
+                      <label className="block text-caption-lg text-text-secondary mb-1">Type</label>
                       <select
                         value={formData.type}
                         onChange={(e) => setFormData({ ...formData, type: e.target.value as "buy" | "sell" })}
@@ -191,7 +184,7 @@ export default function JournalPage() {
                       assetType={formData.asset_type as "crypto" | "stocks" | "real_estate" | undefined}
                     />
                     <div>
-                      <label className="block text-sm font-medium text-text-secondary mb-1">Asset Type</label>
+                      <label className="block text-caption-lg text-text-secondary mb-1">Asset Type</label>
                       <select
                         value={formData.asset_type}
                         onChange={(e) => setFormData({ ...formData, asset_type: e.target.value as "crypto" | "stocks" | "real_estate" })}
@@ -202,7 +195,7 @@ export default function JournalPage() {
                         <option value="stocks">Stocks</option>
                         <option value="real_estate">Real Estate</option>
                       </select>
-                      {formErrors.asset_type && <p className="text-xs text-loss mt-1">{formErrors.asset_type}</p>}
+                      {formErrors.asset_type && <p className="text-caption text-loss mt-1">{formErrors.asset_type}</p>}
                     </div>
                     <Input
                       label="Quantity"
@@ -221,7 +214,7 @@ export default function JournalPage() {
                       error={formErrors.unit_price}
                     />
                     <div>
-                      <label className="block text-sm font-medium text-text-secondary mb-1">Currency</label>
+                      <label className="block text-caption-lg text-text-secondary mb-1">Currency</label>
                       <select
                         value={formData.currency}
                         onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
@@ -253,7 +246,7 @@ export default function JournalPage() {
                     <Button type="submit" disabled={isCreating}>
                       {isCreating ? "Création..." : "Ajouter Transaction"}
                     </Button>
-                    <Button type="button" variant="white" onClick={() => setShowForm(false)}>
+                    <Button type="button" variant="brand" onClick={() => setShowForm(false)}>
                       Annuler
                     </Button>
                   </div>
@@ -262,11 +255,7 @@ export default function JournalPage() {
             </Card>
           )}
 
-          <h3 style={{
-            fontFamily: "var(--font-body)", fontWeight: 500,
-            fontSize: "0.9375rem", color: "var(--text-primary)",
-            margin: 0,
-          }}>
+          <h3 className="text-h3" style={{ margin: 0 }}>
             Historique des Transactions
           </h3>
 
@@ -274,58 +263,31 @@ export default function JournalPage() {
             <table className="w-full min-w-[900px]">
               <thead style={{ background: "var(--surface-sunken)", borderBottom: "1px solid var(--border)" }}>
                 <tr>
-                  <th
-                    className="px-4 py-3 text-left text-xs font-normal text-text-tertiary uppercase"
-                    style={{ letterSpacing: "1px" }}
-                  >
+                  <th className="px-4 py-3 text-left text-label-medium text-text-tertiary">
                     Date
                   </th>
-                  <th
-                    className="px-4 py-3 text-left text-xs font-normal text-text-tertiary uppercase"
-                    style={{ letterSpacing: "1px" }}
-                  >
+                  <th className="px-4 py-3 text-left text-label-medium text-text-tertiary">
                     Type
                   </th>
-                  <th
-                    className="px-4 py-3 text-left text-xs font-normal text-text-tertiary uppercase"
-                    style={{ letterSpacing: "1px" }}
-                  >
+                  <th className="px-4 py-3 text-left text-label-medium text-text-tertiary">
                     Ticker
                   </th>
-                  <th
-                    className="px-4 py-3 text-right text-xs font-normal text-text-tertiary uppercase"
-                    style={{ letterSpacing: "1px" }}
-                  >
+                  <th className="px-4 py-3 text-right text-label-medium text-text-tertiary">
                     Quantité
                   </th>
-                  <th
-                    className="px-4 py-3 text-right text-xs font-normal text-text-tertiary uppercase"
-                    style={{ letterSpacing: "1px" }}
-                  >
+                  <th className="px-4 py-3 text-right text-label-medium text-text-tertiary">
                     Prix Unitaire
                   </th>
-                  <th
-                    className="px-4 py-3 text-left text-xs font-normal text-text-tertiary uppercase"
-                    style={{ letterSpacing: "1px" }}
-                  >
+                  <th className="px-4 py-3 text-left text-label-medium text-text-tertiary">
                     Devise
                   </th>
-                  <th
-                    className="px-4 py-3 text-right text-xs font-normal text-text-tertiary uppercase"
-                    style={{ letterSpacing: "1px" }}
-                  >
+                  <th className="px-4 py-3 text-right text-label-medium text-text-tertiary">
                     Frais
                   </th>
-                  <th
-                    className="px-4 py-3 text-right text-xs font-normal text-text-tertiary uppercase"
-                    style={{ letterSpacing: "1px" }}
-                  >
+                  <th className="px-4 py-3 text-right text-label-medium text-text-tertiary">
                     Total Investi
                   </th>
-                  <th
-                    className="px-4 py-3 text-center text-xs font-normal text-text-tertiary uppercase"
-                    style={{ letterSpacing: "1px" }}
-                  >
+                  <th className="px-4 py-3 text-center text-label-medium text-text-tertiary">
                     Actions
                   </th>
                 </tr>
@@ -355,7 +317,7 @@ export default function JournalPage() {
                                 <option value="buy">BUY</option>
                                 <option value="sell">SELL</option>
                               </select>
-                              <p className="text-xs text-text-muted mt-1">Changer le type mettra à jour vos avoirs.</p>
+                              <p className="text-caption text-text-muted mt-1">Changer le type mettra à jour vos avoirs.</p>
                             </td>
                             <td className="px-4 py-3 whitespace-nowrap">
                               <input
@@ -445,7 +407,7 @@ export default function JournalPage() {
                               {new Date(tx.date).toLocaleDateString()}
                             </td>
                             <td className="px-4 py-4 whitespace-nowrap">
-                              <Badge variant={tx.type === "buy" ? "gain" : "loss"}>
+                              <Badge variant={tx.type === "buy" ? "success" : "neutral"}>
                                 {tx.type.toUpperCase()}
                               </Badge>
                             </td>
@@ -453,7 +415,7 @@ export default function JournalPage() {
                               <div className="flex flex-col">
                                 {tx.symbol.toUpperCase()}
                                 {tx.asset_id && (
-                                  <span className="text-xs text-text-muted mt-0.5">Linked: {tx.symbol.toUpperCase()}</span>
+                                  <span className="text-caption text-text-muted mt-0.5">Linked: {tx.symbol.toUpperCase()}</span>
                                 )}
                               </div>
                             </td>

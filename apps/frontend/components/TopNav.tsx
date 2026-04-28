@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useTheme } from "next-themes";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { Menu, X, Sun, Moon, LogOut } from "lucide-react";
+import { Menu, X, LogOut } from "lucide-react";
 
 interface NavLink {
   href: string;
@@ -23,8 +23,8 @@ const mainLinks: NavLink[] = [
 
 export default function TopNav() {
   const pathname = usePathname();
+  const router = useRouter();
   const { user, logout } = useAuth();
-  const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -48,210 +48,160 @@ export default function TopNav() {
   }, [mobileOpen]);
 
   const isActive = (href: string) => pathname === href;
-  const isLight = resolvedTheme === "light";
+
+  if (!mounted) {
+    return (
+      <nav
+        style={{
+          position: "sticky",
+          top: 0,
+          background: "var(--surface)",
+          borderBottom: "1px solid var(--border-subtle)",
+          padding: "12px 24px",
+          height: 48,
+          zIndex: 50,
+        }}
+      />
+    );
+  }
 
   return (
     <>
       <nav
         style={{
-          background: "#000000",
-          borderBottom: "1px solid #333333",
-          padding: "12px 24px 8px",
+          position: "sticky",
+          top: 0,
+          background: "var(--surface)",
+          borderBottom: "1px solid var(--border-subtle)",
+          padding: "12px 24px",
           display: "flex",
-          flexDirection: "column",
+          justifyContent: "space-between",
           alignItems: "center",
-          position: "relative",
           zIndex: 50,
         }}
       >
-        {/* Logo row */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            width: "100%",
-          }}
-        >
-          <div style={{ flex: 1 }} />
-
-          <div style={{ flex: "0 0 auto" }}>
-            <Link
-              href="/"
-              style={{
-                fontSize: "1rem",
-                fontWeight: 700,
-                color: "#FFFFFF",
-                textDecoration: "none",
-                fontFamily: "var(--font-sans)",
-              }}
-            >
-              Fraude<span style={{ color: "#DA291C" }}>·</span>Ary
-            </Link>
-          </div>
-
-          <div
+        {/* Left: logo + nav links */}
+        <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
+          <Link
+            href="/"
             style={{
-              flex: 1,
-              display: "flex",
-              justifyContent: "flex-end",
-              alignItems: "center",
-              gap: 12,
+              fontSize: 16,
+              fontWeight: 590,
+              color: "var(--text-primary)",
+              textDecoration: "none",
+              fontFamily: "var(--font-sans)",
             }}
           >
-            <button
-              onClick={() => setTheme(isLight ? "dark" : "light")}
-              aria-label={
-                isLight ? "Passer en mode sombre" : "Passer en mode clair"
-              }
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                background: "none",
-                border: "none",
-                color: "#FFFFFF",
-                opacity: 0.6,
-                cursor: "pointer",
-                transition: "opacity 150ms ease-out",
-                padding: 0,
-                width: 16,
-                height: 16,
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
-              onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.6")}
-            >
-              {mounted ? (
-                isLight ? (
-                  <Moon style={{ width: 16, height: 16 }} />
-                ) : (
-                  <Sun style={{ width: 16, height: 16 }} />
-                )
-              ) : (
-                <Sun style={{ width: 16, height: 16 }} />
-              )}
-            </button>
+            Fraude-Ary
+          </Link>
 
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span
-                style={{
-                  fontFamily: "var(--font-sans)",
-                  fontSize: "0.8125rem",
-                  fontWeight: 600,
-                  color: "#FFFFFF",
-                  opacity: 0.8,
-                  maxWidth: 160,
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {user?.full_name || "User"}
-              </span>
-              <button
-                onClick={logout}
-                aria-label="Se déconnecter"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  background: "none",
-                  border: "none",
-                  color: "#FFFFFF",
-                  opacity: 0.4,
-                  cursor: "pointer",
-                  transition: "opacity 150ms ease-out",
-                  padding: 0,
-                  width: 16,
-                  height: 16,
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
-                onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.4")}
-              >
-                <LogOut style={{ width: 16, height: 16 }} />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Desktop links */}
-        <div
-          style={{
-            display: isMobile ? "none" : "flex",
-            justifyContent: "center",
-            gap: 0,
-            marginTop: 8,
-          }}
-        >
-          {mainLinks.map((link) => {
-            const active = isActive(link.href);
-            return (
-              <div key={link.href} style={{ position: "relative" }}>
-                <Link
-                  href={link.href}
-                  style={{
-                    fontFamily: "var(--font-sans)",
-                    fontSize: "0.75rem",
-                    fontWeight: 600,
-                    color: active ? "#FFFFFF" : "#8F8F8F",
-                    letterSpacing: "0.05em",
-                    textDecoration: "none",
-                    padding: "4px 12px",
-                    display: "inline-block",
-                    transition: "color 150ms ease-out",
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!active) e.currentTarget.style.color = "#FFFFFF";
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!active) e.currentTarget.style.color = "#8F8F8F";
-                  }}
-                >
-                  {link.label}
-                </Link>
-                {active && (
-                  <div
+          {!isMobile && (
+            <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
+              {mainLinks.map((link) => {
+                const active = isActive(link.href);
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
                     style={{
-                      position: "absolute",
-                      bottom: -1,
-                      left: 12,
-                      right: 12,
-                      height: 1,
-                      background: "#DA291C",
+                      fontFamily: "var(--font-sans)",
+                      fontSize: 13,
+                      fontWeight: 510,
+                      color: active
+                        ? "var(--text-primary)"
+                        : "var(--text-secondary)",
+                      letterSpacing: "-0.13px",
+                      textDecoration: "none",
+                      padding: "4px 12px",
+                      display: "inline-block",
+                      transition: "color 150ms ease-out",
                     }}
-                  />
-                )}
-              </div>
-            );
-          })}
+                    onMouseEnter={(e) => {
+                      if (!active)
+                        e.currentTarget.style.color = "var(--text-primary)";
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!active)
+                        e.currentTarget.style.color = "var(--text-secondary)";
+                    }}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </div>
 
-        {/* Mobile hamburger */}
-        {isMobile && (
-          <div style={{ display: "flex", justifyContent: "center", marginTop: 8 }}>
+        {/* Right: user name + logout */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          {isMobile && (
             <button
               onClick={() => setMobileOpen(true)}
               aria-label="Ouvrir le menu"
               style={{
                 background: "none",
                 border: "none",
-                color: "#FFFFFF",
+                color: "var(--text-secondary)",
                 cursor: "pointer",
-                padding: 8,
+                padding: 4,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
               <Menu style={{ width: 20, height: 20 }} />
             </button>
-          </div>
-        )}
+          )}
+
+          <span
+            style={{
+              fontFamily: "var(--font-sans)",
+              fontSize: 13,
+              fontWeight: 510,
+              color: "var(--text-primary)",
+              maxWidth: 160,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {user?.full_name || "User"}
+          </span>
+
+          <button
+            onClick={logout}
+            aria-label="Se déconnecter"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "none",
+              border: "none",
+              color: "var(--text-tertiary)",
+              cursor: "pointer",
+              transition: "color 150ms ease-out",
+              padding: 4,
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.color = "var(--text-primary)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.color = "var(--text-tertiary)")
+            }
+          >
+            <LogOut style={{ width: 16, height: 16 }} />
+          </button>
+        </div>
       </nav>
 
-      {/* Mobile overlay */}
+      {/* Mobile overlay drawer */}
       {mobileOpen && (
         <div
           style={{
             position: "fixed",
             inset: 0,
-            background: "#000000",
+            background: "var(--surface)",
             zIndex: 100,
             display: "flex",
             flexDirection: "column",
@@ -260,69 +210,75 @@ export default function TopNav() {
           <div
             style={{
               display: "flex",
-              justifyContent: "flex-end",
-              padding: "20px 20px 0",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: "12px 24px",
+              borderBottom: "1px solid var(--border-subtle)",
             }}
           >
+            <Link
+              href="/"
+              onClick={() => setMobileOpen(false)}
+              style={{
+                fontSize: 16,
+                fontWeight: 590,
+                color: "var(--text-primary)",
+                textDecoration: "none",
+                fontFamily: "var(--font-sans)",
+              }}
+            >
+              Fraude-Ary
+            </Link>
+
             <button
               onClick={() => setMobileOpen(false)}
               aria-label="Fermer le menu"
               style={{
                 background: "none",
                 border: "none",
-                color: "#FFFFFF",
+                color: "var(--text-secondary)",
                 cursor: "pointer",
-                padding: 8,
+                padding: 4,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
               <X style={{ width: 20, height: 20 }} />
             </button>
           </div>
 
-          <div style={{ textAlign: "center", padding: "12px 0 32px" }}>
-            <Link
-              href="/"
-              onClick={() => setMobileOpen(false)}
-              style={{
-                fontSize: "1rem",
-                fontWeight: 700,
-                color: "#FFFFFF",
-                textDecoration: "none",
-                fontFamily: "var(--font-sans)",
-              }}
-            >
-              Fraude<span style={{ color: "#DA291C" }}>·</span>Ary
-            </Link>
-          </div>
-
           <div
             style={{
               display: "flex",
               flexDirection: "column",
-              alignItems: "center",
               flex: 1,
+              padding: "16px 0",
             }}
           >
-            {mainLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileOpen(false)}
-                style={{
-                  fontFamily: "var(--font-sans)",
-                  fontSize: "1rem",
-                  fontWeight: 600,
-                  color: isActive(link.href) ? "#DA291C" : "#FFFFFF",
-                  textDecoration: "none",
-                  padding: "16px 0",
-                  textAlign: "center",
-                  borderBottom: "1px solid #222222",
-                  width: "100%",
-                }}
-              >
-                {link.label}
-              </Link>
-            ))}
+            {mainLinks.map((link) => {
+              const active = isActive(link.href);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileOpen(false)}
+                  style={{
+                    fontFamily: "var(--font-sans)",
+                    fontSize: 15,
+                    fontWeight: 510,
+                    color: active
+                      ? "var(--text-primary)"
+                      : "var(--text-secondary)",
+                    textDecoration: "none",
+                    padding: "16px 24px",
+                    borderBottom: "1px solid var(--border-subtle)",
+                  }}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
           </div>
 
           <div
@@ -332,16 +288,15 @@ export default function TopNav() {
               flexDirection: "column",
               alignItems: "center",
               gap: 12,
-              borderTop: "1px solid #222222",
+              borderTop: "1px solid var(--border-subtle)",
             }}
           >
             <span
               style={{
                 fontFamily: "var(--font-sans)",
-                fontSize: "0.8125rem",
-                fontWeight: 600,
-                color: "#FFFFFF",
-                opacity: 0.8,
+                fontSize: 13,
+                fontWeight: 510,
+                color: "var(--text-primary)",
               }}
             >
               {user?.full_name || "User"}
@@ -357,10 +312,9 @@ export default function TopNav() {
                 alignItems: "center",
                 gap: 8,
                 fontFamily: "var(--font-sans)",
-                fontSize: "0.8125rem",
-                fontWeight: 600,
-                color: "#FFFFFF",
-                opacity: 0.6,
+                fontSize: 13,
+                fontWeight: 510,
+                color: "var(--text-secondary)",
                 background: "none",
                 border: "none",
                 cursor: "pointer",

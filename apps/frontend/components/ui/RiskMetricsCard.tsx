@@ -80,7 +80,7 @@ export function RiskMetricsCard() {
         <div className="flex items-center justify-between">
           <CardTitle>Risk & Performance</CardTitle>
           {analytics.sharpe_ratio !== null && (
-            <Badge variant={analytics.sharpe_ratio >= 1 ? "gain" : analytics.sharpe_ratio >= 0 ? "warning" : "loss"}>
+            <Badge variant={analytics.sharpe_ratio >= 1 ? "success" : analytics.sharpe_ratio >= 0 ? "neutral" : "neutral"}>
               {analytics.sharpe_ratio >= 1 ? "Good" : analytics.sharpe_ratio >= 0 ? "Moderate" : "Poor"}
             </Badge>
           )}

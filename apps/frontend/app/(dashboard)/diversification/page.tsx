@@ -81,7 +81,7 @@ function ChartSection({ title, icon, data, formatCurrency }: ChartSectionProps) 
             </PieChart>
           </ResponsiveContainer>
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <p className="text-xs text-text-tertiary">{data.length} categories</p>
+            <p className="text-caption text-text-tertiary">{data.length} categories</p>
           </div>
         </div>
         <div className="flex flex-wrap justify-center gap-3 mt-4">
@@ -91,8 +91,8 @@ function ChartSection({ title, icon, data, formatCurrency }: ChartSectionProps) 
                 className="w-3 h-3 rounded-full flex-shrink-0"
                 style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }}
               />
-              <span className="text-sm text-text-secondary truncate max-w-[120px]">{item.label}</span>
-              <span className="text-sm font-medium text-text-primary">{item.percentage.toFixed(1)}%</span>
+              <span className="text-small text-text-secondary truncate max-w-[120px]">{item.label}</span>
+              <span className="text-small-medium text-text-primary">{item.percentage.toFixed(1)}%</span>
             </div>
           ))}
         </div>
@@ -140,10 +140,7 @@ export default function DiversificationPage() {
     return (
       <PageTransition>
         <PageSection>
-          <h1 style={{
-            fontSize: "1.625rem", fontWeight: 500,
-            letterSpacing: "normal", color: "var(--text-primary)", margin: 0,
-          }}>
+          <h1 className="text-h1" style={{ margin: 0 }}>
             Diversification
           </h1>
         </PageSection>
@@ -161,17 +158,10 @@ export default function DiversificationPage() {
       <PageSection>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "20px" }}>
           <div>
-            <h1 style={{
-              fontSize: "1.625rem", fontWeight: 500,
-              letterSpacing: "normal", color: "var(--text-primary)", margin: 0,
-            }}>
+            <h1 className="text-h1" style={{ margin: 0 }}>
               Diversification
             </h1>
-            <p style={{
-              fontSize: "0.8125rem", color: "var(--text-secondary)",
-              marginTop: "8px", fontFamily: "var(--font-body)",
-              textTransform: "uppercase", letterSpacing: "1px",
-            }}>
+            <p className="text-small text-text-secondary" style={{ marginTop: "8px" }}>
               Total portfolio value: {formatCurrency(data.total_value, "EUR")}
             </p>
           </div>
@@ -213,32 +203,19 @@ export default function DiversificationPage() {
             { title: "Geography Breakdown", entries: data.by_country },
           ].map((section) => (
             <div key={section.title}>
-              <h3 style={{
-                fontFamily: "var(--font-body)", fontWeight: 500,
-                fontSize: "0.9375rem", color: "var(--text-primary)",
-                marginBottom: "12px",
-              }}>
+              <h3 className="text-h3" style={{ marginBottom: "12px" }}>
                 {section.title}
               </h3>
               <table className="w-full">
                 <thead>
                   <tr style={{ borderBottom: "1px solid var(--border)", background: "var(--surface-sunken)" }}>
-                    <th
-                      className="text-left px-4 py-2 text-xs font-normal text-text-tertiary uppercase"
-                      style={{ letterSpacing: "1px" }}
-                    >
+                    <th className="text-left px-4 py-2 text-label-medium text-text-tertiary">
                       Category
                     </th>
-                    <th
-                      className="text-right px-4 py-2 text-xs font-normal text-text-tertiary uppercase"
-                      style={{ letterSpacing: "1px" }}
-                    >
+                    <th className="text-right px-4 py-2 text-label-medium text-text-tertiary">
                       Value
                     </th>
-                    <th
-                      className="text-right px-4 py-2 text-xs font-normal text-text-tertiary uppercase"
-                      style={{ letterSpacing: "1px" }}
-                    >
+                    <th className="text-right px-4 py-2 text-label-medium text-text-tertiary">
                       %
                     </th>
                   </tr>
