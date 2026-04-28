@@ -148,10 +148,10 @@ export default function PortfolioPage() {
     return (
       <PageTransition>
         <PageSection>
-          <Skeleton style={{ height: 36, width: 200 }} />
-          <Skeleton style={{ height: 18, width: 180, marginTop: 8 }} />
-        </PageSection>
-        <PageSection>
+          <div style={{ marginBottom: "32px" }}>
+            <Skeleton style={{ height: 36, width: 200 }} />
+            <Skeleton style={{ height: 18, width: 180, marginTop: "6px" }} />
+          </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
             <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: "20px" }}>
               <Skeleton style={{ height: 128 }} />
@@ -161,15 +161,11 @@ export default function PortfolioPage() {
             <Skeleton style={{ height: 200 }} />
             <Skeleton style={{ height: 384 }} />
           </div>
-        </PageSection>
-        <PageSection paddingY="24px">
-          <div className="grid grid-cols-1 lg:grid-cols-2" style={{ gap: "20px" }}>
+          <div className="grid grid-cols-1 lg:grid-cols-2" style={{ gap: "20px", marginTop: "24px" }}>
             <Skeleton style={{ height: 320 }} />
             <Skeleton style={{ height: 320 }} />
           </div>
-        </PageSection>
-        <PageSection>
-          <Skeleton style={{ height: 384 }} />
+          <Skeleton style={{ height: 384, marginTop: "24px" }} />
         </PageSection>
       </PageTransition>
     );
@@ -179,14 +175,14 @@ export default function PortfolioPage() {
     return (
       <PageTransition>
         <PageSection>
-          <h1 className="text-h1" style={{ margin: 0 }}>
-            Portfolio
-          </h1>
-          <p className="text-small text-text-secondary" style={{ marginTop: "8px" }}>
-            Vue d&apos;ensemble
-          </p>
-        </PageSection>
-        <PageSection>
+          <div style={{ marginBottom: "32px" }}>
+            <h1 className="text-h1" style={{ margin: 0 }}>
+              Portfolio
+            </h1>
+            <p className="text-small text-text-secondary" style={{ marginTop: "6px" }}>
+              Vue d&apos;ensemble
+            </p>
+          </div>
           <Card>
             <CardContent className="py-12 text-center">
               <p className="text-text-tertiary">Impossible de charger les données du portfolio. Veuillez réessayer plus tard.</p>
@@ -200,17 +196,15 @@ export default function PortfolioPage() {
   return (
     <PageTransition>
       <PageSection>
-        <div>
+        <div style={{ marginBottom: "32px" }}>
           <h1 className="text-h1" style={{ margin: 0 }}>
             Portfolio
           </h1>
-          <p className="text-small text-text-secondary" style={{ marginTop: "8px" }}>
+          <p className="text-small text-text-secondary" style={{ marginTop: "6px" }}>
             Vue d&apos;ensemble
           </p>
         </div>
-      </PageSection>
 
-      <PageSection>
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: "20px" }}>
@@ -360,11 +354,9 @@ export default function PortfolioPage() {
             </Card>
           </ErrorBoundary>
         </div>
-      </PageSection>
 
-      <PageSection paddingY="24px">
         <ErrorBoundary>
-          <div className="grid grid-cols-1 lg:grid-cols-2" style={{ gap: "20px" }}>
+          <div className="grid grid-cols-1 lg:grid-cols-2" style={{ gap: "20px", marginTop: "24px" }}>
             {/* Donut Chart - Allocation */}
             <Card>
               <CardHeader>
@@ -448,11 +440,9 @@ export default function PortfolioPage() {
             </Card>
           </div>
         </ErrorBoundary>
-      </PageSection>
 
-      <PageSection>
         {/* Detailed Assets Table */}
-        <Card>
+        <Card style={{ marginTop: "24px" }}>
           <CardHeader>
             <CardTitle>Assets détaillés</CardTitle>
           </CardHeader>

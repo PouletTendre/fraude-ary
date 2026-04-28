@@ -131,10 +131,16 @@ export default function JournalPage() {
   if (isLoading) {
     return (
       <PageTransition>
-        <div className="space-y-6">
-          <Skeleton className="h-10 w-32" />
-          <Skeleton className="h-96 w-full rounded-xl" />
-        </div>
+        <PageSection>
+          <div style={{ marginBottom: "32px" }}>
+            <Skeleton style={{ height: "36px", width: "200px" }} />
+            <Skeleton style={{ height: "16px", width: "300px", marginTop: "6px" }} />
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-96 w-full rounded-xl" />
+          </div>
+        </PageSection>
       </PageTransition>
     );
   }
@@ -142,15 +148,15 @@ export default function JournalPage() {
   return (
     <PageTransition>
       <PageSection>
-        <h1 className="text-h1" style={{ margin: 0 }}>
-          Journal
-        </h1>
-        <p className="text-small text-text-secondary" style={{ marginTop: "8px" }}>
-          Historique de vos transactions
-        </p>
-      </PageSection>
+        <div style={{ marginBottom: "32px" }}>
+          <h1 className="text-h1" style={{ margin: 0 }}>
+            Journal
+          </h1>
+          <p className="text-small text-text-secondary" style={{ marginTop: "6px" }}>
+            Historique de vos transactions
+          </p>
+        </div>
 
-      <PageSection>
         <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
           <div style={{ display: "flex", justifyContent: "flex-end" }}>
             <Button onClick={() => setShowForm(!showForm)} disabled={isCreating}>

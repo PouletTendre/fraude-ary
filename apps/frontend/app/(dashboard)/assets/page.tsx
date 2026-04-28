@@ -261,23 +261,23 @@ export default function AssetsPage() {
     return (
       <PageTransition>
         <PageSection>
-          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-            <button
-              onClick={() => setSelectedAsset(null)}
-              className="p-2 rounded-lg hover:bg-surface-raised text-text-secondary"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <h1 className="text-h1" style={{ margin: 0 }}>
-              {selectedAsset.symbol.toUpperCase()}
-            </h1>
+          <div style={{ marginBottom: "32px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+              <button
+                onClick={() => setSelectedAsset(null)}
+                className="p-2 rounded-lg hover:bg-surface-raised text-text-secondary"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+              <h1 className="text-h1" style={{ margin: 0 }}>
+                {selectedAsset.symbol.toUpperCase()}
+              </h1>
+            </div>
+            <p className="text-small text-text-secondary" style={{ marginTop: "6px" }}>
+              Asset Detail
+            </p>
           </div>
-          <p className="text-small text-text-secondary" style={{ marginTop: "8px" }}>
-            Asset Detail
-          </p>
-        </PageSection>
 
-        <PageSection>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px" }}>
             <Card>
               <CardContent className="pt-6">
@@ -325,10 +325,8 @@ export default function AssetsPage() {
               </CardContent>
             </Card>
           </div>
-        </PageSection>
 
-        <PageSection paddingY="24px">
-          <Card>
+          <Card style={{ marginTop: "24px" }}>
             <CardHeader>
               <CardTitle>Price History</CardTitle>
             </CardHeader>
@@ -363,10 +361,8 @@ export default function AssetsPage() {
               </div>
             </CardContent>
           </Card>
-        </PageSection>
 
-        <PageSection>
-          <Card>
+          <Card style={{ marginTop: "24px" }}>
             <CardHeader>
               <CardTitle>Asset Details</CardTitle>
             </CardHeader>
@@ -404,17 +400,23 @@ export default function AssetsPage() {
   if (isLoading) {
     return (
       <PageTransition>
-        <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <Skeleton className="h-10 w-32" />
-            <Skeleton className="h-10 w-28" />
+        <PageSection>
+          <div style={{ marginBottom: "32px" }}>
+            <Skeleton style={{ height: "36px", width: "200px" }} />
+            <Skeleton style={{ height: "16px", width: "300px", marginTop: "6px" }} />
           </div>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Skeleton className="h-10 flex-1 rounded-lg" />
-            <Skeleton className="h-10 w-32 rounded-lg" />
+          <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <Skeleton className="h-10 w-32" />
+              <Skeleton className="h-10 w-28" />
+            </div>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Skeleton className="h-10 flex-1 rounded-lg" />
+              <Skeleton className="h-10 w-32 rounded-lg" />
+            </div>
+            <Skeleton className="h-96 w-full rounded-xl" />
           </div>
-          <Skeleton className="h-96 w-full rounded-xl" />
-        </div>
+        </PageSection>
       </PageTransition>
     );
   }
@@ -422,15 +424,15 @@ export default function AssetsPage() {
   return (
     <PageTransition>
       <PageSection>
-        <h1 className="text-h1" style={{ margin: 0 }}>
-          Actifs
-        </h1>
-        <p className="text-small text-text-secondary" style={{ marginTop: "8px" }}>
-          Gérez vos actifs financiers
-        </p>
-      </PageSection>
+        <div style={{ marginBottom: "32px" }}>
+          <h1 className="text-h1" style={{ margin: 0 }}>
+            Actifs
+          </h1>
+          <p className="text-small text-text-secondary" style={{ marginTop: "6px" }}>
+            Gérez vos actifs financiers
+          </p>
+        </div>
 
-      <PageSection>
         <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
           <div style={{ display: "flex", justifyContent: "flex-end" }}>
             <Button onClick={() => setShowForm(!showForm)} disabled={isCreating}>

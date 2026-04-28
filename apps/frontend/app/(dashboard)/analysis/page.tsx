@@ -101,10 +101,7 @@ export default function AnalysisPage() {
         <p className="text-small text-text-secondary" style={{ marginTop: "8px" }}>
           Analyse technique et fondamentale
         </p>
-      </PageSection>
-
-      <PageSection>
-        <div className="space-y-6">
+        <div style={{ marginTop: "32px" }} className="space-y-6">
           <SymbolSearch
             value={symbol}
             onChange={setSymbol}

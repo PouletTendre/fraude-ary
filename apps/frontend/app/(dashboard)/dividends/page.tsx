@@ -101,10 +101,7 @@ export default function DividendsPage() {
       <PageTransition>
         <PageSection>
           <Skeleton className="h-8 w-48 mb-2" />
-          <Skeleton className="h-4 w-64" />
-        </PageSection>
-        <PageSection>
-          <div className="space-y-6">
+          <Skeleton className="h-4 w-64" /><div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-[20px]">
               <Skeleton className="h-32 rounded-xl" />
               <Skeleton className="h-32 rounded-xl" />
@@ -127,11 +124,7 @@ export default function DividendsPage() {
         </h1>
         <p className="text-small text-text-secondary" style={{ marginTop: "8px" }}>
           Suivi des dividendes
-        </p>
-      </PageSection>
-
-      <PageSection>
-        <div className="space-y-6">
+        </p><div className="space-y-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div />
             <Button onClick={() => setShowForm(!showForm)} disabled={isCreating}>

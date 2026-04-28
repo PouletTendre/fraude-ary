@@ -184,17 +184,15 @@ export default function MarketsPage() {
   return (
     <PageTransition>
       <PageSection>
-        <div>
+        <div style={{ marginBottom: "32px" }}>
           <h1 className="text-h1" style={{ margin: 0 }}>
             Marchés
           </h1>
-          <p className="text-small text-text-secondary" style={{ marginTop: "8px" }}>
+          <p className="text-small text-text-secondary" style={{ marginTop: "6px" }}>
             Analyse technique · Graphiques
           </p>
         </div>
-      </PageSection>
 
-      <PageSection>
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           {/* Search */}
           <div style={{ maxWidth: 420 }}>
@@ -464,11 +462,9 @@ export default function MarketsPage() {
             </>
           )}
         </div>
-      </PageSection>
 
-      {/* Full-width MarketChart */}
-      {hasData && !isLoading && (
-        <PageSection paddingY="24px">
+        {/* Full-width MarketChart */}
+        {hasData && !isLoading && (
           <ErrorBoundary>
             <MarketChart
               data={mergedData}
@@ -480,8 +476,8 @@ export default function MarketsPage() {
               onLoadMore={handleLoadMore}
             />
           </ErrorBoundary>
-        </PageSection>
-      )}
+        )}
+      </PageSection>
     </PageTransition>
   );
 }

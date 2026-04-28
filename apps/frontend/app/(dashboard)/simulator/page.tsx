@@ -55,11 +55,7 @@ export default function SimulatorPage() {
         </h1>
         <p className="text-small text-text-secondary" style={{ marginTop: "8px" }}>
           Simulez vos investissements
-        </p>
-      </PageSection>
-
-      <PageSection>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-[20px]">
+        </p><div className="grid grid-cols-1 lg:grid-cols-3 gap-[20px]">
           {/* Form Section */}
           <Card className="lg:col-span-1">
             <CardHeader>

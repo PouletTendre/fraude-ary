@@ -88,10 +88,10 @@ export default function DashboardPage() {
     return (
       <PageTransition>
         <PageSection>
-          <Skeleton style={{ height: "36px", width: "200px" }} />
-          <Skeleton style={{ height: "16px", width: "300px", marginTop: "8px" }} />
-        </PageSection>
-        <PageSection>
+          <div style={{ marginBottom: "32px" }}>
+            <Skeleton style={{ height: "36px", width: "200px" }} />
+            <Skeleton style={{ height: "16px", width: "300px", marginTop: "6px" }} />
+          </div>
           <div className="grid grid-cols-4 gap-[20px]">
             {[1, 2, 3, 4].map((i) => (
               <Skeleton key={i} style={{ height: "110px" }} />
@@ -105,15 +105,15 @@ export default function DashboardPage() {
   return (
     <PageTransition>
       <PageSection>
-        <h1 className="text-h1" style={{ margin: 0 }}>
-          Dashboard
-        </h1>
-        <p className="text-small text-text-secondary" style={{ marginTop: "8px" }}>
-          {lastUpdate ? `Mis à jour le ${lastUpdate}` : "Chargement..."}
-        </p>
-      </PageSection>
+        <div style={{ marginBottom: "32px" }}>
+          <h1 className="text-h1" style={{ margin: 0 }}>
+            Dashboard
+          </h1>
+          <p className="text-small text-text-secondary" style={{ marginTop: "6px" }}>
+            {lastUpdate ? `Mis à jour le ${lastUpdate}` : "Chargement..."}
+          </p>
+        </div>
 
-      <PageSection>
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           <ErrorBoundary>
             <div
@@ -163,23 +163,19 @@ export default function DashboardPage() {
 
           <TimeFilterChips value={timeFilter} onChange={setTimeFilter} />
         </div>
-      </PageSection>
 
-      <PageSection>
         <ErrorBoundary>
           <div
             className="grid grid-cols-1 lg:grid-cols-3"
-            style={{ gap: "24px" }}
+            style={{ gap: "24px", marginTop: "24px" }}
           >
             <MarketWeatherWidget />
             <RecentTransactionsWidget />
             <GoalsWidget />
           </div>
         </ErrorBoundary>
-      </PageSection>
 
-      <PageSection>
-        <div style={{ background: "var(--surface)" }}>
+        <div style={{ background: "var(--surface)", marginTop: "24px" }}>
           <div
             style={{
               display: "flex",

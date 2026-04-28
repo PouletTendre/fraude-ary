@@ -163,10 +163,7 @@ export default function AlertsPage() {
       <PageTransition>
         <PageSection>
           <Skeleton className="h-8 w-48 mb-2" />
-          <Skeleton className="h-4 w-64" />
-        </PageSection>
-        <PageSection>
-          <div className="space-y-3">
+          <Skeleton className="h-4 w-64" /><div className="space-y-3">
             {[...Array(3)].map((_, i) => (
               <Skeleton key={i} className="h-28 w-full" />
             ))}
@@ -184,11 +181,7 @@ export default function AlertsPage() {
         </h1>
         <p className="text-small text-text-secondary" style={{ marginTop: "8px" }}>
           Alertes de prix configurées
-        </p>
-      </PageSection>
-
-      <PageSection>
-        <div className="space-y-6">
+        </p><div className="space-y-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <p className="text-text-tertiary">
               {alerts.length > 0 ? (

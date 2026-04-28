@@ -142,10 +142,7 @@ export default function DiversificationPage() {
         <PageSection>
           <h1 className="text-h1" style={{ margin: 0 }}>
             Diversification
-          </h1>
-        </PageSection>
-        <PageSection>
-          <div className="py-12 text-center">
+          </h1><div className="py-12 text-center">
             <p className="text-text-tertiary">Failed to load diversification data. Please try again later.</p>
           </div>
         </PageSection>
@@ -192,11 +189,7 @@ export default function DiversificationPage() {
             data={data.by_country}
             formatCurrency={formatCurrency}
           />
-        </div>
-      </PageSection>
-
-      <PageSection>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "20px" }}>
+        </div><div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "20px" }}>
           {[
             { title: "Type Breakdown", entries: data.by_type },
             { title: "Sector Breakdown", entries: data.by_sector },

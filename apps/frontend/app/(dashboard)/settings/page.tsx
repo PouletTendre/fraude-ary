@@ -40,11 +40,7 @@ export default function SettingsPage() {
         </h1>
         <p className="text-small text-text-secondary" style={{ marginTop: "8px" }}>
           Paramètres du compte
-        </p>
-      </PageSection>
-
-      <PageSection>
-        <div className="max-w-3xl mx-auto space-y-6">
+        </p><div className="max-w-3xl mx-auto space-y-6">
           {/* Appearance */}
           <Card>
             <CardHeader className="flex flex-row items-center gap-2 pb-2">
