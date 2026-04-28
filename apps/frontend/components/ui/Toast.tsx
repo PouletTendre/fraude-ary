@@ -20,13 +20,16 @@ const ToastContext = createContext<ToastContextType | undefined>(undefined);
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const addToast = useCallback((message: string, type: "success" | "error" | "info" = "info") => {
-    const id = Math.random().toString(36).substring(2, 9);
-    setToasts((prev) => [...prev, { id, message, type }]);
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 4000);
-  }, []);
+  const addToast = useCallback(
+    (message: string, type: "success" | "error" | "info" = "info") => {
+      const id = Math.random().toString(36).substring(2, 9);
+      setToasts((prev) => [...prev, { id, message, type }]);
+      setTimeout(() => {
+        setToasts((prev) => prev.filter((t) => t.id !== id));
+      }, 4000);
+    },
+    []
+  );
 
   const removeToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
@@ -48,21 +51,37 @@ export function useToast() {
   return context;
 }
 
-function ToastContainer({ toasts, removeToast }: { toasts: Toast[]; removeToast: (id: string) => void }) {
+function ToastContainer({
+  toasts,
+  removeToast,
+}: {
+  toasts: Toast[];
+  removeToast: (id: string) => void;
+}) {
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2" role="region" aria-label="Notifications" aria-live="polite">
+    <div
+      className="fixed bottom-4 right-4 z-50 flex flex-col gap-2"
+      role="region"
+      aria-label="Notifications"
+      aria-live="polite"
+    >
       {toasts.map((toast) => (
         <div
           key={toast.id}
           className={cn(
-            "animate-in slide-in-from-bottom-5 fade-in duration-300 px-4 py-3 rounded-lg shadow-lg text-white flex items-center gap-3 min-w-[300px]",
+            "animate-in slide-in-from-bottom-5 fade-in duration-300 px-4 py-3 text-white flex items-center gap-3 min-w-[300px]",
             toast.type === "success" && "bg-gain",
             toast.type === "error" && "bg-loss",
-            toast.type === "info" && "bg-primary"
+            toast.type === "info" && "bg-info"
           )}
+          style={{ borderRadius: "var(--r-xl)" }}
         >
           <span className="flex-1">{toast.message}</span>
-          <button onClick={() => removeToast(toast.id)} className="text-white/80 hover:text-white" aria-label="Close notification">
+          <button
+            onClick={() => removeToast(toast.id)}
+            className="text-white/80 hover:text-white"
+            aria-label="Close notification"
+          >
             ×
           </button>
         </div>

@@ -16,14 +16,21 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="block text-[0.875rem] font-medium text-text-secondary mb-1.5"
+            className="block text-text-secondary mb-1.5"
+            style={{
+              fontSize: "0.8125rem",
+              fontWeight: 600,
+            }}
           >
             {label}
           </label>
         )}
         <div className="relative">
           {icon && (
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" style={{ fontSize: "15px", pointerEvents: "none" }}>
+            <div
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted"
+              style={{ fontSize: "15px", pointerEvents: "none" }}
+            >
               {icon}
             </div>
           )}
@@ -32,12 +39,15 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             aria-describedby={error ? `${inputId}-error` : undefined}
             className={cn(
               "w-full outline-none transition-all duration-150 ease-out bg-surface-sunken text-text-primary placeholder:text-text-muted",
-              "focus:ring-2 focus:ring-primary focus:border-primary-hover",
-              error && "border-loss focus:ring-loss",
+              error
+                ? "focus:ring-2 focus:ring-loss"
+                : "focus:ring-2 focus:ring-accent-teal",
               className
             )}
             style={{
-              border: error ? "1px solid var(--loss)" : "1px solid var(--border)",
+              border: error
+                ? "1px solid var(--loss)"
+                : "1px solid var(--border-input)",
               borderRadius: "var(--r-md)",
               padding: icon ? "10px 14px 10px 36px" : "10px 14px",
               fontSize: "14px",
@@ -49,7 +59,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           />
         </div>
         {error && (
-          <p id={`${inputId}-error`} className="mt-1.5 text-label text-loss" role="alert">{error}</p>
+          <p
+            id={`${inputId}-error`}
+            className="mt-1.5 text-label text-loss"
+            role="alert"
+          >
+            {error}
+          </p>
         )}
       </div>
     );

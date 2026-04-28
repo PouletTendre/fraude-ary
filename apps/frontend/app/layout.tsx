@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Rajdhani } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { QueryProvider } from "@/components/providers/QueryProvider";
@@ -7,6 +7,11 @@ import { ToastProvider } from "@/components/ui/Toast";
 import { SettingsProvider } from "@/hooks/useSettings";
 
 const inter = Inter({ subsets: ["latin"] });
+
+const rajdhani = Rajdhani({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
 
 export const metadata: Metadata = {
   title: "Fraude-Ary | Portfolio Tracker",
@@ -19,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning style={{ '--font-rajdhani': rajdhani.style.fontFamily } as React.CSSProperties}>
       <head>
         <script
           dangerouslySetInnerHTML={{

@@ -95,12 +95,12 @@ export default function DashboardPage() {
             <Skeleton style={{ height: "36px", width: "120px" }} />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[12px]">
-            <Skeleton style={{ height: "110px", borderRadius: "14px" }} />
-            <Skeleton style={{ height: "110px", borderRadius: "14px" }} />
-            <Skeleton style={{ height: "110px", borderRadius: "14px" }} />
-            <Skeleton style={{ height: "110px", borderRadius: "14px" }} />
+            <Skeleton style={{ height: "110px", borderRadius: "var(--r-md)" }} />
+            <Skeleton style={{ height: "110px", borderRadius: "var(--r-md)" }} />
+            <Skeleton style={{ height: "110px", borderRadius: "var(--r-md)" }} />
+            <Skeleton style={{ height: "110px", borderRadius: "var(--r-md)" }} />
           </div>
-          <Skeleton style={{ height: "300px", borderRadius: "14px" }} />
+          <Skeleton style={{ height: "300px", borderRadius: "var(--r-md)" }} />
         </div>
       </PageTransition>
     );
@@ -114,9 +114,9 @@ export default function DashboardPage() {
           <div>
             <h1
               style={{
-                fontSize: "1.75rem",
-                fontWeight: 600,
-                letterSpacing: "-0.01em",
+                fontSize: "1.625rem",
+                fontWeight: 500,
+                letterSpacing: "normal",
                 color: "var(--text-primary)",
               }}
             >
@@ -124,7 +124,7 @@ export default function DashboardPage() {
             </h1>
             <p
               style={{
-                fontSize: "0.875rem",
+                fontSize: "0.8125rem",
                 color: "var(--text-secondary)",
                 marginTop: "4px",
               }}
@@ -226,7 +226,7 @@ export default function DashboardPage() {
           style={{
             background: "var(--surface)",
             border: "1px solid var(--border)",
-            borderRadius: "var(--r-lg)",
+            borderRadius: "var(--r-md)",
           }}
         >
           {/* Table header row */}
@@ -268,9 +268,10 @@ export default function DashboardPage() {
                       style={{
                         background: "var(--surface-sunken)",
                         color: "var(--text-tertiary)",
+                        fontFamily: "var(--font-body)",
                         fontSize: "0.75rem",
                         fontWeight: 500,
-                        letterSpacing: "0.08em",
+                        letterSpacing: "1px",
                         textTransform: "uppercase",
                         padding: "10px 16px",
                         textAlign: i > 0 ? "right" : "left",
@@ -403,23 +404,11 @@ export default function DashboardPage() {
                       </td>
                       <td style={{ padding: "14px 16px" }}>
                         <Badge
-                          variant={
-                            isGain
-                              ? asset.allocation > 20
-                                ? "info"
-                                : "gain"
-                              : asset.pnlPercent < -5
-                                ? "warning"
-                                : "loss"
-                          }
+                          variant={isGain ? "gain" : "loss"}
                         >
                           {isGain
-                            ? asset.allocation > 20
-                              ? "Long"
-                              : "▲ +" + asset.pnlPercent.toFixed(2) + "%"
-                            : asset.pnlPercent < -5
-                              ? "⚠ Volatil"
-                              : "▼ " + asset.pnlPercent.toFixed(2) + "%"}
+                            ? "▲ +" + asset.pnlPercent.toFixed(2) + "%"
+                            : "▼ " + asset.pnlPercent.toFixed(2) + "%"}
                         </Badge>
                       </td>
                     </tr>

@@ -137,7 +137,7 @@ export default function DashboardLayout({
         )}
         style={{
           width: "260px",
-          background: "var(--surface-sunken)",
+          background: "var(--bg)",
           borderRight: "1px solid var(--border)",
           padding: "24px 12px",
           gap: "2px",
@@ -165,16 +165,17 @@ export default function DashboardLayout({
             marginBottom: "8px",
           }}
         >
-          Fraude<span style={{ color: "var(--primary-hover)" }}>·Ary</span>
+          Fraude<span style={{ color: "var(--primary)" }}>·Ary</span>
         </div>
 
         {navSections.map((section) => (
           <div key={section.label}>
             <div
               style={{
-                fontSize: "0.75rem",
+                fontFamily: "var(--font-body)",
+                fontSize: "0.6875rem",
                 fontWeight: 500,
-                letterSpacing: "0.06em",
+                letterSpacing: "1px",
                 textTransform: "uppercase",
                 color: "var(--text-muted)",
                 padding: "12px 12px 6px",
@@ -197,9 +198,9 @@ export default function DashboardLayout({
                   )}
                   style={{
                     padding: "9px 12px",
-                    borderRadius: "8px",
+                    borderRadius: "var(--r-md)",
                     fontSize: "13px",
-                    fontWeight: 500,
+                    fontWeight: 600,
                     borderLeft: isActive ? "2px solid var(--primary)" : "2px solid transparent",
                     paddingLeft: isActive ? "10px" : "12px",
                     background: isActive ? "var(--primary-subtle)" : undefined,
@@ -245,9 +246,9 @@ export default function DashboardLayout({
             className="flex items-center gap-[10px] cursor-pointer transition-all duration-150 ease-out mt-2 text-text-secondary hover:bg-surface-raised hover:text-text-primary"
           style={{
             padding: "9px 12px",
-            borderRadius: "8px",
+            borderRadius: "var(--r-md)",
             fontSize: "13px",
-            fontWeight: 500,
+            fontWeight: 600,
             borderLeft: "2px solid transparent",
             background: "transparent",
             border: "none",
@@ -273,10 +274,10 @@ export default function DashboardLayout({
           <button
             onClick={logout}
             aria-label="Se déconnecter"
-            className="w-full text-left text-[13px] text-text-secondary hover:text-text-primary hover:bg-surface-rounded transition-all duration-150 ease-out"
+            className="w-full text-left text-[13px] text-text-secondary hover:text-text-primary hover:bg-surface-raised transition-all duration-150 ease-out"
             style={{
               padding: "8px 12px",
-              borderRadius: "8px",
+              borderRadius: "var(--r-md)",
               background: "transparent",
               border: "none",
             }}

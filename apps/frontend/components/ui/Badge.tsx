@@ -3,14 +3,14 @@ import { HTMLAttributes, forwardRef } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 
 const badgeVariants = cva(
-  "inline-flex items-center gap-[4px] rounded-full whitespace-nowrap",
+  "inline-flex items-center gap-[4px] whitespace-nowrap font-body uppercase",
   {
     variants: {
       variant: {
-        gain:    "bg-gain-muted text-gain",
-        loss:    "bg-loss-muted text-loss",
+        gain: "bg-gain-muted text-gain",
+        loss: "bg-loss-muted text-loss",
         warning: "bg-warning-muted text-warning",
-        info:    "bg-primary-subtle text-primary-hover",
+        info: "bg-info-muted text-info",
         neutral: "bg-surface-raised text-text-secondary",
       },
     },
@@ -20,7 +20,9 @@ const badgeVariants = cva(
   }
 );
 
-export interface BadgeProps extends HTMLAttributes<HTMLDivElement>, VariantProps<typeof badgeVariants> {}
+export interface BadgeProps
+  extends HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof badgeVariants> {}
 
 export const Badge = forwardRef<HTMLDivElement, BadgeProps>(
   ({ className, variant, ...props }, ref) => {
@@ -29,11 +31,11 @@ export const Badge = forwardRef<HTMLDivElement, BadgeProps>(
         ref={ref}
         className={cn(badgeVariants({ variant }), className)}
         style={{
+          borderRadius: "var(--r-md)",
           padding: "4px 10px",
           fontSize: "0.6875rem",
           fontWeight: 500,
-          letterSpacing: "0.04em",
-          textTransform: "uppercase",
+          letterSpacing: "1px",
           lineHeight: 1,
         }}
         {...props}

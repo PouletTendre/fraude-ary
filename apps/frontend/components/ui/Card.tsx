@@ -1,15 +1,17 @@
 import { cn } from "@/lib/utils";
 import { HTMLAttributes, forwardRef } from "react";
 
-const cardBase = "border border-border rounded-[var(--r-lg)]";
-
 export const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, style, ...props }, ref) => {
     return (
       <div
         ref={ref}
-        className={cn(cardBase, "bg-surface", className)}
-        style={{ padding: "20px 24px", ...style }}
+        className={cn("bg-surface", className)}
+        style={{
+          borderRadius: "var(--r-md)",
+          padding: "20px",
+          ...style,
+        }}
         {...props}
       />
     );
@@ -18,41 +20,52 @@ export const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
 
 Card.displayName = "Card";
 
-export const CardHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
-  ({ className, style, ...props }, ref) => {
-    return (
-      <div
-        ref={ref}
-        className={cn("flex flex-col gap-[6px]", className)}
-        style={{ paddingBottom: "12px", ...style }}
-        {...props}
-      />
-    );
-  }
-);
+export const CardHeader = forwardRef<
+  HTMLDivElement,
+  HTMLAttributes<HTMLDivElement>
+>(({ className, style, ...props }, ref) => {
+  return (
+    <div
+      ref={ref}
+      className={cn("flex flex-col gap-[6px]", className)}
+      style={{ paddingBottom: "8px", ...style }}
+      {...props}
+    />
+  );
+});
 
 CardHeader.displayName = "CardHeader";
 
-export const CardTitle = forwardRef<HTMLHeadingElement, HTMLAttributes<HTMLHeadingElement>>(
-  ({ className, ...props }, ref) => {
-    return (
-      <h3
-        ref={ref}
-        className={cn("text-[1rem] font-semibold text-text-primary", className)}
-        {...props}
-      />
-    );
-  }
-);
+export const CardTitle = forwardRef<
+  HTMLHeadingElement,
+  HTMLAttributes<HTMLHeadingElement>
+>(({ className, ...props }, ref) => {
+  return (
+    <h3
+      ref={ref}
+      className={cn(
+        "text-[1rem] font-bold text-text-primary",
+        className
+      )}
+      style={{ marginBottom: 0 }}
+      {...props}
+    />
+  );
+});
 
 CardTitle.displayName = "CardTitle";
 
-export const CardContent = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => {
-    return (
-      <div ref={ref} className={cn("flex flex-col gap-[12px]", className)} {...props} />
-    );
-  }
-);
+export const CardContent = forwardRef<
+  HTMLDivElement,
+  HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => {
+  return (
+    <div
+      ref={ref}
+      className={cn("flex flex-col gap-[12px]", className)}
+      {...props}
+    />
+  );
+});
 
 CardContent.displayName = "CardContent";

@@ -3,18 +3,22 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { ButtonHTMLAttributes, forwardRef } from "react";
 
 const buttonVariants = cva(
-  "inline-flex items-center gap-[6px] border-none rounded-[var(--r-md)] font-medium font-sans cursor-pointer transition-all duration-150 ease-out whitespace-nowrap no-underline",
+  "inline-flex items-center gap-[6px] cursor-pointer transition-all duration-150 ease-out whitespace-nowrap no-underline uppercase font-body focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2",
   {
     variants: {
       variant: {
-        primary:   "bg-primary text-text-primary hover:bg-primary-hover hover:shadow-glow",
-        secondary: "bg-surface-raised text-text-primary border border-border hover:bg-surface hover:border-border-hover",
-        ghost:     "bg-transparent text-text-secondary border border-transparent hover:bg-white/[0.04] hover:text-text-primary",
-        danger:    "bg-loss text-text-primary hover:bg-loss-hover",
+        primary:
+          "bg-primary text-white hover:bg-accent-teal focus-visible:outline-black",
+        secondary:
+          "bg-surface-raised text-text-primary border border-border hover:bg-surface",
+        ghost:
+          "bg-transparent text-text-secondary border border-transparent hover:bg-accent-teal hover:text-white",
+        danger:
+          "bg-loss text-white hover:bg-[#D63025]",
       },
       size: {
-        default: "text-[14px] font-medium",
-        sm:      "text-[13px] font-medium",
+        default: "",
+        sm: "",
       },
     },
     defaultVariants: {
@@ -30,12 +34,18 @@ export interface ButtonProps
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, style, ...props }, ref) => {
+    const sizeStyle =
+      size === "sm"
+        ? { padding: "7px 10px", fontSize: "0.875rem", letterSpacing: "0.96px" }
+        : { padding: "12px 10px", fontSize: "1rem", letterSpacing: "1.28px" };
+
     return (
       <button
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         style={{
-          padding: size === "sm" ? "7px 12px" : "10px 16px",
+          borderRadius: "var(--r-md)",
+          ...sizeStyle,
           ...style,
         }}
         {...props}
