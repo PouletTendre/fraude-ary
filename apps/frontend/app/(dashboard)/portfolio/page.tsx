@@ -11,13 +11,15 @@ import { usePortfolio } from "@/hooks/usePortfolio";
 import { useAssets } from "@/hooks/useAssets";
 import { useSettings } from "@/hooks/useSettings";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
+import { Badge, getTypeVariant, getTypeLabel } from "@/components/ui/Badge";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { RiskMetricsCard } from "@/components/ui/RiskMetricsCard";
 import { PageSection } from "@/components/ui/PageSection";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { ASSET_TYPE_CONFIG, getAssetTypeChartColor, getAssetTypeLabel, ASSET_TYPE_FILTER_OPTIONS, type AssetType } from "@/lib/asset-type-config";
 import { 
-  TrendingUp, TrendingDown, DollarSign, Activity, ArrowUpDown, ArrowUp, ArrowDown 
+  TrendingUp, TrendingDown, DollarSign, Activity, ArrowUpDown, ArrowUp, ArrowDown, Filter
 } from "lucide-react";
 
 const PERIODS = [
@@ -30,18 +32,6 @@ const PERIODS = [
 ] as const;
 
 type Period = typeof PERIODS[number]["value"];
-
-const TYPE_COLORS: Record<string, string> = {
-  crypto: "#F59E0B",
-  stocks: "#10B981",
-  real_estate: "#6366F1",
-};
-
-const TYPE_LABELS: Record<string, string> = {
-  crypto: "Crypto",
-  stocks: "Stocks",
-  real_estate: "Real Estate",
-};
 
 type SortKey = "symbol" | "type" | "quantity" | "purchase_price" | "current_price" | "value" | "pnl" | "pnlPercent";
 type SortDirection = "asc" | "desc";
@@ -69,6 +59,7 @@ export default function PortfolioPage() {
   const [chartView, setChartView] = useState<"value" | "performance">("value");
   const [sortKey, setSortKey] = useState<SortKey>("value");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
 
   const isLoading = portfolioLoading || assetsLoading;
 
@@ -113,7 +104,10 @@ export default function PortfolioPage() {
   }, [assets]);
 
   const sortedRows = useMemo(() => {
-    const rows = [...assetRows];
+    let rows = [...assetRows];
+    if (typeFilter !== "all") {
+      rows = rows.filter((r) => r.type === typeFilter);
+    }
     rows.sort((a, b) => {
       let aVal: number | string = a[sortKey];
       let bVal: number | string = b[sortKey];
@@ -126,7 +120,7 @@ export default function PortfolioPage() {
       return 0;
     });
     return rows;
-  }, [assetRows, sortKey, sortDirection]);
+  }, [assetRows, sortKey, sortDirection, typeFilter]);
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -378,13 +372,13 @@ export default function PortfolioPage() {
                         strokeWidth={0}
                       >
                         {portfolio.by_type.map((entry) => (
-                          <Cell key={entry.type} fill={TYPE_COLORS[entry.type] || "#9CA3AF"} />
+                          <Cell key={entry.type} fill={getAssetTypeChartColor(entry.type)} />
                         ))}
                       </Pie>
                       <Tooltip
                         formatter={(value: number, name: string) => [
                           formatCurrency(value, "EUR"),
-                          TYPE_LABELS[name] || name
+                          getAssetTypeLabel(name)
                         ]}
                       />
                     </PieChart>
@@ -400,7 +394,7 @@ export default function PortfolioPage() {
                 <div className="flex justify-center gap-4 mt-4 flex-wrap">
                   {portfolio.by_type.map((item) => (
                     <div key={item.type} className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: TYPE_COLORS[item.type] }} />
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: getAssetTypeChartColor(item.type) }} />
                       <span className="text-small text-text-secondary capitalize">{item.type.replace("_", " ")}</span>
                       <span className="text-small-medium text-text-primary">{item.percentage.toFixed(1)}%</span>
                     </div>
@@ -425,12 +419,12 @@ export default function PortfolioPage() {
                         dataKey="type" 
                         stroke="#9CA3AF" 
                         fontSize={12} 
-                        tickFormatter={(v) => TYPE_LABELS[v] || v.replace("_", " ")} 
+                        tickFormatter={(v) => getAssetTypeLabel(v)} 
                       />
                       <Tooltip formatter={(value: number) => formatCurrency(value, "EUR")} />
                       <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={32}>
                         {portfolio.by_type.map((entry) => (
-                          <Cell key={entry.type} fill={TYPE_COLORS[entry.type] || "#9CA3AF"} />
+                          <Cell key={entry.type} fill={getAssetTypeChartColor(entry.type)} />
                         ))}
                       </Bar>
                     </BarChart>
@@ -444,7 +438,22 @@ export default function PortfolioPage() {
         {/* Detailed Assets Table */}
         <Card style={{ marginTop: "24px" }}>
           <CardHeader>
-            <CardTitle>Assets détaillés</CardTitle>
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <CardTitle>Actifs détaillés</CardTitle>
+              <div className="flex items-center gap-2">
+                <Filter className="w-4 h-4 text-text-muted" />
+                <select
+                  value={typeFilter}
+                  onChange={(e) => setTypeFilter(e.target.value)}
+                  aria-label="Filtrer par type d'actif"
+                  className="h-9 px-3 rounded-lg border border-border bg-surface text-text-primary text-sm"
+                >
+                  {ASSET_TYPE_FILTER_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
@@ -534,21 +543,19 @@ export default function PortfolioPage() {
                       >
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className={cn(
-                              "w-2 h-8 rounded-full",
-                              row.type === "crypto" && "bg-secondary",
-                              row.type === "stocks" && "bg-gain",
-                              row.type === "real_estate" && "bg-surface-raised"
-                            )} />
+                            <div
+                              className="w-2 h-8 rounded-full"
+                              style={{ backgroundColor: getAssetTypeChartColor(row.type) }}
+                            />
                             <span className="w-590 text-text-primary">
                               {row.symbol}
                             </span>
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-label-medium text-text-secondary bg-surface-raised capitalize">
-                            {row.type.replace("_", " ")}
-                          </span>
+                          <Badge variant={getTypeVariant(row.type) as "info" | "warning" | "success" | "accent" | "muted" | "neutral" | "subtle"}>
+                            {getTypeLabel(row.type)}
+                          </Badge>
                         </td>
                         <td className="px-6 py-4 text-right text-text-primary">
                           {formatNumber(row.quantity)}

@@ -10,20 +10,14 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { PageSection } from "@/components/ui/PageSection";
 import { useToast } from "@/components/ui/Toast";
-import { Badge } from "@/components/ui/Badge";
+import { Badge, getTypeVariant, getTypeLabel } from "@/components/ui/Badge";
 import { SymbolSearch } from "@/components/SymbolSearch";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { Search, Filter, X, ArrowUpDown, TrendingUp, TrendingDown, ArrowLeft } from "lucide-react";
 import { fetchApi } from "@/lib/api";
 import { cn, formatNumber, formatCurrency } from "@/lib/utils";
+import { ASSET_TYPE_FILTER_OPTIONS } from "@/lib/asset-type-config";
 import type { Asset } from "@/types";
-
-const TYPE_OPTIONS = [
-  { value: "all", label: "All Types" },
-  { value: "crypto", label: "Crypto" },
-  { value: "stocks", label: "Stocks" },
-  { value: "real_estate", label: "Real Estate" },
-];
 
 const CURRENCY_OPTIONS = [
   { value: "USD", label: "USD" },
@@ -48,7 +42,7 @@ export default function AssetsPage() {
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const [selectedAssets, setSelectedAssets] = useState<Set<string>>(new Set());
   const [formData, setFormData] = useState({
-    type: "crypto" as "crypto" | "stocks" | "real_estate",
+    type: "crypto" as "crypto" | "stocks" | "real_estate" | "etf",
     symbol: "",
     quantity: "",
     purchase_price: "",
@@ -370,11 +364,8 @@ export default function AssetsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-caption-lg text-text-tertiary">Type</p>
-                  <Badge variant={
-                    selectedAsset.type === "crypto" ? "neutral" :
-                    selectedAsset.type === "stocks" ? "success" : "subtle"
-                  }>
-                    {selectedAsset.type.replace("_", " ")}
+                  <Badge variant={getTypeVariant(selectedAsset.type) as "info" | "warning" | "success" | "accent" | "muted" | "neutral" | "subtle"}>
+                    {getTypeLabel(selectedAsset.type)}
                   </Badge>
                 </div>
                 <div>
@@ -460,10 +451,10 @@ export default function AssetsPage() {
                       </label>
                       <select
                         value={formData.type}
-                        onChange={(e) => setFormData({ ...formData, type: e.target.value as "crypto" | "stocks" | "real_estate" })}
-                        className="flex h-10 w-full rounded-lg border border-border bg-surface-sunken px-3 py-2 text-sm"
+                        onChange={(e) => setFormData({ ...formData, type: e.target.value as "crypto" | "stocks" | "real_estate" | "etf" })}
+                        className="flex h-10 w-full rounded-lg border border-border bg-surface-sunken px-3 py-2 text-sm text-text-primary"
                       >
-                        {TYPE_OPTIONS.map((opt) => (
+                        {ASSET_TYPE_FILTER_OPTIONS.map((opt) => (
                           <option key={opt.value} value={opt.value}>{opt.label}</option>
                         ))}
                       </select>
@@ -584,7 +575,7 @@ export default function AssetsPage() {
                 onChange={(e) => setTypeFilter(e.target.value)}
                 className="h-10 px-3 rounded-lg border border-border bg-surface text-text-primary text-sm"
               >
-                {TYPE_OPTIONS.map((opt) => (
+                {ASSET_TYPE_FILTER_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
               </select>
@@ -722,11 +713,8 @@ export default function AssetsPage() {
                             <div className="font-medium text-text-primary">{asset.symbol.toUpperCase()}</div>
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap">
-                            <Badge variant={
-                              asset.type === "crypto" ? "neutral" :
-                              asset.type === "stocks" ? "success" : "subtle"
-                            }>
-                              {asset.type.replace("_", " ")}
+                            <Badge variant={getTypeVariant(asset.type) as "info" | "warning" | "success" | "accent" | "muted" | "neutral" | "subtle"}>
+                              {getTypeLabel(asset.type)}
                             </Badge>
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap text-right text-text-primary">{formatNumber(asset.quantity)}</td>

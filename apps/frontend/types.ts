@@ -14,7 +14,7 @@ export interface PaginatedResponse<T> {
 
 export interface Asset {
   id: string;
-  type: 'crypto' | 'stocks' | 'real_estate';
+  type: 'crypto' | 'stocks' | 'real_estate' | 'etf';
   symbol: string;
   quantity: number;
   purchase_price: number;

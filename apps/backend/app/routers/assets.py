@@ -355,8 +355,33 @@ async def create_asset(
 
     return _asset_to_response(db_asset)
 
+YAHOO_TYPE_MAP = {
+    "CRYPTOCURRENCY": "crypto",
+    "ETF": "etf",
+    "EQUITY": "stocks",
+}
+
+POPULAR_SYMBOLS = [
+    {"symbol": "AAPL", "name": "Apple Inc.", "type": "stocks", "exchange": "NMS"},
+    {"symbol": "MSFT", "name": "Microsoft Corporation", "type": "stocks", "exchange": "NMS"},
+    {"symbol": "GOOGL", "name": "Alphabet Inc.", "type": "stocks", "exchange": "NMS"},
+    {"symbol": "AMZN", "name": "Amazon.com, Inc.", "type": "stocks", "exchange": "NMS"},
+    {"symbol": "SPY", "name": "SPDR S&P 500 ETF Trust", "type": "etf", "exchange": "PCX"},
+    {"symbol": "QQQ", "name": "Invesco QQQ Trust", "type": "etf", "exchange": "NMS"},
+    {"symbol": "BTC-USD", "name": "Bitcoin USD", "type": "crypto", "exchange": "CCC"},
+    {"symbol": "ETH-USD", "name": "Ethereum USD", "type": "crypto", "exchange": "CCC"},
+    {"symbol": "TSLA", "name": "Tesla, Inc.", "type": "stocks", "exchange": "NMS"},
+    {"symbol": "VTI", "name": "Vanguard Total Stock Market ETF", "type": "etf", "exchange": "PCX"},
+]
+
+ASSET_TYPE_SCORE = {"crypto": 3, "etf": 2, "stocks": 1}
+
+
 @router.get("/search/symbols")
-async def search_symbols(q: str = Query(..., min_length=1)):
+async def search_symbols(
+    q: str = Query(..., min_length=1),
+    type: str | None = Query(None, alias="type"),
+):
     try:
         async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
             resp = await client.get(
@@ -368,21 +393,47 @@ async def search_symbols(q: str = Query(..., min_length=1)):
             data = resp.json()
             quotes = data.get("quotes", [])
             results = []
+            query_upper = q.strip().upper()
             for quote in quotes:
                 qtype = quote.get("quoteType", "")
-                asset_type = "stocks"
-                if qtype == "CRYPTOCURRENCY":
-                    asset_type = "crypto"
+                asset_type = YAHOO_TYPE_MAP.get(qtype, "stocks")
+                symbol = quote.get("symbol", "")
+                name = quote.get("shortname") or quote.get("longname") or symbol
+                exchange = quote.get("exchange")
+                score = (
+                    0 if symbol.upper() == query_upper else 1,
+                    -len(name),
+                    -ASSET_TYPE_SCORE.get(asset_type, 0),
+                )
                 results.append({
-                    "symbol": quote.get("symbol"),
-                    "name": quote.get("shortname") or quote.get("longname") or quote.get("symbol"),
+                    "symbol": symbol,
+                    "name": name,
                     "type": asset_type,
-                    "exchange": quote.get("exchange"),
+                    "exchange": exchange,
+                    "_score": score,
                 })
+            results.sort(key=lambda r: r["_score"])
+            for r in results:
+                del r["_score"]
+            if type and type != "all":
+                results = [r for r in results if r["type"] == type]
             return results
     except Exception as e:
         logging.warning(f"Yahoo search failed: {e}")
-        return []
+        q_upper = q.strip().upper()
+        fallback = [
+            s for s in POPULAR_SYMBOLS
+            if q_upper in s["symbol"].upper() or q_upper in s["name"].upper()
+        ]
+        fallback.sort(
+            key=lambda s: (
+                0 if s["symbol"].upper() == q_upper else (0 if s["symbol"].upper().startswith(q_upper) else 1),
+                -ASSET_TYPE_SCORE.get(s["type"], 0),
+            )
+        )
+        if type and type != "all":
+            fallback = [s for s in fallback if s["type"] == type]
+        return fallback[:10]
 
 @router.put("/{asset_id}", response_model=AssetResponse)
 async def update_asset(
