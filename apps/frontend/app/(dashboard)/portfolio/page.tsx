@@ -86,6 +86,17 @@ export default function PortfolioPage() {
       .map(mapPoint);
   }, [portfolio?.history, selectedPeriod]);
 
+  const periodMetrics = useMemo(() => {
+    if (filteredHistory.length < 2) {
+      return { gainLoss: 0, performance: 0 };
+    }
+    const firstValue = filteredHistory[0].value;
+    const lastValue = filteredHistory[filteredHistory.length - 1].value;
+    const gainLoss = lastValue - firstValue;
+    const performance = firstValue > 0 ? (gainLoss / firstValue) * 100 : 0;
+    return { gainLoss, performance };
+  }, [filteredHistory]);
+
   const assetRows: AssetRow[] = useMemo(() => {
     if (!assets) return [];
     return assets.map(asset => ({
@@ -222,18 +233,18 @@ export default function PortfolioPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-caption-lg text-text-tertiary">Total Gain/Loss</p>
-                    <p className={`text-2xl font-tnum mt-1 w-590 ${portfolio.total_gain_loss >= 0 ? "text-gain" : "text-loss"}`}>
-                      {portfolio.total_gain_loss >= 0 ? "+" : ""}{formatCurrency(portfolio.total_gain_loss, "EUR")}
+                    <p className={`text-2xl font-tnum mt-1 w-590 ${periodMetrics.gainLoss >= 0 ? "text-gain" : "text-loss"}`}>
+                      {periodMetrics.gainLoss >= 0 ? "+" : ""}{formatCurrency(periodMetrics.gainLoss, "EUR")}
                     </p>
-                    {portfolio.total_gain_loss >= 0 ? (
+                    {periodMetrics.gainLoss >= 0 ? (
                       <TrendingUp className="w-4 h-4 text-gain inline mr-1" />
                     ) : (
                       <TrendingDown className="w-4 h-4 text-loss inline mr-1" />
                     )}
-                    <span className="text-caption-lg text-text-tertiary">all time</span>
+                    <span className="text-caption-lg text-text-tertiary">{selectedPeriod === "ALL" ? "all time" : PERIODS.find(p => p.value === selectedPeriod)?.label ?? selectedPeriod}</span>
                   </div>
-                  <div className={`p-3 rounded-full ${portfolio.total_gain_loss >= 0 ? "bg-gain-muted" : "bg-loss-muted"}`}>
-                    {portfolio.total_gain_loss >= 0 ? (
+                  <div className={`p-3 rounded-full ${periodMetrics.gainLoss >= 0 ? "bg-gain-muted" : "bg-loss-muted"}`}>
+                    {periodMetrics.gainLoss >= 0 ? (
                       <TrendingUp className="w-6 h-6 text-gain" />
                     ) : (
                       <TrendingDown className="w-6 h-6 text-loss" />
@@ -247,15 +258,15 @@ export default function PortfolioPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-caption-lg text-text-tertiary">Performance</p>
-                    <p className={`text-3xl font-tnum mt-1 w-590 ${portfolio.gain_loss_percentage >= 0 ? "text-gain" : "text-loss"}`}>
-                      {portfolio.gain_loss_percentage >= 0 ? "+" : ""}{portfolio.gain_loss_percentage.toFixed(2)}%
+                    <p className={`text-3xl font-tnum mt-1 w-590 ${periodMetrics.performance >= 0 ? "text-gain" : "text-loss"}`}>
+                      {periodMetrics.performance >= 0 ? "+" : ""}{periodMetrics.performance.toFixed(2)}%
                     </p>
-                    <p className={`text-caption-lg mt-1 ${portfolio.gain_loss_percentage >= 0 ? "text-gain" : "text-loss"}`}>
-                      {portfolio.gain_loss_percentage >= 0 ? "↑ En hausse" : "↓ En baisse"}
+                    <p className={`text-caption-lg mt-1 ${periodMetrics.performance >= 0 ? "text-gain" : "text-loss"}`}>
+                      {periodMetrics.performance >= 0 ? "↑ En hausse" : "↓ En baisse"}
                     </p>
                   </div>
-                  <div className={`p-3 rounded-full ${portfolio.gain_loss_percentage >= 0 ? "bg-gain-muted" : "bg-loss-muted"}`}>
-                    {portfolio.gain_loss_percentage >= 0 ? (
+                  <div className={`p-3 rounded-full ${periodMetrics.performance >= 0 ? "bg-gain-muted" : "bg-loss-muted"}`}>
+                    {periodMetrics.performance >= 0 ? (
                       <TrendingUp className="w-6 h-6 text-gain" />
                     ) : (
                       <TrendingDown className="w-6 h-6 text-loss" />
