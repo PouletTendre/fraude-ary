@@ -13,4 +13,6 @@ export { ChartTooltip } from "./ChartTooltip";
 export { RiskMetricsCard } from "./RiskMetricsCard";
 export { ValuationCard } from "./ValuationCard";
 export { NewsCard } from "./NewsCard";
+export { RsiGauge } from "./RsiGauge";
+export { IndicatorCard } from "./IndicatorCard";
 export { PageSection, type PageSectionProps } from "./PageSection";

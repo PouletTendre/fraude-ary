@@ -8,13 +8,16 @@ import { useTechnical } from "@/hooks/useTechnical";
 import { useSettings } from "@/hooks/useSettings";
 import { SymbolSearch } from "@/components/SymbolSearch";
 import { MarketChart } from "@/components/MarketChart";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
+import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { PageSection } from "@/components/ui/PageSection";
+import { RsiGauge } from "@/components/ui/RsiGauge";
+import { IndicatorCard } from "@/components/ui/IndicatorCard";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import type { OHLCVPoint, OHLCVResponse } from "@/types";
+import { rsiBadge, macdBadge, fmtVal, formatObv } from "@/lib/technical";
 import {
   TrendingUp,
   TrendingDown,
@@ -26,87 +29,6 @@ import {
 } from "lucide-react";
 import { NewsCard } from "@/components/ui/NewsCard";
 import { ValuationCard } from "@/components/ui/ValuationCard";
-
-function rsiBadge(rsi: number | null): { label: string; variant: "success" | "neutral" | "subtle" } {
-  if (rsi === null) return { label: "--", variant: "neutral" };
-  if (rsi > 70) return { label: "Suracheté", variant: "subtle" };
-  if (rsi < 30) return { label: "Survendu", variant: "success" };
-  return { label: "Neutre", variant: "neutral" };
-}
-
-function RsiGauge({ value }: { value: number | null }) {
-  const pct = value !== null ? Math.max(0, Math.min(100, value)) : 0;
-  const color =
-    value === null ? "var(--text-muted)" :
-    value > 70 ? "var(--loss)" :
-    value < 30 ? "var(--gain)" :
-    "var(--warning)";
-
-  return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <span className="text-small text-text-secondary">RSI (14)</span>
-        <span className="text-h3 font-tnum" style={{ color }}>
-          {value !== null ? value.toFixed(1) : "--"}
-        </span>
-      </div>
-      <div className="h-2 rounded-full bg-surface-sunken overflow-hidden">
-        <div
-          className="h-full rounded-full transition-all duration-500"
-          style={{ width: `${pct}%`, background: color }}
-        />
-      </div>
-      <div className="flex justify-between text-[10px] text-text-muted">
-        <span>0</span>
-        <span className={value !== null && value < 30 ? "text-gain w-590" : ""}>30</span>
-        <span className={value !== null && value >= 30 && value <= 70 ? "text-warning w-590" : ""}>50</span>
-        <span className={value !== null && value > 70 ? "text-loss w-590" : ""}>70</span>
-        <span>100</span>
-      </div>
-    </div>
-  );
-}
-
-function IndicatorCard({
-  title,
-  children,
-  badge,
-}: {
-  title: string;
-  children: React.ReactNode;
-  badge?: { label: string; variant: "success" | "neutral" | "subtle" };
-}) {
-  return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle>{title}</CardTitle>
-          {badge && <Badge variant={badge.variant}>{badge.label}</Badge>}
-        </div>
-      </CardHeader>
-      <CardContent>{children}</CardContent>
-    </Card>
-  );
-}
-
-function fmtVal(val: number | null, decimals: number = 2): string {
-  if (val === null || val === undefined) return "--";
-  return val.toFixed(decimals);
-}
-
-function macdBadge(histogram: number | null): { label: string; variant: "success" | "neutral" | "subtle" } {
-  if (histogram === null) return { label: "--", variant: "neutral" };
-  if (histogram > 0) return { label: "Haussier", variant: "success" };
-  if (histogram < 0) return { label: "Baissier", variant: "subtle" };
-  return { label: "Neutre", variant: "neutral" };
-}
-
-function formatObv(value: number): string {
-  if (Math.abs(value) >= 1e9) return `${(value / 1e9).toFixed(2)}B`;
-  if (Math.abs(value) >= 1e6) return `${(value / 1e6).toFixed(2)}M`;
-  if (Math.abs(value) >= 1e3) return `${(value / 1e3).toFixed(2)}K`;
-  return value.toFixed(0);
-}
 
 const PERIODS = [
   { value: "1d", label: "1D" },
@@ -505,15 +427,15 @@ export default function MarketsPage() {
                       {technical.bollinger ? (
                         <div className="space-y-2 font-tnum">
                           <div className="flex justify-between">
-                            <span className="text-small text-text-muted">Upper</span>
+                            <span className="text-small text-text-muted">Supérieure</span>
                             <span className="text-small text-text-primary">{fmtVal(technical.bollinger.upper)}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-small text-text-muted">Middle</span>
+                            <span className="text-small text-text-muted">Moyenne</span>
                             <span className="text-small text-text-primary">{fmtVal(technical.bollinger.middle)}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-small text-text-muted">Lower</span>
+                            <span className="text-small text-text-muted">Inférieure</span>
                             <span className="text-small text-text-primary">{fmtVal(technical.bollinger.lower)}</span>
                           </div>
                         </div>
