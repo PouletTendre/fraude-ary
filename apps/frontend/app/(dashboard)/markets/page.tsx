@@ -22,7 +22,91 @@ import {
   CandlestickChart,
   LineChart,
   Activity,
+  Search,
 } from "lucide-react";
+import { NewsCard } from "@/components/ui/NewsCard";
+import { ValuationCard } from "@/components/ui/ValuationCard";
+
+function rsiBadge(rsi: number | null): { label: string; variant: "success" | "neutral" | "subtle" } {
+  if (rsi === null) return { label: "--", variant: "neutral" };
+  if (rsi > 70) return { label: "Suracheté", variant: "subtle" };
+  if (rsi < 30) return { label: "Survendu", variant: "success" };
+  return { label: "Neutre", variant: "neutral" };
+}
+
+function RsiGauge({ value }: { value: number | null }) {
+  const pct = value !== null ? Math.max(0, Math.min(100, value)) : 0;
+  const color =
+    value === null ? "var(--text-muted)" :
+    value > 70 ? "var(--loss)" :
+    value < 30 ? "var(--gain)" :
+    "var(--warning)";
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <span className="text-small text-text-secondary">RSI (14)</span>
+        <span className="text-h3 font-tnum" style={{ color }}>
+          {value !== null ? value.toFixed(1) : "--"}
+        </span>
+      </div>
+      <div className="h-2 rounded-full bg-surface-sunken overflow-hidden">
+        <div
+          className="h-full rounded-full transition-all duration-500"
+          style={{ width: `${pct}%`, background: color }}
+        />
+      </div>
+      <div className="flex justify-between text-[10px] text-text-muted">
+        <span>0</span>
+        <span className={value !== null && value < 30 ? "text-gain w-590" : ""}>30</span>
+        <span className={value !== null && value >= 30 && value <= 70 ? "text-warning w-590" : ""}>50</span>
+        <span className={value !== null && value > 70 ? "text-loss w-590" : ""}>70</span>
+        <span>100</span>
+      </div>
+    </div>
+  );
+}
+
+function IndicatorCard({
+  title,
+  children,
+  badge,
+}: {
+  title: string;
+  children: React.ReactNode;
+  badge?: { label: string; variant: "success" | "neutral" | "subtle" };
+}) {
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle>{title}</CardTitle>
+          {badge && <Badge variant={badge.variant}>{badge.label}</Badge>}
+        </div>
+      </CardHeader>
+      <CardContent>{children}</CardContent>
+    </Card>
+  );
+}
+
+function fmtVal(val: number | null, decimals: number = 2): string {
+  if (val === null || val === undefined) return "--";
+  return val.toFixed(decimals);
+}
+
+function macdBadge(histogram: number | null): { label: string; variant: "success" | "neutral" | "subtle" } {
+  if (histogram === null) return { label: "--", variant: "neutral" };
+  if (histogram > 0) return { label: "Haussier", variant: "success" };
+  if (histogram < 0) return { label: "Baissier", variant: "subtle" };
+  return { label: "Neutre", variant: "neutral" };
+}
+
+function formatObv(value: number): string {
+  if (Math.abs(value) >= 1e9) return `${(value / 1e9).toFixed(2)}B`;
+  if (Math.abs(value) >= 1e6) return `${(value / 1e6).toFixed(2)}M`;
+  if (Math.abs(value) >= 1e3) return `${(value / 1e3).toFixed(2)}K`;
+  return value.toFixed(0);
+}
 
 const PERIODS = [
   { value: "1d", label: "1D" },
@@ -189,7 +273,7 @@ export default function MarketsPage() {
             Marchés
           </h1>
           <p className="text-small text-text-secondary" style={{ marginTop: "6px" }}>
-            Analyse technique · Graphiques
+            Graphiques · Indicateurs techniques · Actualités
           </p>
         </div>
 
@@ -377,76 +461,169 @@ export default function MarketsPage() {
               {/* Summary Cards */}
               <SummaryCard data={summaryData} formatCurrency={formatCurrency} />
 
-              {/* Technical Indicators */}
+              {/* Technical Indicators — full analysis dashboard */}
               {technical && (
-                <div className="grid grid-cols-2 md:grid-cols-4" style={{ gap: "20px" }}>
-                  {technical.rsi !== null && (
-                    <Card>
-                      <CardContent className="pt-6">
-                        <p className="text-caption-lg text-text-tertiary">RSI (14)</p>
-                        <p
-                          className={cn(
-                            "text-2xl font-tnum mt-1 w-590",
-                            (technical.rsi ?? 0) > 70
-                              ? "text-loss"
-                              : (technical.rsi ?? 0) < 30
-                              ? "text-gain"
-                              : "text-text-primary"
-                          )}
-                        >
-                          {(technical.rsi ?? 0).toFixed(1)}
-                        </p>
-                        <p className="text-caption text-text-muted mt-1">
-                          {(technical.rsi ?? 0) > 70
-                            ? "Suracheté"
-                            : (technical.rsi ?? 0) < 30
-                            ? "Survendu"
-                            : "Neutre"}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  )}
-                  {technical.sma_20 !== null && (
-                    <Card>
-                      <CardContent className="pt-6">
-                        <p className="text-caption-lg text-text-tertiary">SMA 20</p>
-                        <p className="text-2xl font-tnum text-text-primary mt-1 w-590">
-                          {formatCurrency(technical.sma_20 ?? 0)}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  )}
-                  {technical.sma_50 !== null && (
-                    <Card>
-                      <CardContent className="pt-6">
-                        <p className="text-caption-lg text-text-tertiary">SMA 50</p>
-                        <p className="text-2xl font-tnum text-text-primary mt-1 w-590">
-                          {formatCurrency(technical.sma_50 ?? 0)}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  )}
-                  {technical.macd && technical.macd.histogram !== null && (
-                    <Card>
-                      <CardContent className="pt-6">
-                        <p className="text-caption-lg text-text-tertiary">MACD</p>
-                        <p
-                          className={cn(
-                            "text-h3 font-tnum mt-1 w-590",
-                            (technical.macd.histogram ?? 0) >= 0
-                              ? "text-gain"
-                              : "text-loss"
-                          )}
-                        >
-                          {(technical.macd.histogram ?? 0).toFixed(4)}
-                        </p>
-                        <p className="text-caption text-text-muted mt-1">
-                          Signal: {(technical.macd.signal_line ?? 0).toFixed(4)}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  )}
-                </div>
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3" style={{ gap: "20px" }}>
+                    {/* RSI */}
+                    <IndicatorCard
+                      title="RSI"
+                      badge={rsiBadge(technical.rsi)}
+                    >
+                      <RsiGauge value={technical.rsi} />
+                    </IndicatorCard>
+
+                    {/* MACD */}
+                    <IndicatorCard
+                      title="MACD"
+                      badge={macdBadge(technical.macd?.histogram ?? null)}
+                    >
+                      {technical.macd ? (
+                        <div className="space-y-2 font-tnum">
+                          <div className="flex justify-between">
+                            <span className="text-small text-text-muted">MACD Line</span>
+                            <span className="text-small text-text-primary">{fmtVal(technical.macd.macd_line, 4)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-small text-text-muted">Signal</span>
+                            <span className="text-small text-text-primary">{fmtVal(technical.macd.signal_line, 4)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-small text-text-muted">Histogramme</span>
+                            <span className={cn("text-small-medium", (technical.macd.histogram ?? 0) >= 0 ? "text-gain" : "text-loss")}>
+                              {fmtVal(technical.macd.histogram, 4)}
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-small text-text-tertiary">Pas de données</p>
+                      )}
+                    </IndicatorCard>
+
+                    {/* Bollinger Bands */}
+                    <IndicatorCard title="Bollinger">
+                      {technical.bollinger ? (
+                        <div className="space-y-2 font-tnum">
+                          <div className="flex justify-between">
+                            <span className="text-small text-text-muted">Upper</span>
+                            <span className="text-small text-text-primary">{fmtVal(technical.bollinger.upper)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-small text-text-muted">Middle</span>
+                            <span className="text-small text-text-primary">{fmtVal(technical.bollinger.middle)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-small text-text-muted">Lower</span>
+                            <span className="text-small text-text-primary">{fmtVal(technical.bollinger.lower)}</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-small text-text-tertiary">Pas de données</p>
+                      )}
+                    </IndicatorCard>
+
+                    {/* Moving Averages */}
+                    <IndicatorCard title="Moyennes Mobiles">
+                      <div className="space-y-2 font-tnum">
+                        <div className="flex justify-between">
+                          <span className="text-small text-text-muted">SMA 20</span>
+                          <span className="text-small text-text-primary">{fmtVal(technical.sma_20)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-small text-text-muted">SMA 50</span>
+                          <span className="text-small text-text-primary">{fmtVal(technical.sma_50)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-small text-text-muted">SMA 200</span>
+                          <span className="text-small text-text-primary">{fmtVal(technical.sma_200)}</span>
+                        </div>
+                        <div className="border-t border-border pt-2 mt-2">
+                          <div className="flex justify-between">
+                            <span className="text-small text-text-muted">EMA 12</span>
+                            <span className="text-small text-text-primary">{fmtVal(technical.ema_12)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-small text-text-muted">EMA 26</span>
+                            <span className="text-small text-text-primary">{fmtVal(technical.ema_26)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </IndicatorCard>
+
+                    {/* ATR */}
+                    <IndicatorCard title="ATR">
+                      <div className="flex items-center justify-center py-4">
+                        <span className="text-h3 font-tnum text-text-primary">
+                          {fmtVal(technical.atr)}
+                        </span>
+                      </div>
+                    </IndicatorCard>
+
+                    {/* OBV */}
+                    <IndicatorCard title="OBV">
+                      <div className="flex items-center justify-center py-4">
+                        <span className="text-h3 font-tnum text-text-primary">
+                          {technical.obv !== null ? formatObv(technical.obv) : "--"}
+                        </span>
+                      </div>
+                    </IndicatorCard>
+
+                    {/* Stochastic */}
+                    <IndicatorCard title="Stochastique">
+                      {technical.stochastic ? (
+                        <div className="space-y-2 font-tnum">
+                          <div className="flex justify-between">
+                            <span className="text-small text-text-muted">%K</span>
+                            <span className="text-small text-text-primary">{fmtVal(technical.stochastic.stoch_k)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-small text-text-muted">%D</span>
+                            <span className="text-small text-text-primary">{fmtVal(technical.stochastic.stoch_d)}</span>
+                          </div>
+                          <div className="flex gap-2 mt-2">
+                            <Badge
+                              variant={technical.stochastic.stoch_k > 80 ? "subtle" : technical.stochastic.stoch_k < 20 ? "success" : "neutral"}
+                            >
+                              %K: {technical.stochastic.stoch_k > 80 ? "Suracheté" : technical.stochastic.stoch_k < 20 ? "Survendu" : "Neutre"}
+                            </Badge>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-small text-text-tertiary">Pas de données</p>
+                      )}
+                    </IndicatorCard>
+
+                    {/* MFI */}
+                    <IndicatorCard
+                      title="MFI"
+                      badge={{
+                        label: technical.mfi !== null ? (technical.mfi > 80 ? "Suracheté" : technical.mfi < 20 ? "Survendu" : "Neutre") : "--",
+                        variant: technical.mfi !== null ? (technical.mfi > 80 ? "subtle" : technical.mfi < 20 ? "success" : "neutral") : "neutral",
+                      }}
+                    >
+                      <div className="flex items-center justify-center py-4">
+                        <span className="text-h3 font-tnum text-text-primary">
+                          {fmtVal(technical.mfi)}
+                        </span>
+                      </div>
+                    </IndicatorCard>
+
+                    {/* Symbol Info */}
+                    <IndicatorCard title="Symbole">
+                      <div className="py-4 text-center">
+                        <span className="text-h3 text-text-primary w-590">
+                          {technical.symbol}
+                        </span>
+                      </div>
+                    </IndicatorCard>
+                  </div>
+
+                  {/* Valuation */}
+                  <ValuationCard symbol={symbol} />
+
+                  {/* News */}
+                  <NewsCard symbol={symbol} />
+                </>
               )}
 
               {/* Show technical indicators missing state */}
