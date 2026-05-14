@@ -4,39 +4,22 @@ import { useEffect, useMemo, useState } from "react";
 import { usePortfolio } from "@/hooks/usePortfolio";
 import { useAssets } from "@/hooks/useAssets";
 import { useSettings } from "@/hooks/useSettings";
+import { useBenchmark } from "@/hooks/useBenchmark";
+import { DashboardAreaChart } from "@/components/DashboardAreaChart";
+import { DashboardTable } from "@/components/DashboardTable";
 import { KPICard } from "@/components/ui/KPICard";
-import { TimeFilterChips } from "@/components/ui/TimeFilterChips";
-import { Badge } from "@/components/ui/Badge";
-import { AssetAvatar } from "@/components/ui/AssetAvatar";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { PageSection } from "@/components/ui/PageSection";
-import { MarketWeatherWidget } from "@/components/MarketWeatherWidget";
-import { RecentTransactionsWidget } from "@/components/RecentTransactionsWidget";
-import { GoalsWidget } from "@/components/GoalsWidget";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { ArrowRight } from "lucide-react";
-import Link from "next/link";
-import { cn } from "@/lib/utils";
-
-function formatNumber(value: number, currency?: string) {
-  const opts: Intl.NumberFormatOptions = {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  };
-  if (currency) {
-    opts.style = "currency";
-    opts.currency = currency;
-  }
-  return new Intl.NumberFormat("fr-FR", opts).format(value);
-}
 
 export default function DashboardPage() {
   const { portfolio, analytics, isLoading: portfolioLoading } = usePortfolio();
   const { assets, isLoading: assetsLoading } = useAssets();
   const { formatCurrency } = useSettings();
-  const [lastUpdate, setLastUpdate] = useState<string>("");
   const [timeFilter, setTimeFilter] = useState("1M");
+  const [lastUpdate, setLastUpdate] = useState("");
+  const { benchmarkHistory, isLoading: benchmarkLoading } = useBenchmark(timeFilter);
 
   const isLoading = portfolioLoading || assetsLoading;
 
@@ -55,6 +38,7 @@ export default function DashboardPage() {
     }
   }, [isLoading, portfolio, assets]);
 
+  // Daily change from history
   const dailyChange = useMemo(() => {
     if (!portfolio?.history || portfolio.history.length < 2) return null;
     const history = [...portfolio.history].sort(
@@ -67,6 +51,7 @@ export default function DashboardPage() {
     return { change, percent };
   }, [portfolio?.history]);
 
+  // Enriched assets for table
   const enrichedAssets = useMemo(() => {
     if (!assets || assets.length === 0) return [];
     return [...assets]
@@ -80,9 +65,41 @@ export default function DashboardPage() {
           ? ((asset.current_price * asset.quantity) / portfolio.total_value) *
             100
           : 0,
+        dailyChange24h: "0.00%",
       }))
       .sort((a, b) => b.value - a.value);
   }, [assets, portfolio?.total_value]);
+
+  // Allocation by type
+  const typeAllocation = useMemo(() => {
+    if (!portfolio?.by_type) return [];
+    return portfolio.by_type.map((t) => ({
+      type: t.type,
+      value: t.value,
+      percentage: t.percentage,
+      color:
+        t.type === "stocks"
+          ? "var(--primary)"
+          : t.type === "crypto"
+          ? "#f7931a"
+          : t.type === "real_estate"
+          ? "var(--gain)"
+          : "var(--text-tertiary)",
+    }));
+  }, [portfolio?.by_type]);
+
+  // Portfolio history for chart
+  const portfolioHistory = useMemo(() => {
+    if (!portfolio?.history) return [];
+    return [...portfolio.history]
+      .map((h) => ({
+        date: h.date,
+        value: h.value,
+      }))
+      .sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+      );
+  }, [portfolio?.history]);
 
   if (isLoading) {
     return (
@@ -90,12 +107,21 @@ export default function DashboardPage() {
         <PageSection>
           <div style={{ marginBottom: "32px" }}>
             <Skeleton style={{ height: "36px", width: "200px" }} />
-            <Skeleton style={{ height: "16px", width: "300px", marginTop: "6px" }} />
+            <Skeleton
+              style={{ height: "16px", width: "300px", marginTop: "6px" }}
+            />
           </div>
-          <div className="grid grid-cols-4 gap-[20px]">
-            {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} style={{ height: "110px" }} />
-            ))}
+          <Skeleton style={{ height: "380px", borderRadius: "var(--r-panel)" }} />
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: "20px",
+              marginTop: "24px",
+            }}
+          >
+            <Skeleton style={{ height: "320px" }} />
+            <Skeleton style={{ height: "320px" }} />
           </div>
         </PageSection>
       </PageTransition>
@@ -104,269 +130,283 @@ export default function DashboardPage() {
 
   return (
     <PageTransition>
-      <PageSection>
-        <div style={{ marginBottom: "32px" }}>
-          <h1 className="text-h1" style={{ margin: 0 }}>
+      <PageSection maxWidth="1400px">
+        {/* Page header */}
+        <div style={{ marginBottom: "28px" }}>
+          <h1
+            className="text-h1"
+            style={{ margin: "0 0 4px" }}
+          >
             Dashboard
           </h1>
-          <p className="text-small text-text-secondary" style={{ marginTop: "6px" }}>
+          <p
+            className="text-small text-text-secondary"
+            style={{ margin: 0 }}
+          >
             {lastUpdate ? `Mis à jour le ${lastUpdate}` : "Chargement..."}
           </p>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-          <ErrorBoundary>
-            <div
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
-              style={{ gap: "20px" }}
-            >
-              <KPICard
-                label="Valeur totale"
-                value={portfolio ? formatCurrency(portfolio.total_value, "EUR") : "—"}
-                delta={
-                  portfolio
-                    ? `${portfolio.gain_loss_percentage >= 0 ? "+" : ""}${portfolio.gain_loss_percentage.toFixed(2)}% ce mois`
-                    : undefined
-                }
-                isPositive={
-                  portfolio ? portfolio.gain_loss_percentage >= 0 : null
-                }
-              />
-              <KPICard
-                label="P&L journalier"
-                value={
-                  dailyChange
-                    ? `${dailyChange.change >= 0 ? "+" : ""}${formatCurrency(dailyChange.change, "EUR")}`
-                    : "—"
-                }
-                delta={
-                  dailyChange
-                    ? `${dailyChange.percent >= 0 ? "+" : ""}${dailyChange.percent.toFixed(2)}%`
-                    : undefined
-                }
-                isPositive={dailyChange ? dailyChange.change >= 0 : null}
-              />
-              <KPICard
-                label="Volatilité annualisée"
-                value={analytics?.volatility_annual != null ? `${(analytics.volatility_annual * 100).toFixed(1)}%` : "—"}
-                delta={analytics?.volatility_annual != null ? (analytics.volatility_annual < 0.15 ? "faible" : analytics.volatility_annual < 0.25 ? "modérée" : "élevée") : undefined}
-                isPositive={analytics?.volatility_annual != null ? analytics.volatility_annual < 0.2 : null}
-              />
-              <KPICard
-                label="Ratio de Sharpe"
-                value={analytics?.sharpe_ratio != null ? analytics.sharpe_ratio.toFixed(2) : "—"}
-                delta={analytics?.sharpe_ratio != null ? (analytics.sharpe_ratio > 1 ? "bon" : analytics.sharpe_ratio > 0 ? "moyen" : "négatif") : undefined}
-                isPositive={analytics?.sharpe_ratio != null ? analytics.sharpe_ratio > 0 : null}
-              />
-            </div>
-          </ErrorBoundary>
-
-          <TimeFilterChips value={timeFilter} onChange={setTimeFilter} />
-        </div>
-
+        {/* Area chart */}
         <ErrorBoundary>
-          <div
-            className="grid grid-cols-1 lg:grid-cols-3"
-            style={{ gap: "24px", marginTop: "24px" }}
-          >
-            <MarketWeatherWidget />
-            <RecentTransactionsWidget />
-            <GoalsWidget />
-          </div>
+          <DashboardAreaChart
+            portfolioHistory={portfolioHistory}
+            benchmarkHistory={benchmarkHistory}
+            period={timeFilter}
+            totalGainLoss={portfolio?.total_gain_loss ?? 0}
+            gainLossPercent={portfolio?.gain_loss_percentage ?? 0}
+            onPeriodChange={setTimeFilter}
+          />
         </ErrorBoundary>
 
-        <div style={{ background: "var(--surface)", marginTop: "24px" }}>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              padding: "0 0 16px",
-            }}
-          >
-            <h3 className="text-h2" style={{ margin: 0 }}>
-              Mes positions
-            </h3>
-            <Link
-              href="/portfolio"
-              className="text-caption"
+        {/* KPI row */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: "16px",
+            marginTop: "20px",
+          }}
+        >
+          <KPICard
+            label="Valeur totale"
+            value={
+              portfolio
+                ? formatCurrency(portfolio.total_value, "EUR")
+                : "—"
+            }
+            delta={
+              portfolio
+                ? `${portfolio.gain_loss_percentage >= 0 ? "+" : ""}${portfolio.gain_loss_percentage.toFixed(2)}% global`
+                : undefined
+            }
+            isPositive={
+              portfolio ? portfolio.gain_loss_percentage >= 0 : null
+            }
+          />
+          <KPICard
+            label="P&L journalier"
+            value={
+              dailyChange
+                ? `${dailyChange.change >= 0 ? "+" : ""}${formatCurrency(dailyChange.change, "EUR")}`
+                : "—"
+            }
+            delta={
+              dailyChange
+                ? `${dailyChange.percent >= 0 ? "+" : ""}${dailyChange.percent.toFixed(2)}%`
+                : undefined
+            }
+            isPositive={dailyChange ? dailyChange.change >= 0 : null}
+          />
+          <KPICard
+            label="Volatilité annualisée"
+            value={
+              analytics?.volatility_annual != null
+                ? `${(analytics.volatility_annual * 100).toFixed(1)}%`
+                : "—"
+            }
+            delta={
+              analytics?.volatility_annual != null
+                ? analytics.volatility_annual < 0.15
+                  ? "Risque faible"
+                  : analytics.volatility_annual < 0.25
+                  ? "Risque modéré"
+                  : "Risque élevé"
+                : undefined
+            }
+            isPositive={
+              analytics?.volatility_annual != null
+                ? analytics.volatility_annual < 0.2
+                : null
+            }
+          />
+        </div>
+
+        {/* Two-column layout: Table + Allocation */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1.5fr 1fr",
+            gap: "20px",
+            marginTop: "20px",
+            alignItems: "start",
+          }}
+          className="max-lg:grid-cols-1"
+        >
+          {/* Assets table */}
+          <ErrorBoundary>
+            <DashboardTable
+              assets={enrichedAssets}
+              formatCurrency={formatCurrency}
+            />
+          </ErrorBoundary>
+
+          {/* Allocation panel */}
+          <ErrorBoundary>
+            <div
               style={{
-                color: "var(--primary-hover)",
-                display: "flex",
-                alignItems: "center",
-                gap: "4px",
-                textDecoration: "none",
+                background: "var(--surface)",
+                border: "1px solid var(--border)",
+                borderRadius: "var(--r-panel)",
+                overflow: "hidden",
               }}
             >
-              Voir détails <ArrowRight size={16} />
-            </Link>
-          </div>
+              <div
+                style={{
+                  padding: "16px 20px",
+                  borderBottom: "1px solid var(--border-subtle)",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: "13px",
+                    fontWeight: 590,
+                    color: "var(--text-primary)",
+                  }}
+                >
+                  Allocation
+                </span>
+              </div>
 
-          <table className="w-full" style={{ borderCollapse: "collapse" }}>
-            <thead>
-              <tr>
-                {["Actif", "Prix", "24h", "Valeur", "Allocation", "Statut"].map(
-                  (h, i) => (
-                    <th
-                      key={h}
-                      className="text-label-medium text-text-tertiary"
-                      style={{
-                        background: "var(--surface-sunken)",
-                        padding: "10px 16px",
-                        textAlign: i > 0 ? "right" : "left",
-                        borderBottom: "1px solid var(--border)",
-                      }}
-                    >
-                      {h}
-                    </th>
-                  )
-                )}
-              </tr>
-            </thead>
-            <tbody>
-              {enrichedAssets.length > 0 ? (
-                enrichedAssets.slice(0, 6).map((asset) => {
-                  const avatarType =
-                    asset.type === "crypto"
-                      ? "crypto"
-                      : asset.type === "stocks"
-                        ? "equity"
-                        : "other";
-                  const isGain = asset.pnlPercent >= 0;
-                  return (
-                    <tr
-                      key={asset.id}
-                      style={{
-                        borderBottom: "1px solid var(--border)",
-                        transition: "background 150ms ease-out",
-                      }}
-                      className="hover:bg-surface-raised"
-                    >
-                      <td style={{ padding: "14px 16px", verticalAlign: "middle" }}>
-                        <div className="flex items-center gap-[10px]">
-                          <AssetAvatar
-                            symbol={asset.symbol}
-                            type={avatarType}
-                          />
-                          <div>
-                            <div
-                              className="w-510"
-                              style={{
-                                fontSize: "13px",
-                                color: "var(--text-primary)",
-                              }}
-                            >
-                              {asset.symbol.toUpperCase()}
-                            </div>
-                            <div
-                              style={{
-                                fontSize: "11px",
-                                color: "var(--text-tertiary)",
-                                marginTop: "1px",
-                              }}
-                            >
-                              {asset.type.replace("_", " ")}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td
-                        className="font-mono font-tnum"
-                        style={{
-                          padding: "14px 16px",
-                          textAlign: "right",
-                          fontSize: "13px",
-                          color: "var(--text-primary)",
-                        }}
-                      >
-                        {formatCurrency(asset.current_price, asset.currency)}
-                      </td>
-                      <td
-                        className={cn(
-                          "font-mono font-tnum",
-                          isGain ? "text-gain" : "text-loss"
-                        )}
-                        style={{
-                          padding: "14px 16px",
-                          textAlign: "right",
-                          fontSize: "13px",
-                        }}
-                      >
-                        {isGain ? "+" : ""}
-                        {asset.pnlPercent.toFixed(2)}%
-                      </td>
-                      <td
-                        className="font-mono font-tnum"
-                        style={{
-                          padding: "14px 16px",
-                          textAlign: "right",
-                          fontSize: "13px",
-                          color: "var(--text-primary)",
-                        }}
-                      >
-                        {formatCurrency(asset.value, asset.currency)}
-                      </td>
-                      <td style={{ padding: "14px 16px", textAlign: "right" }}>
-                        <div className="flex items-center gap-[8px] justify-end">
-                          <div
+              <div style={{ padding: "20px" }}>
+                {typeAllocation.length > 0 ? (
+                  <div
+                    style={{ display: "flex", flexDirection: "column", gap: "16px" }}
+                  >
+                    {typeAllocation.map((item) => (
+                      <div key={item.type}>
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            marginBottom: "8px",
+                          }}
+                        >
+                          <span
                             style={{
-                              width: "80px",
-                              height: "6px",
-                              background: "var(--border)",
-                              borderRadius: "9999px",
-                              overflow: "hidden",
-                              flexShrink: 0,
+                              fontSize: "13px",
+                              fontWeight: 510,
+                              color: "var(--text-primary)",
+                              textTransform: "capitalize",
                             }}
                           >
-                            <div
-                              style={{
-                                height: "100%",
-                                borderRadius: "9999px",
-                                background:
-                                  "linear-gradient(90deg, var(--primary), var(--secondary))",
-                                width: `${Math.min(asset.allocation, 100)}%`,
-                              }}
-                            />
-                          </div>
+                            {item.type === "stocks"
+                              ? "Actions"
+                              : item.type === "crypto"
+                              ? "Crypto"
+                              : item.type === "real_estate"
+                              ? "Immobilier"
+                              : item.type}
+                          </span>
+                          <span
+                            className="font-mono font-tnum"
+                            style={{
+                              fontSize: "13px",
+                              color: "var(--text-secondary)",
+                            }}
+                          >
+                            {item.percentage.toFixed(1)}%
+                          </span>
+                        </div>
+                        <div
+                          style={{
+                            width: "100%",
+                            height: "6px",
+                            background: "var(--border)",
+                            borderRadius: "9999px",
+                            overflow: "hidden",
+                          }}
+                        >
+                          <div
+                            style={{
+                              height: "100%",
+                              borderRadius: "9999px",
+                              background: item.color,
+                              width: `${item.percentage}%`,
+                              transition: "width 400ms ease-out",
+                            }}
+                          />
+                        </div>
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            marginTop: "4px",
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontSize: "11px",
+                              color: "var(--text-tertiary)",
+                            }}
+                          >
+                            {enrichedAssets.filter(
+                              (a) =>
+                                a.type ===
+                                (item.type === "real_estate"
+                                  ? "real_estate"
+                                  : item.type)
+                            ).length}{" "}
+                            actif(s)
+                          </span>
                           <span
                             className="font-mono font-tnum"
                             style={{
                               fontSize: "11px",
                               color: "var(--text-tertiary)",
-                              minWidth: "28px",
-                              textAlign: "right",
                             }}
                           >
-                            {asset.allocation.toFixed(1)}%
+                            {formatCurrency(item.value, "EUR")}
                           </span>
                         </div>
-                      </td>
-                      <td style={{ padding: "14px 16px" }}>
-                        <Badge variant={isGain ? "success" : "neutral"}>
-                          {isGain
-                            ? "▲ +" + asset.pnlPercent.toFixed(2) + "%"
-                            : "▼ " + asset.pnlPercent.toFixed(2) + "%"}
-                        </Badge>
-                      </td>
-                    </tr>
-                  );
-                })
-              ) : (
-                <tr>
-                  <td
-                    colSpan={6}
+                      </div>
+                    ))}
+
+                    {/* Total bar */}
+                    <div
+                      style={{
+                        paddingTop: "16px",
+                        borderTop: "1px solid var(--border-subtle)",
+                        display: "flex",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: "13px",
+                          fontWeight: 590,
+                          color: "var(--text-primary)",
+                        }}
+                      >
+                        Total
+                      </span>
+                      <span
+                        className="font-mono font-tnum"
+                        style={{
+                          fontSize: "13px",
+                          fontWeight: 590,
+                          color: "var(--text-primary)",
+                        }}
+                      >
+                        {formatCurrency(portfolio?.total_value ?? 0, "EUR")}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div
                     style={{
-                      padding: "32px",
+                      padding: "32px 0",
                       textAlign: "center",
                       color: "var(--text-tertiary)",
+                      fontSize: "13px",
                     }}
                   >
-                    Aucun actif. Ajoutez votre premier actif pour commencer.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                    Aucune donnée d&apos;allocation
+                  </div>
+                )}
+              </div>
+            </div>
+          </ErrorBoundary>
         </div>
       </PageSection>
     </PageTransition>
