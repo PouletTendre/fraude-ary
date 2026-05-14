@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { Menu, X, LogOut, LayoutDashboard, PieChart, TrendingUp, Briefcase, Search, Calculator, Settings, Bell } from "lucide-react";
+import { Menu, X, LogOut, LayoutDashboard, PieChart, TrendingUp, Briefcase, Search, Calculator, ScrollText, Banknote, Layers, BellRing, Settings, Bell } from "lucide-react";
 
 interface NavLink {
   href: string;
@@ -19,6 +19,13 @@ const mainLinks: NavLink[] = [
   { href: "/assets", label: "Actifs", icon: <Briefcase size={18} /> },
   { href: "/research", label: "Research", icon: <Search size={18} /> },
   { href: "/simulator", label: "Simulateur", icon: <Calculator size={18} /> },
+];
+
+const manageLinks: NavLink[] = [
+  { href: "/journal", label: "Journal", icon: <ScrollText size={18} /> },
+  { href: "/dividends", label: "Dividendes", icon: <Banknote size={18} /> },
+  { href: "/diversification", label: "Diversification", icon: <Layers size={18} /> },
+  { href: "/alerts", label: "Alertes", icon: <BellRing size={18} /> },
 ];
 
 const bottomLinks: NavLink[] = [
@@ -89,11 +96,73 @@ export default function Sidebar() {
           flex: 1,
           display: "flex",
           flexDirection: "column",
-          padding: "12px 10px",
+          padding: "12px 10px 0",
           gap: "2px",
+          overflowY: "auto",
         }}
       >
         {mainLinks.map((link) => {
+          const active = isActive(link.href);
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              onClick={() => setMobileOpen(false)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                padding: "10px 12px",
+                borderRadius: "var(--r-btn)",
+                fontSize: "13px",
+                fontWeight: active ? 510 : 400,
+                color: active ? "var(--primary)" : "var(--text-secondary)",
+                textDecoration: "none",
+                background: active ? "var(--primary-subtle)" : "transparent",
+                transition: "background 150ms ease-out, color 150ms ease-out",
+              }}
+              onMouseEnter={(e) => {
+                if (!active) {
+                  e.currentTarget.style.background = "var(--surface-hover)";
+                  e.currentTarget.style.color = "var(--text-primary)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!active) {
+                  e.currentTarget.style.background = "transparent";
+                  e.currentTarget.style.color = "var(--text-secondary)";
+                }
+              }}
+            >
+              <span
+                style={{
+                  opacity: active ? 1 : 0.55,
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                {link.icon}
+              </span>
+              {link.label}
+            </Link>
+          );
+        })}
+
+        {/* Gestion section */}
+        <div
+          style={{
+            fontSize: "10px",
+            fontWeight: 590,
+            color: "var(--text-muted)",
+            textTransform: "uppercase",
+            letterSpacing: "1px",
+            padding: "16px 12px 6px",
+          }}
+        >
+          Gestion
+        </div>
+
+        {manageLinks.map((link) => {
           const active = isActive(link.href);
           return (
             <Link

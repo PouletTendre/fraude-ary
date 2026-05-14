@@ -42,12 +42,27 @@ const PERIODS = [
 
 type ChartType = "candle" | "line" | "area";
 
+function inferCurrency(symbol: string): string {
+  const s = symbol.toUpperCase();
+  if (s.includes("-USD") || s.includes("USD")) return "USD";
+  if (/\.(PA|MI|DE|AS|BR|MC|SW|VI|HE|LS|TO)$/i.test(s)) return "EUR";
+  if (/\.L$/i.test(s)) return "GBP";
+  if (/\.T$/i.test(s)) return "JPY";
+  if (/\.SW|\.S$/i.test(s)) return "CHF";
+  if (/\.HK$/i.test(s)) return "HKD";
+  if (/\.AX$/i.test(s)) return "AUD";
+  if (/^[A-Z]{1,5}$/.test(s)) return "USD";
+  return "USD";
+}
+
 function SummaryCard({
   data,
   formatCurrency,
+  currency,
 }: {
   data: { time: number; close: number; high: number; low: number; open: number }[];
-  formatCurrency: (value: number) => string;
+  formatCurrency: (value: number, currency?: string) => string;
+  currency: string;
 }) {
   if (data.length < 2) return null;
 
@@ -64,7 +79,7 @@ function SummaryCard({
         <CardContent className="pt-6">
           <p className="text-caption-lg text-text-tertiary">Prix actuel</p>
           <p className="text-2xl font-tnum text-text-primary mt-1 w-590">
-            {formatCurrency(latest.close)}
+            {formatCurrency(latest.close, currency)}
           </p>
         </CardContent>
       </Card>
@@ -79,7 +94,7 @@ function SummaryCard({
               )}
             >
               {periodChange >= 0 ? "+" : ""}
-              {formatCurrency(periodChange)}
+              {formatCurrency(periodChange, currency)}
             </p>
           </div>
           <div className="flex items-center gap-1 mt-1">
@@ -104,7 +119,7 @@ function SummaryCard({
         <CardContent className="pt-6">
           <p className="text-caption-lg text-text-tertiary">Plus haut (période)</p>
           <p className="text-2xl font-tnum text-text-primary mt-1 w-590">
-            {formatCurrency(periodHigh)}
+            {formatCurrency(periodHigh, currency)}
           </p>
         </CardContent>
       </Card>
@@ -112,7 +127,7 @@ function SummaryCard({
         <CardContent className="pt-6">
           <p className="text-caption-lg text-text-tertiary">Plus bas (période)</p>
           <p className="text-2xl font-tnum text-text-primary mt-1 w-590">
-            {formatCurrency(periodLow)}
+            {formatCurrency(periodLow, currency)}
           </p>
         </CardContent>
       </Card>
@@ -381,7 +396,7 @@ export default function MarketsPage() {
               </div>
 
               {/* Summary Cards */}
-              <SummaryCard data={summaryData} formatCurrency={formatCurrency} />
+              <SummaryCard data={summaryData} formatCurrency={formatCurrency} currency={inferCurrency(symbol)} />
 
               {/* Technical Indicators — full analysis dashboard */}
               {technical && (
