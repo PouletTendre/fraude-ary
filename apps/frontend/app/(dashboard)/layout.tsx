@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useRouter } from "next/navigation";
-import TopNav from "@/components/TopNav";
+import Sidebar from "@/components/Sidebar";
 import { Footer } from "@/components/Footer";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -45,9 +45,9 @@ export default function DashboardLayout({
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
-      <TopNav />
+      <Sidebar />
 
-      <main>
+      <main style={{ marginLeft: "256px" }} className="max-md:ml-0">
         <Suspense
           fallback={
             <div
@@ -60,9 +60,9 @@ export default function DashboardLayout({
         >
           <ErrorBoundary>{children}</ErrorBoundary>
         </Suspense>
-      </main>
 
-      <Footer />
+        <Footer />
+      </main>
     </div>
   );
 }
