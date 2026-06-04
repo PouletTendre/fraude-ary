@@ -65,6 +65,7 @@ async def seed_demo_assets(
             purchase_price_eur=a.purchase_price_eur,
             current_price=a.current_price,
             total_value=a.quantity * a.current_price if a.current_price else 0,
+            currency="EUR",
             created_at=a.created_at,
         )
         for a in created_assets
