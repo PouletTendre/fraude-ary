@@ -378,7 +378,7 @@ export default function AssetsPage() {
                 </div>
                 <div>
                   <p className="text-caption-lg text-text-tertiary">Purchase Date</p>
-                  <p className="text-text-primary">{new Date(selectedAsset.purchase_date).toLocaleDateString()}</p>
+                  <p className="text-text-primary">{selectedAsset.purchase_date ? new Date(selectedAsset.purchase_date).toLocaleDateString() : "N/A"}</p>
                 </div>
               </div>
             </CardContent>

@@ -48,6 +48,8 @@ interface AssetRow {
   pnl: number;
   pnlPercent: number;
   currency: string;
+  gain_loss_eur?: number;
+  gain_loss_eur_pct?: number;
 }
 
 export default function PortfolioPage() {
@@ -98,8 +100,8 @@ export default function PortfolioPage() {
   }, [filteredHistory]);
 
   const assetRows: AssetRow[] = useMemo(() => {
-    if (!assets) return [];
-    return assets.map(asset => ({
+    const src = assets ?? portfolio?.assets ?? [];
+    return src.map(asset => ({
       id: asset.id,
       symbol: asset.symbol,
       type: asset.type,
@@ -108,11 +110,13 @@ export default function PortfolioPage() {
       purchase_price_eur: asset.purchase_price_eur,
       current_price: asset.current_price,
       value: asset.current_price * asset.quantity,
-      pnl: (asset.current_price - asset.purchase_price) * asset.quantity,
-      pnlPercent: ((asset.current_price - asset.purchase_price) / asset.purchase_price) * 100,
+      pnl: asset.gain_loss_eur ?? ((asset.current_price - asset.purchase_price) * asset.quantity),
+      pnlPercent: asset.gain_loss_eur_pct ?? (((asset.current_price - asset.purchase_price) / asset.purchase_price) * 100),
       currency: asset.currency,
+      gain_loss_eur: asset.gain_loss_eur,
+      gain_loss_eur_pct: asset.gain_loss_eur_pct,
     }));
-  }, [assets]);
+  }, [assets, portfolio?.assets]);
 
   const sortedRows = useMemo(() => {
     let rows = [...assetRows];
@@ -590,7 +594,7 @@ export default function PortfolioPage() {
                             "font-medium",
                             row.pnl >= 0 ? "text-gain" : "text-loss"
                           )}>
-                            {row.pnl >= 0 ? "+" : ""}{formatCurrency(row.pnl, row.currency)}
+                            {row.pnl >= 0 ? "+" : ""}{formatCurrency(row.pnl, "EUR")}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-right">

@@ -20,10 +20,13 @@ export interface Asset {
   purchase_price: number;
   purchase_price_eur?: number;
   current_price: number;
-  purchase_date: string;
-  user_id: string;
+  purchase_date?: string;
+  user_id?: string;
+  user_email?: string;
   currency: string;
   last_updated?: string;
+  gain_loss_eur?: number;
+  gain_loss_eur_pct?: number;
 }
 
 export interface Transaction {
@@ -47,6 +50,17 @@ export interface PortfolioSummary {
   total_value: number;
   total_gain_loss: number;
   gain_loss_percentage: number;
+  assets: Asset[];
+  performance: {
+    daily: number;
+    monthly: number;
+    yearly: number;
+  };
+  allocation: {
+    crypto: number;
+    stocks: number;
+    real_estate: number;
+  };
   by_type: {
     type: string;
     value: number;

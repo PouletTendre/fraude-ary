@@ -14,8 +14,8 @@ export function RecentTransactionsWidget() {
 
   const recentAssets = [...(assets || [])]
     .sort((a, b) => {
-      const dateA = a.last_updated ? new Date(a.last_updated).getTime() : new Date(a.purchase_date).getTime();
-      const dateB = b.last_updated ? new Date(b.last_updated).getTime() : new Date(b.purchase_date).getTime();
+      const dateA = a.last_updated ? new Date(a.last_updated).getTime() : (a.purchase_date ? new Date(a.purchase_date).getTime() : 0);
+      const dateB = b.last_updated ? new Date(b.last_updated).getTime() : (b.purchase_date ? new Date(b.purchase_date).getTime() : 0);
       return dateB - dateA;
     })
     .slice(0, 5);
@@ -56,7 +56,7 @@ export function RecentTransactionsWidget() {
               const pnl = (asset.current_price - asset.purchase_price) * asset.quantity;
               const pnlPercent = ((asset.current_price - asset.purchase_price) / asset.purchase_price) * 100;
               const isProfit = pnl >= 0;
-              const displayDate = asset.last_updated || asset.purchase_date;
+              const displayDate = asset.last_updated || asset.purchase_date || "";
 
               return (
                 <div

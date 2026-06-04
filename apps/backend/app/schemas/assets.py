@@ -28,6 +28,8 @@ class AssetResponse(BaseModel):
     total_value: float
     purchase_date: Optional[str] = None
     currency: str
+    gain_loss_eur: Optional[float] = None
+    gain_loss_eur_pct: Optional[float] = None
     created_at: Optional[datetime] = None
 
 class PriceHistoryResponse(BaseModel):

@@ -235,6 +235,8 @@ async def get_portfolio_summary(
             total_value=total_asset_value_native,
             purchase_date=purchase_date_str,
             currency=asset.currency or 'EUR',
+            gain_loss_eur=round(total_asset_value - cost_basis, 2),
+            gain_loss_eur_pct=round((total_asset_value - cost_basis) / cost_basis * 100, 2) if cost_basis > 0 else 0,
             created_at=asset.created_at
         ))
     # Compute history from the oldest purchase date so the chart shows full range
