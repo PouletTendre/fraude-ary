@@ -128,7 +128,7 @@ async def create_transaction(
             asset.purchase_price_eur = round(
                 (asset.quantity * (asset.purchase_price_eur or 0.0) + eur_cost) / new_quantity, 2
             )
-            asset.quantity = round(new_quantity, 2)
+            asset.quantity = new_quantity
             tx.asset_id = asset.id
         else:
             if not transaction.asset_type:
@@ -159,7 +159,7 @@ async def create_transaction(
             await db.delete(asset)
             tx.asset_id = None
         else:
-            asset.quantity = round(new_quantity, 2)
+            asset.quantity = new_quantity
             tx.asset_id = asset.id
 
     await db.commit()
@@ -263,11 +263,11 @@ async def update_transaction(
                 old_asset.purchase_price_eur = round(
                     (old_asset.quantity * (old_asset.purchase_price_eur or 0.0) - old_quantity * old_unit_price * old_exchange_rate) / reverted_quantity, 2
                 )
-                old_asset.quantity = round(reverted_quantity, 2)
+                old_asset.quantity = reverted_quantity
             else:
-                old_asset.quantity = round(reverted_quantity, 2)
+                old_asset.quantity = reverted_quantity
         else:  # sell
-            old_asset.quantity = round(old_asset.quantity + old_quantity, 2)
+            old_asset.quantity = old_asset.quantity + old_quantity
 
     # Find target asset for the new transaction
     target_asset: Asset | None = None
@@ -305,7 +305,7 @@ async def update_transaction(
             target_asset.purchase_price_eur = round(
                 (target_asset.quantity * (target_asset.purchase_price_eur or 0.0) + eur_cost) / new_qty, 2
             )
-            target_asset.quantity = round(new_qty, 2)
+            target_asset.quantity = new_qty
             tx.asset_id = target_asset.id
         else:
             asset_type_str = update.asset_type if update.asset_type is not None else None
@@ -414,11 +414,11 @@ async def delete_transaction(
                 asset.purchase_price_eur = round(
                     (asset.quantity * (asset.purchase_price_eur or 0.0) - tx_quantity * tx.unit_price * tx.exchange_rate) / reverted_quantity, 2
                 )
-                asset.quantity = round(reverted_quantity, 2)
+                asset.quantity = reverted_quantity
             else:
                 await db.delete(asset)
         else:  # sell
-            asset.quantity = round(asset.quantity + tx_quantity, 2)
+            asset.quantity = asset.quantity + tx_quantity
 
     await db.delete(tx)
     await db.commit()

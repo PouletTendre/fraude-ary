@@ -108,7 +108,7 @@ async def deduplicate_assets(
             weighted_price_eur,
         )
 
-        master.quantity = round(total_quantity, 2)
+        master.quantity = total_quantity
         master.purchase_price = round(weighted_price, 2)
         master.purchase_price_eur = round(weighted_price_eur, 2)
 
@@ -279,7 +279,7 @@ async def create_asset(
             (existing.quantity * existing.purchase_price + asset.quantity * asset.purchase_price)
             / new_quantity, 2
         )
-        existing.quantity = round(new_quantity, 2)
+        existing.quantity = new_quantity
         await db.commit()
         await db.refresh(existing)
         db_asset = existing
