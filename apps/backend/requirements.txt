@@ -20,3 +20,6 @@ pytest==8.3.4
 pytest-asyncio==0.25.0
 aiosqlite==0.20.0
 apscheduler==3.11.0
+python-dateutil>=2.8.2
+plaid-python>=19.0.0
+cryptography>=42.0.0

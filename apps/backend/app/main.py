@@ -11,7 +11,7 @@ from slowapi.errors import RateLimitExceeded
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from sqlalchemy import text
 
-from app.routers import auth, assets, portfolio, prices, demo, alerts, notifications, exchange_rates, cache, monitoring, transactions, dividends, simulator, technical, analytics, news, valuation
+from app.routers import auth, assets, portfolio, prices, demo, alerts, notifications, exchange_rates, cache, monitoring, transactions, dividends, simulator, technical, analytics, news, valuation, plaid
 from app.services.cache_service import cache_service
 from app.services.price_service import price_service
 from app.database import async_session
@@ -96,6 +96,7 @@ app.include_router(technical.router, prefix="/api/v1")
 app.include_router(analytics.router, prefix="/api/v1")
 app.include_router(news.router, prefix="/api/v1")
 app.include_router(valuation.router, prefix="/api/v1")
+app.include_router(plaid.router, prefix="/api/v1/plaid", tags=["plaid"])
 
 @app.get("/health")
 async def health():

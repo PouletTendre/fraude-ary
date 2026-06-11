@@ -13,6 +13,10 @@ class Settings(BaseSettings):
     FRED_API_KEY: str = ""
     ALPHA_VANTAGE_API_KEY: str = ""
     COINCAP_API_KEY: str = ""
+    PLAID_CLIENT_ID: str = ""
+    PLAID_SECRET: str = ""
+    PLAID_ENV: str = "sandbox"  # sandbox | development | production
+    PLAID_ENCRYPTION_KEY: str = ""  # Fernet key for encrypting access tokens
 
     class Config:
         env_file = ".env"

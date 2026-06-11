@@ -1,6 +1,7 @@
 import asyncio
 import httpx
 import logging
+import random
 import uuid
 import yfinance
 from typing import Optional, Dict, List, Any, Tuple
@@ -13,6 +14,7 @@ from sqlalchemy import select
 CRYPTO_COMPARE_API = "https://min-api.cryptocompare.com/data"
 YAHOO_CHART_API = "https://query1.finance.yahoo.com/v8/finance/chart"
 COINCAP_API = "https://api.coincap.io/v2"
+COINGECKO_API = "https://api.coingecko.com/api/v3"
 EXCHANGE_RATE_API_URL = "https://api.frankfurter.app/latest?from=EUR"
 REDIS_KEY_EXCHANGE_RATES = "exchange_rates"
 CACHE_TTL_EXCHANGE = 3600
@@ -20,6 +22,24 @@ CACHE_TTL_EXCHANGE = 3600
 CACHE_TTL_STOCK = 300
 CACHE_TTL_CRYPTO = 60
 CACHE_TTL_HISTORY = 86400
+
+# User-Agent rotation pool to avoid rate-limiting / bot detection
+USER_AGENTS = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_5) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15",
+    "Mozilla/5.0 (X11; Linux x86_64; rv:126.0) Gecko/20100101 Firefox/126.0",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+]
+
+# Semaphore to cap concurrent outbound HTTP requests
+_semaphore = asyncio.Semaphore(20)
+
+
+class PriceFetchError(Exception):
+    """Raised when all price providers fail for a given symbol."""
+    pass
 
 # Default exchange rates (fallback when API is unavailable)
 DEFAULT_EXCHANGE_RATES = {
@@ -45,6 +65,28 @@ REAL_ESTATE_PRICES = {
 }
 
 class PriceService:
+    def __init__(self):
+        self._client: Optional[httpx.AsyncClient] = None
+
+    async def _get_client(self) -> httpx.AsyncClient:
+        """Persistent httpx client with connection pooling."""
+        if self._client is None or self._client.is_closed:
+            self._client = httpx.AsyncClient(
+                timeout=httpx.Timeout(15.0, connect=10.0),
+                follow_redirects=True,
+                limits=httpx.Limits(max_connections=50, max_keepalive_connections=20),
+            )
+        return self._client
+
+    async def close(self):
+        """Close the persistent HTTP client."""
+        if self._client and not self._client.is_closed:
+            await self._client.aclose()
+            self._client = None
+
+    def _random_ua(self) -> str:
+        return random.choice(USER_AGENTS)
+
     async def get_crypto_price(self, symbol: str) -> Optional[float]:
         symbol_upper = symbol.upper()
         cached = await cache_service.get_crypto_price(symbol_upper)
@@ -53,10 +95,12 @@ class PriceService:
 
         # 1. CryptoCompare (primary)
         try:
-            async with httpx.AsyncClient(timeout=10.0) as client:
+            async with _semaphore:
+                client = await self._get_client()
                 resp = await client.get(
                     f"{CRYPTO_COMPARE_API}/price",
-                    params={"fsym": symbol_upper, "tsyms": "USD"}
+                    params={"fsym": symbol_upper, "tsyms": "USD"},
+                    headers={"User-Agent": self._random_ua()},
                 )
                 if resp.status_code == 200:
                     data = resp.json()
@@ -85,9 +129,11 @@ class PriceService:
 
         # 3. CoinCap fallback (free REST API, no key needed)
         try:
-            async with httpx.AsyncClient(timeout=10.0) as client:
+            async with _semaphore:
+                client = await self._get_client()
                 resp = await client.get(
                     f"{COINCAP_API}/assets/{symbol_upper.lower()}",
+                    headers={"User-Agent": self._random_ua()},
                 )
                 if resp.status_code == 200:
                     data = resp.json().get("data", {})
@@ -100,6 +146,25 @@ class PriceService:
         except Exception as e:
             logging.warning(f"CoinCap failed for {symbol_upper}: {e}")
 
+        # 4. CoinGecko fallback (free tier, no key needed)
+        try:
+            async with _semaphore:
+                client = await self._get_client()
+                resp = await client.get(
+                    f"{COINGECKO_API}/simple/price",
+                    params={"ids": symbol_upper.lower(), "vs_currencies": "usd"},
+                    headers={"User-Agent": self._random_ua()},
+                )
+                if resp.status_code == 200:
+                    data = resp.json()
+                    price_data = data.get(symbol_upper.lower(), {})
+                    price = price_data.get("usd")
+                    if price and price > 0:
+                        await cache_service.set_crypto_price(symbol_upper, float(price))
+                        return float(price)
+        except Exception as e:
+            logging.warning(f"CoinGecko failed for {symbol_upper}: {e}")
+
         return None
 
     async def get_stock_price(self, symbol: str) -> Optional[float]:
@@ -109,10 +174,11 @@ class PriceService:
             return cached
 
         try:
-            async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as client:
+            async with _semaphore:
+                client = await self._get_client()
                 url = f"{YAHOO_CHART_API}/{symbol_upper}?interval=1d&range=1d"
                 resp = await client.get(url, headers={
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+                    "User-Agent": self._random_ua()
                 })
                 if resp.status_code == 200:
                     data = resp.json()
@@ -241,7 +307,8 @@ class PriceService:
 
         # 2. Yahoo Chart API (existing fallback)
         try:
-            async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
+            async with _semaphore:
+                client = await self._get_client()
                 url = f"{YAHOO_CHART_API}/{symbol_upper}"
                 params = {
                     "period1": int(start.timestamp()),
@@ -249,7 +316,7 @@ class PriceService:
                     "interval": "1d",
                 }
                 resp = await client.get(url, params=params, headers={
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+                    "User-Agent": self._random_ua()
                 })
                 if resp.status_code == 200:
                     data = resp.json()
@@ -276,7 +343,8 @@ class PriceService:
 
         # 1. CryptoCompare histoday (primary)
         try:
-            async with httpx.AsyncClient(timeout=30.0) as client:
+            async with _semaphore:
+                client = await self._get_client()
                 url = f"{CRYPTO_COMPARE_API}/v2/histoday"
                 params = {
                     "fsym": symbol_upper,
@@ -284,7 +352,9 @@ class PriceService:
                     "limit": days,
                     "toTs": int(end.timestamp()),
                 }
-                resp = await client.get(url, params=params)
+                resp = await client.get(url, params=params, headers={
+                    "User-Agent": self._random_ua()
+                })
                 if resp.status_code == 200:
                     data = resp.json()
                     data_array = data.get("Data", {}).get("Data", [])
@@ -375,10 +445,13 @@ class PriceService:
             logging.warning(f"Redis cache miss for historical rate: {e}")
 
         try:
-            async with httpx.AsyncClient(timeout=10.0) as client:
+            async with _semaphore:
+                client = await price_service._get_client()
                 url = f"https://api.frankfurter.app/{date_str}"
                 params = {"from": from_currency.upper(), "to": to_currency.upper()}
-                resp = await client.get(url, params=params)
+                resp = await client.get(url, params=params, headers={
+                    "User-Agent": price_service._random_ua()
+                })
                 if resp.status_code == 200:
                     data = resp.json()
                     rates = data.get("rates", {})
@@ -462,8 +535,11 @@ async def fetch_and_update_exchange_rates() -> Dict[str, float]:
 
     rates = None
     try:
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            resp = await client.get(EXCHANGE_RATE_API_URL)
+        async with _semaphore:
+            client = await price_service._get_client()
+            resp = await client.get(EXCHANGE_RATE_API_URL, headers={
+                "User-Agent": price_service._random_ua()
+            })
             if resp.status_code == 200:
                 data = resp.json()
                 api_rates = data.get("rates", {})

@@ -20,6 +20,9 @@ const TYPE_LABELS: Record<string, string> = {
   stocks: "Action",
   crypto: "Crypto",
   real_estate: "Immobilier",
+  etf: "ETF",
+  bond: "Obligation",
+  cash: "Liquidités",
 };
 
 export function DashboardTable({
